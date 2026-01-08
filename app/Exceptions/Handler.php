@@ -42,11 +42,7 @@ class Handler extends ExceptionHandler
      *
      * @var array<int, string>
      */
-    protected $dontFlash = [
-        'current_password',
-        'password',
-        'password_confirmation',
-    ];
+    protected $dontFlash = ['current_password', 'password', 'password_confirmation'];
 
     /**
      * Register the exception handling callbacks for the application.
@@ -76,8 +72,10 @@ class Handler extends ExceptionHandler
     /**
      * Handle API exceptions
      */
-    protected function handleApiException(Request $request, Throwable $exception): JsonResponse
-    {
+    protected function handleApiException(
+        Request $request,
+        Throwable $exception
+    ): \Symfony\Component\HttpFoundation\Response {
         $exception = $this->prepareException($exception);
 
         // Custom API Exception
@@ -87,7 +85,7 @@ class Handler extends ExceptionHandler
 
         // Validation Exception
         if ($exception instanceof ValidationException) {
-            return $this->convertValidationExceptionToResponse($exception);
+            return $this->convertValidationExceptionToResponse($exception, $request);
         }
 
         // Model Not Found Exception
@@ -102,34 +100,24 @@ class Handler extends ExceptionHandler
 
         // Method Not Allowed Exception
         if ($exception instanceof MethodNotAllowedHttpException) {
-            return $this->errorResponse(
-                'Method not allowed',
-                HttpStatusCode::METHOD_NOT_ALLOWED
-            );
+            return $this->errorResponse('Method not allowed', HttpStatusCode::METHOD_NOT_ALLOWED);
         }
 
         // Authentication Exception
         if ($exception instanceof AuthenticationException) {
-            return $this->errorResponse(
-                $exception->getMessage() ?: 'Unauthenticated',
-                HttpStatusCode::UNAUTHORIZED
-            );
+            return $this->errorResponse($exception->getMessage() ?: 'Unauthenticated', HttpStatusCode::UNAUTHORIZED);
         }
 
         // Authorization Exception
         if ($exception instanceof AuthorizationException) {
-            return $this->errorResponse(
-                $exception->getMessage() ?: 'Forbidden',
-                HttpStatusCode::FORBIDDEN
-            );
+            return $this->errorResponse($exception->getMessage() ?: 'Forbidden', HttpStatusCode::FORBIDDEN);
         }
 
         // Too Many Requests Exception
         if ($exception instanceof TooManyRequestsHttpException) {
-            return $this->errorResponse(
-                'Too many requests',
-                HttpStatusCode::TOO_MANY_REQUESTS
-            )->withHeaders($exception->getHeaders());
+            return $this->errorResponse('Too many requests', HttpStatusCode::TOO_MANY_REQUESTS)->withHeaders(
+                $exception->getHeaders()
+            );
         }
 
         // HTTP Exception
@@ -156,13 +144,18 @@ class Handler extends ExceptionHandler
     /**
      * Convert validation exception to JSON response
      */
-    protected function convertValidationExceptionToResponse(ValidationException $exception): JsonResponse
-    {
-        return response()->json([
-            'success' => false,
-            'message' => $exception->getMessage() ?: 'Validation failed',
-            'errors' => $exception->errors(),
-        ], HttpStatusCode::UNPROCESSABLE_ENTITY);
+    protected function convertValidationExceptionToResponse(
+        ValidationException $exception,
+        $request
+    ): \Symfony\Component\HttpFoundation\Response {
+        return response()->json(
+            [
+                'success' => false,
+                'message' => $exception->getMessage() ?: 'Validation failed',
+                'errors' => $exception->errors(),
+            ],
+            HttpStatusCode::UNPROCESSABLE_ENTITY
+        );
     }
 
     /**
@@ -172,7 +165,7 @@ class Handler extends ExceptionHandler
     {
         if (config('app.debug')) {
             return $this->errorResponse(
-                'Database error: '.$exception->getMessage(),
+                'Database error: ' . $exception->getMessage(),
                 HttpStatusCode::INTERNAL_SERVER_ERROR,
                 [
                     'sql' => $exception->getSql(),
@@ -204,11 +197,13 @@ class Handler extends ExceptionHandler
             'message' => $exception->getMessage(),
             'trace' => collect($exception->getTrace())
                 ->take(10)
-                ->map(fn ($trace) => [
-                    'file' => $trace['file'] ?? 'unknown',
-                    'line' => $trace['line'] ?? 0,
-                    'function' => $trace['function'] ?? 'unknown',
-                ])
+                ->map(
+                    fn($trace) => [
+                        'file' => $trace['file'] ?? 'unknown',
+                        'line' => $trace['line'] ?? 0,
+                        'function' => $trace['function'],
+                    ]
+                )
                 ->toArray(),
         ];
     }
@@ -246,12 +241,11 @@ class Handler extends ExceptionHandler
     /**
      * Handle unauthenticated user
      */
-    protected function unauthenticated($request, AuthenticationException $exception): JsonResponse|\Symfony\Component\HttpFoundation\Response
-    {
+    protected function unauthenticated(
+        $request,
+        AuthenticationException $exception
+    ): \Symfony\Component\HttpFoundation\Response {
         // Always return JSON for API routes
-        return $this->errorResponse(
-            $exception->getMessage() ?: 'Unauthenticated',
-            HttpStatusCode::UNAUTHORIZED
-        );
+        return $this->errorResponse($exception->getMessage() ?: 'Unauthenticated', HttpStatusCode::UNAUTHORIZED);
     }
 }

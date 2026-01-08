@@ -82,12 +82,7 @@ class RolePermissionSeeder extends Seeder
 
         // User - basic permissions
         $user = Role::firstOrCreate(['name' => 'user']);
-        $user->givePermissionTo([
-            'view posts',
-            'create posts',
-            'view comments',
-            'create comments',
-        ]);
+        $user->givePermissionTo(['view posts', 'create posts', 'view comments', 'create comments']);
 
         $this->command->info('Roles and permissions seeded successfully!');
     }

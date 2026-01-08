@@ -19,7 +19,6 @@ Route::prefix('auth')->group(function () {
 
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
-
     // Auth routes
     Route::prefix('auth')->group(function () {
         Route::get('me', [AuthController::class, 'me']);

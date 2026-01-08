@@ -4,7 +4,6 @@ namespace App\Traits;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 trait ApiResponse
@@ -54,32 +53,37 @@ trait ApiResponse
      */
     protected function paginatedResponse(LengthAwarePaginator $paginator, string $message = 'Success'): JsonResponse
     {
-        return response()->json([
-            'success' => true,
-            'message' => $message,
-            'data' => $paginator->items(),
-            'meta' => [
-                'current_page' => $paginator->currentPage(),
-                'from' => $paginator->firstItem(),
-                'last_page' => $paginator->lastPage(),
-                'per_page' => $paginator->perPage(),
-                'to' => $paginator->lastItem(),
-                'total' => $paginator->total(),
+        return response()->json(
+            [
+                'success' => true,
+                'message' => $message,
+                'data' => $paginator->items(),
+                'meta' => [
+                    'current_page' => $paginator->currentPage(),
+                    'from' => $paginator->firstItem(),
+                    'last_page' => $paginator->lastPage(),
+                    'per_page' => $paginator->perPage(),
+                    'to' => $paginator->lastItem(),
+                    'total' => $paginator->total(),
+                ],
+                'links' => [
+                    'first' => $paginator->url(1),
+                    'last' => $paginator->url($paginator->lastPage()),
+                    'prev' => $paginator->previousPageUrl(),
+                    'next' => $paginator->nextPageUrl(),
+                ],
             ],
-            'links' => [
-                'first' => $paginator->url(1),
-                'last' => $paginator->url($paginator->lastPage()),
-                'prev' => $paginator->previousPageUrl(),
-                'next' => $paginator->nextPageUrl(),
-            ],
-        ], 200);
+            200
+        );
     }
 
     /**
      * Return a created response (201)
      */
-    protected function createdResponse(mixed $data = null, string $message = 'Resource created successfully'): JsonResponse
-    {
+    protected function createdResponse(
+        mixed $data = null,
+        string $message = 'Resource created successfully'
+    ): JsonResponse {
         return $this->successResponse($data, $message, 201);
     }
 
@@ -136,7 +140,7 @@ trait ApiResponse
      */
     private function transformData(mixed $data): mixed
     {
-        if ($data instanceof JsonResource || $data instanceof ResourceCollection) {
+        if ($data instanceof JsonResource) {
             return $data->resolve();
         }
 
@@ -150,8 +154,11 @@ trait ApiResponse
     /**
      * Add deprecation warning header
      */
-    protected function withDeprecationWarning(JsonResponse $response, string $version, ?string $sunsetDate = null): JsonResponse
-    {
+    protected function withDeprecationWarning(
+        JsonResponse $response,
+        string $version,
+        ?string $sunsetDate = null
+    ): JsonResponse {
         $response->header('X-API-Deprecation', 'true');
         $response->header('X-API-Deprecated-Version', $version);
 

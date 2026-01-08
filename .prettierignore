@@ -1,0 +1,5 @@
+artisan
+public/index.php
+vendor
+storage
+bootstrap/cache

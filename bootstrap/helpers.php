@@ -6,11 +6,14 @@ if (!function_exists('api_response')) {
      */
     function api_response(mixed $data = null, string $message = '', int $code = 200): \Illuminate\Http\JsonResponse
     {
-        return response()->json([
-            'success' => $code >= 200 && $code < 300,
-            'message' => $message,
-            'data' => $data,
-        ], $code);
+        return response()->json(
+            [
+                'success' => $code >= 200 && $code < 300,
+                'message' => $message,
+                'data' => $data,
+            ],
+            $code
+        );
     }
 }
 
@@ -37,8 +40,11 @@ if (!function_exists('api_success')) {
     /**
      * Return a standardized API success response
      */
-    function api_success(mixed $data = null, string $message = 'Success', int $code = 200): \Illuminate\Http\JsonResponse
-    {
+    function api_success(
+        mixed $data = null,
+        string $message = 'Success',
+        int $code = 200
+    ): \Illuminate\Http\JsonResponse {
         return api_response($data, $message, $code);
     }
 }
@@ -85,7 +91,7 @@ if (!function_exists('format_bytes')) {
             $bytes /= 1024;
         }
 
-        return round($bytes, $precision).' '.$units[$i];
+        return round($bytes, $precision) . ' ' . $units[$i];
     }
 }
 
@@ -109,9 +115,9 @@ if (!function_exists('mask_email')) {
         $name = $parts[0];
         $domain = $parts[1] ?? '';
 
-        $maskedName = substr($name, 0, 2).str_repeat('*', max(strlen($name) - 2, 0));
+        $maskedName = substr($name, 0, 2) . str_repeat('*', max(strlen($name) - 2, 0));
 
-        return $maskedName.'@'.$domain;
+        return $maskedName . '@' . $domain;
     }
 }
 
@@ -154,7 +160,7 @@ if (!function_exists('generate_token_name')) {
         $agent = request()->userAgent();
         $ip = request()->ip();
 
-        return $prefix.'-'.substr(md5($agent.$ip), 0, 8);
+        return $prefix . '-' . substr(md5($agent . $ip), 0, 8);
     }
 }
 
@@ -210,6 +216,7 @@ if (!function_exists('route_exists')) {
     {
         try {
             route($name);
+
             return true;
         } catch (\Throwable $e) {
             return false;

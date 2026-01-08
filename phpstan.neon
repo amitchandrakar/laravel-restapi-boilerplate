@@ -8,18 +8,6 @@ parameters:
     # Level (0-9) - start with 5 for production
     level: 5
 
-    ignoreErrors:
-        - '#PHPDoc tag @var#'
 
-    excludePaths:
-        - app/Console/Kernel.php
-        - app/Http/Middleware/EncryptCookies.php
-        - app/Http/Middleware/PreventRequestsDuringMaintenance.php
-        - app/Http/Middleware/TrimStrings.php
-        - app/Http/Middleware/TrustHosts.php
-        - app/Http/Middleware/TrustProxies.php
-        - app/Http/Middleware/ValidateSignature.php
-        - app/Http/Middleware/VerifyCsrfToken.php
 
-    checkMissingIterableValueType: false
-    checkGenericClassInNonGenericObjectType: false
+

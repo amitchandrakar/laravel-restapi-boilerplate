@@ -1,0 +1,44 @@
+#!/bin/sh
+
+# Fix the path to ensure we can find composer
+export PATH=$PATH:/usr/local/bin:/usr/local/sbin:/opt/homebrew/bin
+
+echo "🔍 Running pre-commit checks..."
+
+# 1. Check Prettier (Formatting)
+echo "✨ Running Prettier Check..."
+npx prettier --check .
+STATUS=$?
+
+if [ $STATUS -ne 0 ]; then
+    echo "❌ Prettier check failed!"
+    echo "💡 Run 'npm run format' to fix formatting issues."
+    exit 1
+fi
+
+# 2. Check Code Style (Pint)
+echo "🎨 Running Pint (Code Style)..."
+# We reference the composer script 'lint' which runs 'pint --test'
+composer lint
+STATUS=$?
+
+if [ $STATUS -ne 0 ]; then
+    echo "❌ Pint check failed!"
+    echo "💡 Run 'composer format' to automatically fix style issues."
+    exit 1
+fi
+
+# 2. Check Static Analysis (Larastan)
+echo "🧠 Running Larastan (Static Analysis)..."
+# We reference the composer script 'analyse' which runs 'phpstan analyse'
+composer analyse
+STATUS=$?
+
+if [ $STATUS -ne 0 ]; then
+    echo "❌ Larastan check failed!"
+    echo "💡 Please fix the errors reported above."
+    exit 1
+fi
+
+echo "✅ All checks passed! Committing..."
+exit 0

@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | API Configuration
@@ -88,5 +87,4 @@ return [
         'include_trace_in_debug' => env('APP_DEBUG', false),
         'snake_case_keys' => false, // Convert response keys to snake_case
     ],
-
 ];

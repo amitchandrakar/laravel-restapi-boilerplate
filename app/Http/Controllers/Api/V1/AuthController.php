@@ -27,11 +27,14 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
-        return $this->createdResponse([
-            'user' => $user,
-            'token' => $token,
-            'token_type' => 'Bearer',
-        ], 'User registered successfully');
+        return $this->createdResponse(
+            [
+                'user' => $user,
+                'token' => $token,
+                'token_type' => 'Bearer',
+            ],
+            'User registered successfully'
+        );
     }
 
     /**
@@ -47,11 +50,14 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
-        return $this->successResponse([
-            'user' => $user,
-            'token' => $token,
-            'token_type' => 'Bearer',
-        ], 'Login successful');
+        return $this->successResponse(
+            [
+                'user' => $user,
+                'token' => $token,
+                'token_type' => 'Bearer',
+            ],
+            'Login successful'
+        );
     }
 
     /**
@@ -59,10 +65,7 @@ class AuthController extends Controller
      */
     public function me(Request $request): JsonResponse
     {
-        return $this->successResponse(
-            $request->user(),
-            'User retrieved successfully'
-        );
+        return $this->successResponse($request->user(), 'User retrieved successfully');
     }
 
     /**
@@ -86,10 +89,13 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
-        return $this->successResponse([
-            'token' => $token,
-            'token_type' => 'Bearer',
-        ], 'Token refreshed successfully');
+        return $this->successResponse(
+            [
+                'token' => $token,
+                'token_type' => 'Bearer',
+            ],
+            'Token refreshed successfully'
+        );
     }
 
     /**
@@ -119,7 +125,10 @@ class AuthController extends Controller
         ]);
 
         // Optionally revoke all tokens except current one
-        $user->tokens()->where('id', '!=', $request->user()->currentAccessToken()->id)->delete();
+        $user
+            ->tokens()
+            ->where('id', '!=', $request->user()->currentAccessToken()->id)
+            ->delete();
 
         return $this->successResponse(null, 'Password changed successfully');
     }
@@ -135,10 +144,7 @@ class AuthController extends Controller
 
         // TODO: Implement password reset email logic
 
-        return $this->successResponse(
-            null,
-            'Password reset link sent to your email'
-        );
+        return $this->successResponse(null, 'Password reset link sent to your email');
     }
 
     /**
@@ -154,9 +160,6 @@ class AuthController extends Controller
 
         // TODO: Implement password reset logic
 
-        return $this->successResponse(
-            null,
-            'Password reset successfully'
-        );
+        return $this->successResponse(null, 'Password reset successfully');
     }
 }

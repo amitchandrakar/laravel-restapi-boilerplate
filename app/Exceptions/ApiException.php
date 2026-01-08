@@ -10,8 +10,12 @@ class ApiException extends Exception
     protected int $statusCode;
     protected mixed $errors;
 
-    public function __construct(string $message = 'An error occurred', int $statusCode = 400, mixed $errors = null, ?\Throwable $previous = null)
-    {
+    public function __construct(
+        string $message = 'An error occurred',
+        int $statusCode = 400,
+        mixed $errors = null,
+        ?\Throwable $previous = null
+    ) {
         parent::__construct($message, 0, $previous);
         $this->statusCode = $statusCode;
         $this->errors = $errors;
@@ -33,7 +37,9 @@ class ApiException extends Exception
                 'exception' => get_class($this->getPrevious()),
                 'file' => $this->getPrevious()->getFile(),
                 'line' => $this->getPrevious()->getLine(),
-                'trace' => collect($this->getPrevious()->getTrace())->take(5)->toArray(),
+                'trace' => collect($this->getPrevious()->getTrace())
+                    ->take(5)
+                    ->toArray(),
             ];
         }
 

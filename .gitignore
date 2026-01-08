@@ -20,4 +20,6 @@ yarn-error.log
 /.idea
 /.nova
 /.vscode
+!/.vscode/settings.json
+!/.vscode/extensions.json
 /.zed

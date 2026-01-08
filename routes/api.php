@@ -26,13 +26,15 @@ Route::get('health', function () {
 });
 
 // Load V1 routes
-Route::prefix('v1')
-    ->group(base_path('routes/api/v1.php'));
+Route::prefix('v1')->group(base_path('routes/api/v1.php'));
 
 // Fallback for undefined routes
 Route::fallback(function () {
-    return response()->json([
-        'success' => false,
-        'message' => 'Endpoint not found',
-    ], 404);
+    return response()->json(
+        [
+            'success' => false,
+            'message' => 'Endpoint not found',
+        ],
+        404
+    );
 });

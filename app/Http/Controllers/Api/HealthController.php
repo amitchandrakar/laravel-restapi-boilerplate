@@ -20,7 +20,7 @@ class HealthController extends Controller
             'services' => $this->checkServices(),
         ];
 
-        $allHealthy = collect($checks['services'])->every(fn ($service) => $service['status'] === 'up');
+        $allHealthy = collect($checks['services'])->every(fn($service) => $service['status'] === 'up');
 
         return response()->json($checks, $allHealthy ? 200 : 503);
     }
