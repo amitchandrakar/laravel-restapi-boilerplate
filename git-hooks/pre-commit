@@ -47,5 +47,15 @@ if [ $STATUS -ne 0 ]; then
     exit 1
 fi
 
+# 5. Check Tests
+echo "🧪 Running Tests..."
+php artisan test
+STATUS=$?
+
+if [ $STATUS -ne 0 ]; then
+    echo "❌ Tests failed!"
+    exit 1
+fi
+
 echo "✅ All checks passed! Committing..."
 exit 0

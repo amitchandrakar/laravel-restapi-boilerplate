@@ -2,6 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 
+Route::get('/', function () {
+    return response()->json(['status' => 'success']);
+});
+
 // Dummy login route to prevent "Route [login] not defined" error
 Route::get('/login', function () {
     return response()->json(
