@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class AuthService
 {
@@ -38,9 +42,7 @@ class AuthService
     public function login(array $credentials): array
     {
         if (!Auth::attempt($credentials)) {
-            throw ValidationException::withMessages([
-                'email' => ['Invalid credentials'],
-            ]);
+            throw new AuthenticationException('Invalid credentials');
         }
 
         /** @var User $user */
@@ -91,9 +93,7 @@ class AuthService
     public function changePassword(User $user, string $currentPassword, string $newPassword): void
     {
         if (!Hash::check($currentPassword, $user->password)) {
-            throw ValidationException::withMessages([
-                'current_password' => ['Current password is incorrect'],
-            ]);
+            throw new HttpException(403, 'Current password is incorrect');
         }
 
         $user->update([

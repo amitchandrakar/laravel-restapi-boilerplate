@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Api;
 
 use Illuminate\Contracts\Validation\Validator;
@@ -27,6 +29,7 @@ abstract class ApiFormRequest extends FormRequest
                 [
                     'success' => false,
                     'message' => 'Validation failed',
+                    'code' => JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
                     'errors' => $validator->errors(),
                 ],
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
@@ -44,6 +47,7 @@ abstract class ApiFormRequest extends FormRequest
                 [
                     'success' => false,
                     'message' => 'Forbidden',
+                    'code' => JsonResponse::HTTP_FORBIDDEN,
                 ],
                 JsonResponse::HTTP_FORBIDDEN
             )

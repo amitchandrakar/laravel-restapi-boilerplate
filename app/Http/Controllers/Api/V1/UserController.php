@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
@@ -10,12 +12,16 @@ use App\Models\User;
 use App\Services\UserService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
     use ApiResponse;
 
-    public function __construct(protected UserService $userService) {}
+    public function __construct(protected UserService $userService)
+    {
+        Log::info('UserController constructor called');
+    }
 
     /**
      * Display a listing of the resource.
@@ -60,6 +66,7 @@ class UserController extends Controller
      */
     public function destroy(User $user): JsonResponse
     {
+        // dd('HERE');
         $this->userService->deleteUser($user);
 
         return $this->successResponse(null, 'User deleted successfully');
