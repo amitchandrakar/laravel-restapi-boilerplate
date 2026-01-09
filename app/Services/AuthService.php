@@ -32,6 +32,7 @@ class AuthService
      * Login user.
      *
      * @return array{user: User, token: string}
+     *
      * @throws ValidationException
      */
     public function login(array $credentials): array
