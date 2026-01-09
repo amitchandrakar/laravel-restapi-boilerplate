@@ -9,8 +9,10 @@ use Symfony\Component\Finder\Finder;
 
 class StrictTypesTest extends TestCase
 {
-    /** @test */
-    public function all_php_files_must_declare_strict_types(): void
+    /**
+     * Test that all PHP files in the app and tests directories have strict types declared.
+     */
+    public function test_all_php_files_must_declare_strict_types(): void
     {
         $directories = [__DIR__ . '/../../app', __DIR__ . '/../../tests'];
 

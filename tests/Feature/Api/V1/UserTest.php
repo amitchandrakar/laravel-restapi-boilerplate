@@ -13,6 +13,8 @@ class UserTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
+    protected User $user;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -20,8 +22,10 @@ class UserTest extends TestCase
         $this->user = User::factory()->create();
     }
 
-    /** @test */
-    public function it_lists_users_successfully()
+    /**
+     * Test retrieving a paginated list of users.
+     */
+    public function test_it_lists_users_successfully(): void
     {
         User::factory()->count(5)->create();
 
@@ -42,8 +46,10 @@ class UserTest extends TestCase
             ]);
     }
 
-    /** @test */
-    public function it_stores_a_user_successfully()
+    /**
+     * Test storing a new user successfully.
+     */
+    public function test_it_stores_a_user_successfully(): void
     {
         $userData = [
             'name' => $this->faker->name,
@@ -67,8 +73,10 @@ class UserTest extends TestCase
         $this->assertDatabaseHas('users', ['email' => $userData['email']]);
     }
 
-    /** @test */
-    public function it_returns_validation_error_when_storing_invalid_user()
+    /**
+     * Test validation failure when storing an invalid user.
+     */
+    public function test_it_returns_validation_error_when_storing_invalid_user(): void
     {
         $response = $this->actingAs($this->user)->postJson('/api/v1/users', []); // Empty data
 
@@ -81,8 +89,10 @@ class UserTest extends TestCase
             ->assertJsonStructure(['errors']);
     }
 
-    /** @test */
-    public function it_shows_a_user_successfully()
+    /**
+     * Test retrieving a single user by UUID.
+     */
+    public function test_it_shows_a_user_successfully(): void
     {
         $targetUser = User::factory()->create();
 
@@ -98,8 +108,10 @@ class UserTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function it_returns_404_when_user_not_found()
+    /**
+     * Test showing a user that does not exist returns 404.
+     */
+    public function test_it_returns_404_when_user_not_found(): void
     {
         $response = $this->actingAs($this->user)->getJson('/api/v1/users/00000000-0000-0000-0000-000000000000');
 
@@ -109,8 +121,10 @@ class UserTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function it_updates_a_user_successfully()
+    /**
+     * Test updating a user successfully.
+     */
+    public function test_it_updates_a_user_successfully(): void
     {
         $targetUser = User::factory()->create();
         $updateData = [
@@ -128,8 +142,10 @@ class UserTest extends TestCase
         $this->assertDatabaseHas('users', ['uuid' => $targetUser->uuid, 'name' => 'Updated Name']);
     }
 
-    /** @test */
-    public function it_returns_validation_error_on_update()
+    /**
+     * Test validation failure during user update.
+     */
+    public function test_it_returns_validation_error_on_update(): void
     {
         $targetUser = User::factory()->create();
         $response = $this->actingAs($this->user)->putJson("/api/v1/users/{$targetUser->uuid}", [
@@ -142,8 +158,10 @@ class UserTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function it_returns_404_on_update_missing_user()
+    /**
+     * Test updating a non-existent user returns 404.
+     */
+    public function test_it_returns_404_on_update_missing_user(): void
     {
         $response = $this->actingAs($this->user)->putJson('/api/v1/users/00000000-0000-0000-0000-000000000000', [
             'name' => 'New',
@@ -155,8 +173,10 @@ class UserTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function it_destroys_a_user_successfully()
+    /**
+     * Test deleting a user successfully.
+     */
+    public function test_it_destroys_a_user_successfully(): void
     {
         $targetUser = User::factory()->create();
 
@@ -170,8 +190,10 @@ class UserTest extends TestCase
         $this->assertSoftDeleted('users', ['id' => $targetUser->id]);
     }
 
-    /** @test */
-    public function it_returns_404_on_destroy_missing_user()
+    /**
+     * Test deleting a non-existent user returns 404.
+     */
+    public function test_it_returns_404_on_destroy_missing_user(): void
     {
         $response = $this->actingAs($this->user)->deleteJson('/api/v1/users/00000000-0000-0000-0000-000000000000');
 
@@ -181,8 +203,10 @@ class UserTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function it_returns_401_when_unauthenticated()
+    /**
+     * Test unauthenticated access to user list returns 401.
+     */
+    public function test_it_returns_401_when_unauthenticated(): void
     {
         $response = $this->getJson('/api/v1/users');
 
@@ -192,8 +216,10 @@ class UserTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function it_returns_405_on_unsupported_method()
+    /**
+     * Test calling an unsupported method on user endpoint returns 405.
+     */
+    public function test_it_returns_405_on_unsupported_method(): void
     {
         $targetUser = User::factory()->create();
 
@@ -206,8 +232,10 @@ class UserTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function it_returns_500_on_unexpected_error()
+    /**
+     * Test unexpected backend error returns 500.
+     */
+    public function test_it_returns_500_on_unexpected_error(): void
     {
         // Force an exception by calling a non-existent method on UserService during index
         $this->mock(\App\Services\UserService::class, function ($mock) {

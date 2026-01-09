@@ -12,7 +12,10 @@ class AuthTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_user_can_register()
+    /**
+     * Test that a user can register via the API.
+     */
+    public function test_user_can_register(): void
     {
         $response = $this->postJson('/api/v1/auth/register', [
             'name' => 'Test User',
@@ -28,7 +31,10 @@ class AuthTest extends TestCase
         $this->assertDatabaseHas('users', ['email' => 'test@example.com']);
     }
 
-    public function test_user_can_login()
+    /**
+     * Test that a user can login via the API.
+     */
+    public function test_user_can_login(): void
     {
         $user = User::factory()->create([
             'password' => bcrypt('password123'),
@@ -42,7 +48,10 @@ class AuthTest extends TestCase
         $response->assertOk()->assertJsonStructure(['success', 'message', 'data' => ['user', 'token', 'token_type']]);
     }
 
-    public function test_user_can_get_token_user()
+    /**
+     * Test that an authenticated user can retrieve their profile.
+     */
+    public function test_user_can_get_token_user(): void
     {
         $user = User::factory()->create();
 
@@ -57,7 +66,10 @@ class AuthTest extends TestCase
         ]);
     }
 
-    public function test_user_can_logout()
+    /**
+     * Test that an authenticated user can logout.
+     */
+    public function test_user_can_logout(): void
     {
         $user = User::factory()->create();
         $token = $user->createToken('test')->plainTextToken;
