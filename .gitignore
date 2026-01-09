@@ -7,19 +7,17 @@
 /storage/pail
 /vendor
 .env
-.env.backup
-.env.production
 .phpactor.json
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
-/auth.json
-/.fleet
 /.idea
 /.nova
-/.vscode
-!/.vscode/settings.json
-!/.vscode/extensions.json
+# Ignore everything in .vscode
+.vscode/*
+# Allow only these files
+!.vscode/settings.json
+!.vscode/extensions.json
 /.zed
