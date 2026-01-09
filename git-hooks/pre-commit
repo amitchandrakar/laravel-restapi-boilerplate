@@ -5,32 +5,39 @@ export PATH=$PATH:/usr/local/bin:/usr/local/sbin:/opt/homebrew/bin
 
 echo "🔍 Running pre-commit checks..."
 
-# 1. Check Prettier (Formatting)
-echo "✨ Running Prettier Check..."
-npx prettier --check .
+# 1. Auto-format with Prettier
+echo "✨ Running Prettier (Auto-format)..."
+npm run format
 STATUS=$?
 
 if [ $STATUS -ne 0 ]; then
-    echo "❌ Prettier check failed!"
-    echo "💡 Run 'npm run format' to fix formatting issues."
+    echo "❌ Prettier formatting failed!"
     exit 1
 fi
 
-# 2. Check Code Style (Pint)
-echo "🎨 Running Pint (Code Style)..."
-# We reference the composer script 'lint' which runs 'pint --test'
+# 2. Auto-format with Pint
+echo "🎨 Running Pint (Auto-format)..."
+composer format
+STATUS=$?
+
+if [ $STATUS -ne 0 ]; then
+    echo "❌ Pint formatting failed!"
+    exit 1
+fi
+
+# 3. Verify with Pint lint check
+echo "🔍 Verifying code style with Pint..."
 composer lint
 STATUS=$?
 
 if [ $STATUS -ne 0 ]; then
-    echo "❌ Pint check failed!"
-    echo "💡 Run 'composer format' to automatically fix style issues."
+    echo "❌ Pint verification failed!"
+    echo "💡 This shouldn't happen after auto-format. Please review the errors."
     exit 1
 fi
 
-# 2. Check Static Analysis (Larastan)
+# 4. Check Static Analysis (Larastan)
 echo "🧠 Running Larastan (Static Analysis)..."
-# We reference the composer script 'analyse' which runs 'phpstan analyse'
 composer analyse
 STATUS=$?
 

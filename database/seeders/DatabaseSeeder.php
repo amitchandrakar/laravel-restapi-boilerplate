@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Seed roles and permissions first
-        // $this->call(RolePermissionSeeder::class);
+        $this->call(RolePermissionSeeder::class);
 
         // Create test users with roles
         $superAdmin = User::firstOrCreate(
@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('password'),
             ]
         );
-        // $superAdmin->assignRole('super-admin');
+        $superAdmin->assignRole('super-admin');
 
         $admin = User::firstOrCreate(
             ['email' => 'admin@example.com'],
@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('password'),
             ]
         );
-        // $admin->assignRole('admin');
+        $admin->assignRole('admin');
 
         $moderator = User::firstOrCreate(
             ['email' => 'moderator@example.com'],
@@ -42,7 +42,7 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('password'),
             ]
         );
-        // $moderator->assignRole('moderator');
+        $moderator->assignRole('moderator');
 
         $user = User::firstOrCreate(
             ['email' => 'user@example.com'],
@@ -51,7 +51,9 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('password'),
             ]
         );
-        // $user->assignRole('user');
+        $user->assignRole('user');
+
+        $this->call(MassUserSeeder::class);
 
         $this->command->info('Test users created successfully!');
         $this->command->info('Super Admin: superadmin@example.com / password');

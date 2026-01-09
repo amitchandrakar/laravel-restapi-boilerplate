@@ -28,7 +28,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('password', [AuthController::class, 'changePassword']);
     });
 
-    // Add your resource routes here
-    // Example:
-    // Route::apiResource('posts', PostController::class);
+    // User Management
+    Route::apiResource('users', \App\Http\Controllers\Api\V1\UserController::class);
 });
