@@ -51,13 +51,28 @@ trait ApiResponse
     /**
      * Return a paginated JSON response
      */
-    protected function paginatedResponse(LengthAwarePaginator $paginator, string $message = 'Success'): JsonResponse
-    {
+    /**
+     * Return a paginated JSON response
+     */
+    protected function paginatedResponse(
+        LengthAwarePaginator|JsonResource $paginator,
+        string $message = 'Success'
+    ): JsonResponse {
+        $resource = $paginator;
+
+        if ($paginator instanceof JsonResource) {
+            $paginator = $paginator->resource;
+        }
+
+        if (!$paginator instanceof LengthAwarePaginator) {
+            throw new \InvalidArgumentException('Pagination data not found.');
+        }
+
         return response()->json(
             [
                 'success' => true,
                 'message' => $message,
-                'data' => $paginator->items(),
+                'data' => $resource instanceof JsonResource ? $resource : $paginator->items(),
                 'meta' => [
                     'current_page' => $paginator->currentPage(),
                     'from' => $paginator->firstItem(),

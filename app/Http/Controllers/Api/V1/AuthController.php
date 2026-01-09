@@ -3,34 +3,34 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Requests\Api\V1\ChangePasswordRequest;
+use App\Http\Requests\Api\V1\ForgotPasswordRequest;
 use App\Http\Requests\Api\V1\LoginRequest;
 use App\Http\Requests\Api\V1\RegisterRequest;
+use App\Http\Requests\Api\V1\ResetPasswordRequest;
 use App\Http\Requests\Api\V1\UpdateProfileRequest;
-use App\Models\User;
+use App\Http\Resources\Api\V1\UserResource;
+use App\Services\AuthService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    use ApiResponse;
+
+    public function __construct(protected AuthService $authService) {}
+
     /**
      * Register a new user
      */
     public function register(RegisterRequest $request): JsonResponse
     {
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
-
-        $token = $user->createToken('auth-token')->plainTextToken;
+        $result = $this->authService->register($request->validated());
 
         return $this->createdResponse(
             [
-                'user' => $user,
-                'token' => $token,
+                'user' => UserResource::make($result['user']),
+                'token' => $result['token'],
                 'token_type' => 'Bearer',
             ],
             'User registered successfully'
@@ -42,18 +42,12 @@ class AuthController extends Controller
      */
     public function login(LoginRequest $request): JsonResponse
     {
-        if (!Auth::attempt($request->only('email', 'password'))) {
-            return $this->unauthorizedResponse('Invalid credentials');
-        }
-
-        $user = Auth::user();
-
-        $token = $user->createToken('auth-token')->plainTextToken;
+        $result = $this->authService->login($request->only('email', 'password'));
 
         return $this->successResponse(
             [
-                'user' => $user,
-                'token' => $token,
+                'user' => UserResource::make($result['user']),
+                'token' => $result['token'],
                 'token_type' => 'Bearer',
             ],
             'Login successful'
@@ -65,7 +59,7 @@ class AuthController extends Controller
      */
     public function me(Request $request): JsonResponse
     {
-        return $this->successResponse($request->user(), 'User retrieved successfully');
+        return $this->successResponse(UserResource::make($request->user()), 'User retrieved successfully');
     }
 
     /**
@@ -73,7 +67,7 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        $this->authService->logout($request->user());
 
         return $this->successResponse(null, 'Logged out successfully');
     }
@@ -83,15 +77,11 @@ class AuthController extends Controller
      */
     public function refresh(Request $request): JsonResponse
     {
-        $user = $request->user();
-
-        $request->user()->currentAccessToken()->delete();
-
-        $token = $user->createToken('auth-token')->plainTextToken;
+        $result = $this->authService->refresh($request->user());
 
         return $this->successResponse(
             [
-                'token' => $token,
+                'token' => $result['token'],
                 'token_type' => 'Bearer',
             ],
             'Token refreshed successfully'
@@ -103,10 +93,9 @@ class AuthController extends Controller
      */
     public function updateProfile(UpdateProfileRequest $request): JsonResponse
     {
-        $user = $request->user();
-        $user->update($request->validated());
+        $user = $this->authService->updateProfile($request->user(), $request->validated());
 
-        return $this->successResponse($user, 'Profile updated successfully');
+        return $this->successResponse(UserResource::make($user), 'Profile updated successfully');
     }
 
     /**
@@ -114,21 +103,7 @@ class AuthController extends Controller
      */
     public function changePassword(ChangePasswordRequest $request): JsonResponse
     {
-        $user = $request->user();
-
-        if (!Hash::check($request->current_password, $user->password)) {
-            return $this->errorResponse('Current password is incorrect', 422);
-        }
-
-        $user->update([
-            'password' => Hash::make($request->password),
-        ]);
-
-        // Optionally revoke all tokens except current one
-        $user
-            ->tokens()
-            ->where('id', '!=', $request->user()->currentAccessToken()->id)
-            ->delete();
+        $this->authService->changePassword($request->user(), $request->current_password, $request->password);
 
         return $this->successResponse(null, 'Password changed successfully');
     }
@@ -136,13 +111,13 @@ class AuthController extends Controller
     /**
      * Forgot password
      */
-    public function forgotPassword(Request $request): JsonResponse
+    /**
+     * Forgot password
+     */
+    public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
-        $request->validate([
-            'email' => 'required|email|exists:users,email',
-        ]);
-
-        // TODO: Implement password reset email logic
+        // TODO: Implement password reset email logic via Service if needed
+        // For now leaving as is or moving to service if logic expands
 
         return $this->successResponse(null, 'Password reset link sent to your email');
     }
@@ -150,15 +125,9 @@ class AuthController extends Controller
     /**
      * Reset password
      */
-    public function resetPassword(Request $request): JsonResponse
+    public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
-        $request->validate([
-            'email' => 'required|email|exists:users,email',
-            'token' => 'required|string',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
-        // TODO: Implement password reset logic
+        // TODO: Implement password reset logic via Service if needed
 
         return $this->successResponse(null, 'Password reset successfully');
     }

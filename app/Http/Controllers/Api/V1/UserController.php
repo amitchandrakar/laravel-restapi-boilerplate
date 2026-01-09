@@ -5,27 +5,26 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\StoreUserRequest;
 use App\Http\Requests\Api\V1\UpdateUserRequest;
+use App\Http\Resources\Api\V1\UserResource;
 use App\Models\User;
+use App\Services\UserService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
     use ApiResponse;
+
+    public function __construct(protected UserService $userService) {}
 
     /**
      * Display a listing of the resource.
      */
     public function index(): JsonResponse
     {
-        try {
-            $users = User::latest()->paginate();
+        $users = $this->userService->getAllUsers();
 
-            return $this->paginatedResponse($users, 'Users retrieved successfully');
-        } catch (\Exception $e) {
-            return $this->serverErrorResponse('Failed to retrieve users: ' . $e->getMessage());
-        }
+        return $this->paginatedResponse(UserResource::collection($users), 'Users retrieved successfully');
     }
 
     /**
@@ -33,16 +32,9 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request): JsonResponse
     {
-        try {
-            $data = $request->validated();
-            $data['password'] = Hash::make($data['password']);
+        $user = $this->userService->createUser($request->validated());
 
-            $user = User::create($data);
-
-            return $this->createdResponse($user, 'User created successfully');
-        } catch (\Exception $e) {
-            return $this->serverErrorResponse('Failed to create user: ' . $e->getMessage());
-        }
+        return $this->createdResponse(UserResource::make($user), 'User created successfully');
     }
 
     /**
@@ -50,11 +42,7 @@ class UserController extends Controller
      */
     public function show(User $user): JsonResponse
     {
-        try {
-            return $this->successResponse($user, 'User retrieved successfully');
-        } catch (\Exception $e) {
-            return $this->serverErrorResponse('Failed to retrieve user: ' . $e->getMessage());
-        }
+        return $this->successResponse(UserResource::make($user), 'User retrieved successfully');
     }
 
     /**
@@ -62,19 +50,9 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user): JsonResponse
     {
-        try {
-            $data = $request->validated();
+        $updatedUser = $this->userService->updateUser($user, $request->validated());
 
-            if (isset($data['password'])) {
-                $data['password'] = Hash::make($data['password']);
-            }
-
-            $user->update($data);
-
-            return $this->successResponse($user, 'User updated successfully');
-        } catch (\Exception $e) {
-            return $this->serverErrorResponse('Failed to update user: ' . $e->getMessage());
-        }
+        return $this->successResponse(UserResource::make($updatedUser), 'User updated successfully');
     }
 
     /**
@@ -82,12 +60,8 @@ class UserController extends Controller
      */
     public function destroy(User $user): JsonResponse
     {
-        try {
-            $user->delete();
+        $this->userService->deleteUser($user);
 
-            return $this->successResponse(null, 'User deleted successfully');
-        } catch (\Exception $e) {
-            return $this->serverErrorResponse('Failed to delete user: ' . $e->getMessage());
-        }
+        return $this->successResponse(null, 'User deleted successfully');
     }
 }
