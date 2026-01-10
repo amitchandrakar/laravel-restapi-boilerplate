@@ -149,7 +149,7 @@ class MakeApiModule extends Command
         }
 
         $this->line("4) Implement API logic and write tests in tests/Feature/Api/{$version}/{$name}Test.php.");
-        $this->line("5) Update documentation in Docs/api-modules/{$name}.md.");
+        $this->line("5) Update documentation in docs/api-modules/{$name}.md.");
 
         return self::SUCCESS;
     }
@@ -243,7 +243,7 @@ PHP;
 
     protected function makeDocs(string $name): void
     {
-        $basePath = base_path('Docs/api-modules');
+        $basePath = base_path('docs/api-modules');
         $path = "{$basePath}/{$name}.md";
 
         if (File::exists($path)) {
@@ -276,7 +276,8 @@ Describe when and why events are triggered.
 ## Notes
 Add edge cases, assumptions, and business rules here.
 
-> ⚠️ This document must be updated once module implementation is complete.
+> [!IMPORTANT]
+> This document must be updated once module implementation is complete.
 MD;
 
         File::put($path, $content);
