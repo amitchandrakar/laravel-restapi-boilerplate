@@ -3,59 +3,59 @@
 # Fix the path to ensure we can find composer
 export PATH=$PATH:/usr/local/bin:/usr/local/sbin:/opt/homebrew/bin
 
-echo "🔍 Running pre-commit checks..."
+echo "Running pre-commit checks..."
 
 # 1. Auto-format with Prettier
-echo "✨ Running Prettier (Auto-format)..."
+echo "Running Prettier (Auto-format)..."
 npm run format
 STATUS=$?
 
 if [ $STATUS -ne 0 ]; then
-    echo "❌ Prettier formatting failed!"
+    echo "[ERROR] Prettier formatting failed!"
     exit 1
 fi
 
 # 2. Auto-format with Pint
-echo "🎨 Running Pint (Auto-format)..."
+echo "Running Pint (Auto-format)..."
 composer format
 STATUS=$?
 
 if [ $STATUS -ne 0 ]; then
-    echo "❌ Pint formatting failed!"
+    echo "[ERROR] Pint formatting failed!"
     exit 1
 fi
 
 # 3. Verify with Pint lint check
-echo "🔍 Verifying code style with Pint..."
+echo "Verifying code style with Pint..."
 composer lint
 STATUS=$?
 
 if [ $STATUS -ne 0 ]; then
-    echo "❌ Pint verification failed!"
+    echo "[ERROR] Pint verification failed!"
     echo "💡 This shouldn't happen after auto-format. Please review the errors."
     exit 1
 fi
 
 # 4. Check Static Analysis (Larastan)
-echo "🧠 Running Larastan (Static Analysis)..."
+echo "Running Larastan (Static Analysis)..."
 composer analyse
 STATUS=$?
 
 if [ $STATUS -ne 0 ]; then
-    echo "❌ Larastan check failed!"
+    echo "[ERROR] Larastan check failed!"
     echo "💡 Please fix the errors reported above."
     exit 1
 fi
 
 # 5. Check Tests
-echo "🧪 Running Tests..."
+echo "Running Tests..."
 php artisan test
 STATUS=$?
 
 if [ $STATUS -ne 0 ]; then
-    echo "❌ Tests failed!"
+    echo "[ERROR] Tests failed!"
     exit 1
 fi
 
-echo "✅ All checks passed! Committing..."
+echo "[OK] All checks passed! Committing..."
 exit 0
