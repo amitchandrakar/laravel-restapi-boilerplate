@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Cross-Origin Resource Sharing (CORS) Configuration
@@ -31,5 +30,4 @@ return [
 
     // Set to true for Sanctum cookie/SPA auth; then set CORS_ALLOWED_ORIGINS to your frontend URL(s).
     'supports_credentials' => (bool) env('CORS_SUPPORTS_CREDENTIALS', false),
-
 ];

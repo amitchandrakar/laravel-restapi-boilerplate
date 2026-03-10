@@ -23,13 +23,15 @@
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.6",
         "fakerphp/faker": "^1.23",
+        "kitloong/laravel-migrations-generator": "^7.2",
         "larastan/larastan": "^3.8",
         "laravel/pail": "^1.1",
         "laravel/pint": "^1.27",
         "laravel/sail": "^1.26",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.1",
-        "phpunit/phpunit": "^11.0.1"
+        "phpunit/phpunit": "^11.0.1",
+        "tyghaykal/laravel-seed-generator": "^2.2"
     },
     "autoload": {
         "psr-4": {

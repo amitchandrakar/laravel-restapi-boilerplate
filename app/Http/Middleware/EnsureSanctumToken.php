@@ -42,8 +42,9 @@ class EnsureSanctumToken
             );
         }
 
-        // Check if token is expired
-        if ($accessToken->expires_at && $accessToken->expires_at->isPast()) {
+        // Check if token is expired (expires_at is nullable on personal_access_tokens)
+        $expiresAt = $accessToken->expires_at ?? null;
+        if ($expiresAt !== null && $expiresAt->isPast()) {
             return response()->json(
                 [
                     'success' => false,
