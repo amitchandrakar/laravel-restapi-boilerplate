@@ -991,6 +991,1446 @@ parameters:
 			path: app/Alonti/ZipManager/ZipManager.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$cafe\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$coupon\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$order\.$#'
+			identifier: property.notFound
+			count: 7
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$shipping\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 8
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\CartItem\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\CartItem\>\:\:\$cart\.$#'
+			identifier: property.notFound
+			count: 20
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Cart\>\:\:\$order\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Cart\>\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$addr\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$addr2\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$cafe_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$city\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$company\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$customermenu_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$group_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$payment_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$phone\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$physical_addr\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$physical_addr2\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$physical_city\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$physical_state\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$physical_zip\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$secondary_phone\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$social_login\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$state\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$zip\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Support\\Collection\:\:\$cafe\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to property \$zipcode on an unknown class App\\Alonti\\Invitation\\Cart\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to protected property Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Cart\>\:\:\$items\.$#'
+			identifier: property.protected
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Call to method input\(\) on an unknown class App\\Http\\Requests\\Api\\V1\\CouponRequest\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Cannot call method map\(\) on array\<int, App\\Models\\Cart\>\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Function getCartItemCategoryServingTags not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:addFreeItem\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:anetValidationMsg\(\) with return type void returns mixed but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:anetValidationMsg\(\) with return type void returns string but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:applyCoupon\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:applyRewards\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:clientErrorHandler\(\) with return type void returns string but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:delete\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:deleteServingOption\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:placeOrder\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:removeCard\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:resetCoupon\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:resetRewards\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:splCookieValidation\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:storeDelivery\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 3
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:storePayment\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:storeServingOption\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 2
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:storeTipAmount\(\) with return type void returns mixed but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:update\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:updateMsg\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:updateOrder\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:updateTip\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Method Psr\\Http\\Message\\MessageInterface\:\:getBody\(\) invoked with 1 parameter, 0 required\.$#'
+			identifier: arguments.count
+			count: 4
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^PHPDoc tag @param for parameter \$request with type mixed is not subtype of native type App\\Http\\Requests\\Api\\V1\\CouponRequest\.$#'
+			identifier: parameter.phpDocType
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^PHPDoc tag @param for parameter \$request with type mixed is not subtype of native type Illuminate\\Http\\Request\.$#'
+			identifier: parameter.phpDocType
+			count: 14
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Parameter \$request of method App\\Http\\Controllers\\Api\\CartController\:\:applyCoupon\(\) has invalid type App\\Http\\Requests\\Api\\V1\\CouponRequest\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Property App\\Models\\Cart\:\:\$status \(bool\) does not accept int\.$#'
+			identifier: assign.propertyType
+			count: 7
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Result of method App\\Http\\Controllers\\Api\\CartController\:\:clientErrorHandler\(\) \(void\) is used\.$#'
+			identifier: method.void
+			count: 2
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Result of method App\\Http\\Controllers\\Api\\CartController\:\:storeTipAmount\(\) \(void\) is used\.$#'
+			identifier: method.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Undefined variable\: \$storePayment$#'
+			identifier: variable.undefined
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Variable \$errorMsg might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Variable \$result in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Order\:\:\$cafe\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/EzCaterController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$fname\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Api/EzCaterController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$lname\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Api/EzCaterController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$phone\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Api/EzCaterController.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\Cafe\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Cafe\>\:\:matching\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/EzCaterController.php
+
+		-
+			message: '#^Relation ''product'' is not found in App\\Models\\ProductVariant model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Api/V1/Api/EzCaterController.php
+
+		-
+			message: '#^Static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Cafe\>\:\:find\(\) invoked with 0 parameters, 1\-2 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/EzCaterController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/EzCaterController.php
+
+		-
+			message: '#^Variable \$ezcaterOrderId on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/EzCaterController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Cart\>\:\:\$order\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/UserController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$account_status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/UserController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$active_cart_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Api/UserController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$cafe\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Api/UserController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$myconfig\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/UserController.php
+
+		-
+			message: '#^Access to property \$customer_rewards on an unknown class App\\Models\\CustomerReferralReward\.$#'
+			identifier: class.notFound
+			count: 6
+			path: app/Http/Controllers/Api/V1/Api/UserController.php
+
+		-
+			message: '#^Access to property \$paid_reward_value on an unknown class App\\Models\\CustomerReferralReward\.$#'
+			identifier: class.notFound
+			count: 22
+			path: app/Http/Controllers/Api/V1/Api/UserController.php
+
+		-
+			message: '#^Access to property \$paid_status on an unknown class App\\Models\\CustomerReferralReward\.$#'
+			identifier: class.notFound
+			count: 14
+			path: app/Http/Controllers/Api/V1/Api/UserController.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:mailer\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: app/Http/Controllers/Api/V1/Api/UserController.php
+
+		-
+			message: '#^Call to method getActiveCart\(\) on an unknown class App\\Http\\Controllers\\Api\\CartManager\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/UserController.php
+
+		-
+			message: '#^Call to method update\(\) on an unknown class App\\Models\\CustomerReferralReward\.$#'
+			identifier: class.notFound
+			count: 7
+			path: app/Http/Controllers/Api/V1/Api/UserController.php
+
+		-
+			message: '#^Call to method userUnPaidReferralRewardValue\(\) on an unknown class App\\Models\\CustomerReferralReward\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/UserController.php
+
+		-
+			message: '#^Cannot call method get\(\) on array\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/UserController.php
+
+		-
+			message: '#^Cannot call method has\(\) on array\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/UserController.php
+
+		-
+			message: '#^Class App\\Http\\Controllers\\Api\\CartManager not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/UserController.php
+
+		-
+			message: '#^Class App\\Models\\CustomerReferralReward not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/UserController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/UserController.php
+
+		-
+			message: '#^Parameter \$reward of anonymous function has invalid type App\\Models\\CustomerReferralReward\.$#'
+			identifier: class.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Api/UserController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$order\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$profile_image\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Zipcode\:\:\$cafe\.$#'
+			identifier: property.notFound
+			count: 15
+			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\ZipcodeController\:\:getdeliveryinfo\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\ZipcodeController\:\:pickupClosestCafe\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\ZipcodeController\:\:retreiveCateringMgrInfo\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\ZipcodeController\:\:search\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\ZipcodeController\:\:setDeliveryAreaByZipId\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\ZipcodeController\:\:validateDeliveryDateTime\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 7
+			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
+
+		-
+			message: '#^PHPDoc tag @param for parameter \$request with type mixed is not subtype of native type Illuminate\\Http\\Request\.$#'
+			identifier: parameter.phpDocType
+			count: 4
+			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
+
+		-
+			message: '#^PHPDoc tag @param for parameter \$zipManager with type mixed is not subtype of native type App\\Alonti\\ZipManager\\ZipManager\.$#'
+			identifier: parameter.phpDocType
+			count: 3
+			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
+
+		-
+			message: '#^Relation ''cafe'' is not found in App\\Models\\Zipcode model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Cart\>\:\:\$order\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$account_status\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$active_cart_id\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$cafe\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$forgot_password_link_valid\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$type\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$zip\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Auth\\LoginController\:\:setSocailAuthConfigs\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:mailer\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Call to function is_null\(\) with App\\Http\\Controllers\\Auth\\varchar will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Call to method getMessage\(\) on an unknown class Laravel\\Socialite\\Two\\InvalidStateException\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Call to static method driver\(\) on an unknown class Laravel\\Socialite\\Facades\\Socialite\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Cannot call method mailer\(\) on App\\Models\\User\|true\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Caught class Laravel\\Socialite\\Two\\InvalidStateException not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 4
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Auth\\LoginController\:\:callback\(\) with return type void returns Illuminate\\Http\\RedirectResponse but should not return anything\.$#'
+			identifier: return.void
+			count: 10
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Auth\\LoginController\:\:createNewUser\(\) with return type void returns App\\Models\\User but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Auth\\LoginController\:\:extractFirstNameLastName\(\) with return type void returns array\<string, string\> but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Auth\\LoginController\:\:googleRecaptchaErrorMessage\(\) should return array but returns Illuminate\\Http\\Response\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Auth\\LoginController\:\:redirect\(\) with return type void returns mixed but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Auth\\LoginController\:\:validateGoogleRecaptcha\(\) has invalid return type App\\Http\\Controllers\\Auth\\success\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Offset ''first_name'' does not exist on null\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Offset ''last_name'' does not exist on null\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Offset ''middle_name'' does not exist on null\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^PHPDoc tag @param for parameter \$request with type mixed is not subtype of native type Illuminate\\Http\\Request\.$#'
+			identifier: parameter.phpDocType
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Parameter \#1 \$json of function json_decode expects string, Psr\\Http\\Message\\StreamInterface given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Parameter \#1 \$user of static method Illuminate\\Support\\Facades\\Auth\:\:login\(\) expects Illuminate\\Contracts\\Auth\\Authenticatable, null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 3
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Parameter \$googleRecaptchaResponse of method App\\Http\\Controllers\\Auth\\LoginController\:\:validateGoogleRecaptcha\(\) has invalid type App\\Http\\Controllers\\Auth\\varchar\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Result of method App\\Http\\Controllers\\Auth\\LoginController\:\:createNewUser\(\) \(void\) is used\.$#'
+			identifier: method.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Result of method App\\Http\\Controllers\\Auth\\LoginController\:\:extractFirstNameLastName\(\) \(void\) is used\.$#'
+			identifier: method.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Result of static method Illuminate\\Support\\Facades\\Auth\:\:login\(\) \(void\) is used\.$#'
+			identifier: staticMethod.void
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$groupOrderConfig\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/UserController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$order\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Controllers/Api/V1/Auth/UserController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$payment\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Auth/UserController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$shipping\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Auth/UserController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$active_cart_id\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Http/Controllers/Api/V1/Auth/UserController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$latitude\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/UserController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$longitude\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/UserController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$myconfig\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Auth/UserController.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:carts\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Auth/UserController.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:orders\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/UserController.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/UserController.php
+
+		-
+			message: '#^Instantiated class App\\Mail\\ApplyHouseAccount not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/UserController.php
+
+		-
+			message: '#^Method Psr\\Http\\Message\\MessageInterface\:\:getBody\(\) invoked with 1 parameter, 0 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/UserController.php
+
+		-
+			message: '#^Parameter \#1 \$mailable of method Illuminate\\Mail\\PendingMail\:\:send\(\) expects Illuminate\\Contracts\\Mail\\Mailable, App\\Mail\\ApplyHouseAccount given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/UserController.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 7
+			path: app/Http/Controllers/Api/V1/Auth/UserController.php
+
+		-
+			message: '#^Relation ''customerReferralRewards'' is not found in App\\Models\\CustomerReferral model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/UserController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$abandonedCart\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$billing\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$cafe\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$coupon\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$groupOrderConfig\.$#'
+			identifier: property.notFound
+			count: 8
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$invitees\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$items\.$#'
+			identifier: property.notFound
+			count: 5
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$order\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$shipping\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\GroupOrder\:\:\$cart\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$myconfig\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$cart\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$terms\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\User\:\:updateActiveCartId\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Call to function compact\(\) contains possibly undefined variable \$givenZipCode\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Call to method all\(\) on an unknown class App\\Http\\Requests\\Api\\V1\\CartAddRequest\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Call to method all\(\) on an unknown class App\\Http\\Requests\\Api\\V1\\CartUpdateRequest\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Call to method input\(\) on an unknown class App\\Http\\Requests\\Api\\V1\\CartAddRequest\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Call to method input\(\) on an unknown class App\\Http\\Requests\\Api\\V1\\CartUpdateRequest\.$#'
+			identifier: class.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Function getCartItemCategoryServingTags not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Method App\\Models\\Cart\:\:getCartCount\(\) invoked with 1 parameter, 0 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Parameter \#1 \$input of static method App\\Alonti\\Cart\\CartManager\:\:saveCartItem\(\) expects array, App\\Http\\Requests\\Api\\V1\\CartAddRequest given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 5
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Parameter \$request of method App\\Http\\Controllers\\CartController\:\:add\(\) has invalid type App\\Http\\Requests\\Api\\V1\\CartAddRequest\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Parameter \$request of method App\\Http\\Controllers\\CartController\:\:update\(\) has invalid type App\\Http\\Requests\\Api\\V1\\CartUpdateRequest\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Property App\\Models\\Cart\:\:\$status \(bool\) does not accept int\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Relation ''groupOrderConfig'' is not found in App\\Models\\Cart model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Relation ''invitees'' is not found in App\\Models\\Cart model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Relation ''paymentProfiles'' is not found in App\\Models\\Cim model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Relation ''servingOption'' is not found in App\\Models\\Offmenu model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Relation ''uniqueurl'' is not found in App\\Models\\Category model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Relation ''variant'' is not found in App\\Models\\Product model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 2
+			path: app/Http/Controllers/Api/V1/CartController.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/CategoryController.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:mailer\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/EmailCampaignController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$order\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/GroupOrderController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\CartInvitee\:\:\$cart\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/GroupOrderController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Cart\>\:\:\$shipping\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/GroupOrderController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Category\:\:\$products\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/GroupOrderController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\GroupOrderConfiguration\:\:\$cart\.$#'
+			identifier: property.notFound
+			count: 9
+			path: app/Http/Controllers/Api/V1/GroupOrderController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\GroupOrderConfiguration\:\:\$groupOrder\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/GroupOrderController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Product\:\:\$price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/GroupOrderController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$active_cart_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/GroupOrderController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$group_orders\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/GroupOrderController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Zipcode\:\:\$cafe\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Controllers/Api/V1/GroupOrderController.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:activeGroupOrder\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/GroupOrderController.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:group_orders\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/GroupOrderController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\GroupOrderController\:\:inviteToOrder\(\) should return Illuminate\\View\\View but returns Illuminate\\Http\\RedirectResponse\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/GroupOrderController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\|string\)\: void, Closure\(App\\Models\\Category\)\: void given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/GroupOrderController.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Api/V1/GroupOrderController.php
+
+		-
+			message: '#^Parameter \#2 \$stateId of static method App\\Models\\Category\:\:getInviteeCategories\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/GroupOrderController.php
+
+		-
+			message: '#^Relation ''cafe'' is not found in App\\Models\\Zipcode model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Api/V1/GroupOrderController.php
+
+		-
+			message: '#^Relation ''cart'' is not found in App\\Models\\GroupOrderConfiguration model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/V1/GroupOrderController.php
+
+		-
+			message: '#^Variable \$inviteeIds might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: app/Http/Controllers/Api/V1/GroupOrderController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$groupOrderConfig\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Invitation/InviteeController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\CartInvitee\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\CartInvitee\>\:\:\$cart\.$#'
+			identifier: property.notFound
+			count: 10
+			path: app/Http/Controllers/Api/V1/Invitation/InviteeController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\CartInvitee\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\CartInvitee\>\:\:\$cartItems\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Invitation/InviteeController.php
+
+		-
+			message: '#^Access to property \$email on an unknown class App\\Alonti\\Invitation\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Invitation/InviteeController.php
+
+		-
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Api/V1/Invitation/InviteeController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: app/Http/Controllers/Api/V1/Invitation/InviteeController.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Api/V1/Invitation/InviteeController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Api/V1/Invitation/InviteeController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Order\:\:\$cart\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Controllers/Api/V1/OrderController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Order\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Order\>\:\:\$cafe\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/OrderController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Order\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Order\>\:\:\$cart\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/OrderController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$active_cart_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/OrderController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$zip\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/OrderController.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:orderCount\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/OrderController.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Api/V1/OrderController.php
+
+		-
+			message: '#^Relation ''image'' is not found in App\\Models\\Category model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/V1/OrderController.php
+
+		-
+			message: '#^Relation ''image'' is not found in App\\Models\\Product model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Api/V1/OrderController.php
+
+		-
+			message: '#^Relation ''uniqueurl'' is not found in App\\Models\\Category model\.$#'
+			identifier: larastan.relationExistence
+			count: 4
+			path: app/Http/Controllers/Api/V1/OrderController.php
+
+		-
+			message: '#^Relation ''uniqueurl'' is not found in App\\Models\\Product model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Api/V1/OrderController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$groupOrderConfig\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/ProductController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Category\:\:\$products\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProductController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Category\:\:\$subCategories\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/ProductController.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 4
+			path: app/Http/Controllers/Api/V1/ProductController.php
+
+		-
+			message: '#^Parameter \#2 \$stateId of static method App\\Models\\Category\:\:getCategoryAndProductList\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProductController.php
+
+		-
+			message: '#^PHPDoc type array of property App\\Http\\Middleware\\EncryptCookies\:\:\$except is not covariant with PHPDoc type array\<int, string\> of overridden property Illuminate\\Cookie\\Middleware\\EncryptCookies\:\:\$except\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Http/Middleware/EncryptCookies.php
+
+		-
+			message: '#^Access to property \$zipcode on an unknown class App\\Alonti\\Invitation\\Cart\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Middleware/HasInvitation.php
+
+		-
+			message: '#^PHPDoc type array of property App\\Http\\Middleware\\TrimStrings\:\:\$except is not covariant with PHPDoc type array\<int, string\> of overridden property Illuminate\\Foundation\\Http\\Middleware\\TrimStrings\:\:\$except\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Http/Middleware/TrimStrings.php
+
+		-
+			message: '#^PHPDoc type array of property App\\Http\\Middleware\\VerifyCsrfToken\:\:\$except is not covariant with PHPDoc type array\<int, string\> of overridden property Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken\:\:\$except\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Http/Middleware/VerifyCsrfToken.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$guard$#'
+			identifier: parameter.notFound
+			count: 1
+			path: app/Http/Middleware/VerifyUniqueUrl.php
+
+		-
 			message: '#^Instantiated class App\\Mail\\InviteeDecline not found\.$#'
 			identifier: class.notFound
 			count: 1

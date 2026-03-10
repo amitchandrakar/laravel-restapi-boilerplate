@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace App\Models\Traits\Scope;
 
 use App\Alonti\Cart\CartManager;

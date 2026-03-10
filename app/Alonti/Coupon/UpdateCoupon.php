@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace App\Alonti\Coupon;
 
 use App\Alonti\Cart\CartManager;

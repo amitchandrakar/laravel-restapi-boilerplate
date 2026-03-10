@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace App\Alonti\User;
 
 use App\Models\Cim;

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace App\Alonti\Auth\Cake;
 
 use Illuminate\Contracts\Hashing\Hasher as HasherContract;

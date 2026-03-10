@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace App\Alonti\Payment\Drivers;
 
 use App\Alonti\Payment\Contracts\PaymentGateway;
