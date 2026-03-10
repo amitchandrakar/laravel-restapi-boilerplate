@@ -223,3 +223,47 @@ if (!function_exists('route_exists')) {
         }
     }
 }
+
+if (!function_exists('sentenceCase')) {
+    /**
+     * Convert string to sentence case (first letter of each word capitalized, rest lower).
+     * Used by legacy model traits (e.g. ProductSelectionAttribute).
+     */
+    function sentenceCase(?string $value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        return \Illuminate\Support\Str::title(\Illuminate\Support\Str::lower($value));
+    }
+}
+
+if (!function_exists('storeEmailSentLogs')) {
+    /**
+     * Log sent email to email_sent_logs table (legacy Mailer integration).
+     *
+     * @param  string  $from  Sender email
+     * @param  string|array  $to  Recipient(s)
+     * @param  string|array  $cc  CC recipient(s)
+     * @param  string  $subject  Subject or description
+     * @param  string  $message  Optional message/template reference
+     */
+    function storeEmailSentLogs(string $from, $to, $cc, string $subject, string $message = ''): void
+    {
+        try {
+            $toStr = is_array($to) ? implode(', ', $to) : (string) $to;
+            $ccStr = is_array($cc) ? implode(', ', $cc) : (string) $cc;
+            \App\Models\EmailSentLog::create([
+                'email_from' => $from,
+                'email_to' => $toStr,
+                'email_cc' => $ccStr !== '' ? $ccStr : null,
+                'email_subject' => $subject,
+                'email_message' => $message,
+                'created_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            report($e);
+        }
+    }
+}

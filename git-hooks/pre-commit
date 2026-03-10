@@ -47,9 +47,15 @@ if [ $STATUS -ne 0 ]; then
     exit 1
 fi
 
+<<<<<<< Updated upstream
 # 5. Check Tests (exclude @group manual - run those separately)
 echo "Running Tests..."
 php artisan test --exclude-group=manual
+=======
+# 5. Check Tests
+echo "Running Tests..."
+php artisan test
+>>>>>>> Stashed changes
 STATUS=$?
 
 if [ $STATUS -ne 0 ]; then
