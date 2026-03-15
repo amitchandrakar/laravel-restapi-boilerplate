@@ -84,7 +84,27 @@ return [
     */
 
     'response' => [
+        'version' => env('API_RESPONSE_VERSION', '1.0.0'),
         'include_trace_in_debug' => env('APP_DEBUG', false),
         'snake_case_keys' => false, // Convert response keys to snake_case
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Machine-Readable Error Codes
+    |--------------------------------------------------------------------------
+    */
+
+    'error_codes' => [
+        'NOT_FOUND' => 'NOT_FOUND',
+        'VALIDATION_ERROR' => 'VALIDATION_ERROR',
+        'UNAUTHORIZED' => 'UNAUTHORIZED',
+        'FORBIDDEN' => 'FORBIDDEN',
+        'METHOD_NOT_ALLOWED' => 'METHOD_NOT_ALLOWED',
+        'TOO_MANY_REQUESTS' => 'TOO_MANY_REQUESTS',
+        'CONFLICT' => 'CONFLICT',
+        'DB_ERROR' => 'DB_ERROR',
+        'INTERNAL_SERVER_ERROR' => 'INTERNAL_SERVER_ERROR',
+        'BAD_REQUEST' => 'BAD_REQUEST',
     ],
 ];

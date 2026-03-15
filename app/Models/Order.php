@@ -10,6 +10,20 @@ use App\Mailer\OrderMailer;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * @property int|null $id
+ * @property float|string $total
+ * @property int|null $group_order_id
+ * @property string|null $status
+ * @property string|null $order_name
+ * @property string|null $orderName
+ * @property \Carbon\Carbon|string|null $d_date
+ * @property string|null $encrypted_id
+ * @property \App\Models\Time|null $time
+ * @property \App\Models\Payment|null $payment
+ * @property int|null $is_new_order
+ * @property int|null $web
+ */
 class Order extends BaseModel
 {
     use EncryptIdentity;

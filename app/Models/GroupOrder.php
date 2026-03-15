@@ -7,6 +7,10 @@ namespace App\Models;
 use App\Alonti\Support\EncryptIdentity;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property string $name
+ */
 class GroupOrder extends BaseModel
 {
     use EncryptIdentity, SoftDeletes;

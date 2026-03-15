@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\V1;
 
 use App\Alonti\Cart\CartManager;
 use App\Alonti\Coupon\UpdateCoupon;
@@ -11,6 +11,11 @@ use App\Alonti\User\UserManager;
 use App\Alonti\ZipManager\ZipManager;
 use App\Http\Requests\Api\V1\CartAddRequest;
 use App\Http\Requests\Api\V1\CartUpdateRequest;
+use App\Http\Resources\Api\V1\CartDeliveryResource;
+use App\Http\Resources\Api\V1\CartPaymentResource;
+use App\Http\Resources\Api\V1\CartReviewResource;
+use App\Http\Resources\Api\V1\CartServingOptionsResource;
+use App\Http\Resources\Api\V1\CartSummaryResource;
 use App\Models\Cart;
 use App\Models\CartInvitee;
 use App\Models\CartItem;
@@ -53,21 +58,21 @@ class CartController extends Controller
      * Shows the cart contents with all items, pricing, and group order information.
      * Handles both individual and group order carts with different display logic.
      *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
      */
     public function index()
     {
         // Get the active cart for current user/session
         $cartInfo = app(CartManager::class)->getActiveCart();
 
-        // Redirect if no cart exists
+        // Return error if no cart exists
         if (!$cartInfo) {
-            return redirect('/')->with('notify-failure', 'Your bag is empty, please add items to your bag');
+            return $this->errorResponse('Your bag is empty, please add items to your bag', 400);
         }
 
-        // Redirect if individual cart is empty
+        // Return error if individual cart is empty
         if (!$cartInfo->isGroupOrder() && $cartInfo->items && $cartInfo->items->count() == 0) {
-            return redirect('/')->with('notify-failure', 'Your bag is empty, please add items to your bag');
+            return $this->errorResponse('Your bag is empty, please add items to your bag', 400);
         }
 
         // Flag to control reminder email functionality for group orders
@@ -202,30 +207,30 @@ class CartController extends Controller
 
         $group = GroupOrder::find(session()->get('invitation.group_order_id'));
 
-        return view(
-            'summary',
-            compact([
-                'group',
-                'cartInfo',
-                'groupDetail',
-                'items',
-                'displayWcBanner',
-                'warmCookieData',
-                'itemCount',
-                'itemCountInvitee',
-                'ownerCount',
-                'deliveryAreaCount',
-                'deliveryAreaChosen',
-                'cafeList',
-                'budget',
-                'requestFromInvitee',
-                'goConfigExist',
-                'allowLeaderToSendReminderEmail',
-                'budgetActive',
-                'productName',
-                'pendingInvitees',
-                'invitee_total',
-            ])
+        return $this->successResponse(
+            CartSummaryResource::make([
+                'group' => $group,
+                'cart_info' => $cartInfo,
+                'group_detail' => $groupDetail,
+                'items' => $items,
+                'display_wc_banner' => $displayWcBanner,
+                'warm_cookie_data' => $warmCookieData,
+                'item_count' => $itemCount,
+                'item_count_invitee' => $itemCountInvitee,
+                'owner_count' => $ownerCount,
+                'delivery_area_count' => $deliveryAreaCount,
+                'delivery_area_chosen' => $deliveryAreaChosen,
+                'cafe_list' => $cafeList,
+                'budget' => $budget,
+                'request_from_invitee' => $requestFromInvitee,
+                'go_config_exist' => $goConfigExist,
+                'allow_leader_to_send_reminder_email' => $allowLeaderToSendReminderEmail,
+                'budget_active' => $budgetActive,
+                'product_name' => $productName,
+                'pending_invitees' => $pendingInvitees,
+                'invitee_total' => $invitee_total,
+            ]),
+            'Success'
         );
     }
 
@@ -235,7 +240,7 @@ class CartController extends Controller
      * Shows delivery address form, past delivery addresses, and delivery options.
      * Handles both delivery and pickup scenarios with validation and timezone logic.
      *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
      */
     public function delivery()
     {
@@ -243,11 +248,11 @@ class CartController extends Controller
         $cartInfo = app(CartManager::class)->getActiveCart();
 
         if (!$cartInfo) {
-            return redirect('/');
+            return $this->errorResponse('Cart not found.', 400);
         }
 
         if ($cartInfo->items->count() == 0) {
-            return redirect('/summary')->with('notify-failure', 'Your cart is empty');
+            return $this->errorResponse('Your cart is empty', 400);
         }
 
         $displayWcPersonalisedMsg = CartManager::checkCartHasOnlyWarmCookie($cartInfo);
@@ -307,22 +312,22 @@ class CartController extends Controller
                 ? true
                 : false;
 
-        return view(
-            'includes/delivery-details',
-            compact([
-                'cartInfo',
-                'pastDeliveryAddress',
-                'deliveryTimes',
-                'industries',
-                'states',
-                'givenZipCode',
-                'pickupZipcode',
-                'pickupCafes',
-                'displayWcPersonalisedMsg',
-                'existingDeliveryAddressCount',
-                'disable_dates',
-                'allowWeekendOrders',
-            ])
+        return $this->successResponse(
+            CartDeliveryResource::make([
+                'cart_info' => $cartInfo,
+                'past_delivery_address' => $pastDeliveryAddress,
+                'delivery_times' => $deliveryTimes,
+                'industries' => $industries,
+                'states' => $states,
+                'given_zip_code' => $givenZipCode ?? '',
+                'pickup_zipcode' => $pickupZipcode,
+                'pickup_cafes' => $pickupCafes,
+                'display_wc_personalised_msg' => $displayWcPersonalisedMsg,
+                'existing_delivery_address_count' => $existingDeliveryAddressCount,
+                'disable_dates' => $disable_dates,
+                'allow_weekend_orders' => $allowWeekendOrders,
+            ]),
+            'Success'
         );
     }
 
@@ -332,18 +337,18 @@ class CartController extends Controller
      * Shows available serving ware options based on cart contents and category requirements.
      * Allows customers to select paper products and serving utensils for their order.
      *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
      */
     public function servingOptions()
     {
         $cartInfo = app(CartManager::class)->getActiveCart();
 
         if (!$cartInfo) {
-            return redirect('/')->with('notify-failure', 'Your bag is empty, please add items to your bag');
+            return $this->errorResponse('Your bag is empty, please add items to your bag', 400);
         }
 
         if (!$cartInfo->isGroupOrder() && $cartInfo->items && $cartInfo->items->count() == 0) {
-            return redirect('/')->with('notify-failure', 'Your bag is empty, please add items to your bag');
+            return $this->errorResponse('Your bag is empty, please add items to your bag', 400);
         }
 
         $ids = getCartItemCategoryServingTags();
@@ -358,7 +363,14 @@ class CartController extends Controller
         $paper_products =
             $cartInfo->shipping && $cartInfo->shipping->paper_products == 0 ? '' : $cartInfo->shipping->paper_products;
 
-        return view('includes/serving-options', compact(['servingOptions', 'existingServingOption', 'paper_products']));
+        return $this->successResponse(
+            CartServingOptionsResource::make([
+                'serving_options' => $servingOptions,
+                'existing_serving_option' => $existingServingOption,
+                'paper_products' => $paper_products,
+            ]),
+            'Success'
+        );
     }
 
     /**
@@ -367,20 +379,20 @@ class CartController extends Controller
      * Shows payment options, saved payment methods, tip calculations, and rewards.
      * Handles both authenticated user and guest checkout scenarios with validation.
      *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
      */
     public function payment()
     {
         // Validate cart and required information before showing payment
         $cartInfo = app(CartManager::class)->getActiveCart();
         if (!$cartInfo) {
-            return redirect('/');
+            return $this->errorResponse('Cart not found.', 400);
         }
         if ($cartInfo->items->count() == 0) {
-            return redirect('/summary')->with('notify-failure', 'Your cart is empty');
+            return $this->errorResponse('Your cart is empty', 400);
         }
         if (!$cartInfo->shipping) {
-            return redirect('/delivery-details')->with('notify-failure', 'Please enter your delivery address');
+            return $this->errorResponse('Please enter your delivery address', 400);
         }
 
         $companyPayments = UserManager::getUserPayment();
@@ -463,29 +475,29 @@ class CartController extends Controller
             $cartInfo->abandonedCart->update();
         }
 
-        return view(
-            'payment',
-            compact(
-                'cartInfo',
-                'cafeInfo',
-                'companyPayments',
-                'paymentProfileDetails',
-                'states',
-                'tipOptions',
-                'ccId',
-                'poId',
-                'codId',
-                'giftToDisplay',
-                'defaultTipAmount',
-                'discountOptions',
-                'customerOptAlontiRewardsEver',
-                'rewardCalculateValue',
-                'amazonRewardMinSpendAmount',
-                'amazonRewardBalance',
-                'amazonRewardApplied',
-                'customerOptAlontiRewardsEverEmailExist',
-                'anetProfileExist'
-            )
+        return $this->successResponse(
+            CartPaymentResource::make([
+                'cart_info' => $cartInfo,
+                'cafe_info' => $cafeInfo,
+                'company_payments' => $companyPayments,
+                'payment_profile_details' => $paymentProfileDetails,
+                'states' => $states,
+                'tip_options' => $tipOptions,
+                'cc_id' => $ccId,
+                'po_id' => $poId,
+                'cod_id' => $codId,
+                'gift_to_display' => $giftToDisplay,
+                'default_tip_amount' => $defaultTipAmount,
+                'discount_options' => $discountOptions,
+                'customer_opt_alonti_rewards_ever' => $customerOptAlontiRewardsEver,
+                'reward_calculate_value' => $rewardCalculateValue,
+                'amazon_reward_min_spend_amount' => $amazonRewardMinSpendAmount,
+                'amazon_reward_balance' => $amazonRewardBalance,
+                'amazon_reward_applied' => $amazonRewardApplied,
+                'customer_opt_alonti_rewards_ever_email_exist' => $customerOptAlontiRewardsEverEmailExist,
+                'anet_profile_exist' => $anetProfileExist,
+            ]),
+            'Success'
         );
     }
 
@@ -495,26 +507,26 @@ class CartController extends Controller
      * Final step before order placement. Shows complete order summary including
      * items, delivery details, payment info, and serving options for confirmation.
      *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
      */
     public function review()
     {
         $cartInfo = app(CartManager::class)->getActiveCart();
 
         if (!$cartInfo) {
-            return redirect('/');
+            return $this->errorResponse('Cart not found.', 400);
         }
 
         if ($cartInfo->items->count() == 0) {
-            return redirect('/summary')->with('notify-failure', 'Your cart is empty');
+            return $this->errorResponse('Your cart is empty', 400);
         }
 
         if (!$cartInfo->shipping) {
-            return redirect('/delivery-details')->with('notify-failure', 'Please enter your delivery address');
+            return $this->errorResponse('Please enter your delivery address', 400);
         }
 
         if (!$cartInfo->billing) {
-            return redirect('/payment-details')->with('notify-failure', 'Please enter your payment information');
+            return $this->errorResponse('Please enter your payment information', 400);
         }
 
         // Get serving ware options from offmenu table
@@ -529,7 +541,17 @@ class CartController extends Controller
             ? Carbon::createFromFormat('Y-m-d', $cartInfo->shipping->delivery_date)->format('m/d/Y')
             : '';
 
-        return view('review', compact('cartInfo', 'items', 'states', 'deliveryTimes', 'payments', 'servingOption'));
+        return $this->successResponse(
+            CartReviewResource::make([
+                'cart_info' => $cartInfo,
+                'items' => $items,
+                'states' => $states,
+                'delivery_times' => $deliveryTimes,
+                'payments' => $payments,
+                'serving_option' => $servingOption,
+            ]),
+            'Success'
+        );
     }
 
     /**
@@ -599,10 +621,6 @@ class CartController extends Controller
                         $result['count'] = $cart->getCartCount($cart);
                         $result['category'] = Category::getCategoryUrl($cartItem->category_id);
 
-                        if (!session()->has('invitation')) {
-                            Session::flash('notify-success', 'Product is added to cart successfully!');
-                        }
-
                         return response()->json(['status' => true, 'result' => $result]);
                     }
                 }
@@ -659,9 +677,6 @@ class CartController extends Controller
                         app(UpdateCoupon::class)->calculateItemDiscount($cartItem);
                     }
                     $cart->calculateAndUpdate();
-                    if (!session()->has('invitation')) {
-                        Session::flash('notify-success', 'Cart Item is updated successfully');
-                    }
 
                     return response()->json(['status' => true]);
                 }

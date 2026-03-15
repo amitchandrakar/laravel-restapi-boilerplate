@@ -80,7 +80,11 @@ class PaymentService
 
     private function createPaymentProfileForExistingProfile()
     {
-        $profileId = $this->user->cim->profile_id;
+        $cim = $this->user->cim;
+        if ($cim === null) {
+            throw new \RuntimeException('CIM record is required for existing profile.');
+        }
+        $profileId = $cim->profile_id;
         $output = $this->gateway
             ->setPaymentInfo($this->profileInfo['paymentDetails']['cardDetails'])
             ->setBillingInfo($this->user, $this->profileInfo['paymentDetails']['billing'])
@@ -91,7 +95,7 @@ class PaymentService
             ? $this->profileInfo['paymentDetails']['cardDetails']['cardName']
             : $this->user->lname;
         $lastFourDigits = substr($cardNumber, -4);
-        $paymentProfile = $this->user->cim->paymentProfiles()->create([
+        $paymentProfile = $cim->paymentProfiles()->create([
             'profile_id' => $output['profileId'],
             'payment_profile_id' => $output['paymentProfileId'],
             'last_name' => $cardName,
@@ -139,10 +143,14 @@ class PaymentService
         ]);
 
         $this->user = $this->user->fresh();
+        $cim = $this->user->cim;
+        if ($cim === null) {
+            throw new \RuntimeException('CIM record was not created.');
+        }
         $cardName = isset($this->profileInfo['paymentDetails']['cardDetails']['cardName'])
             ? $this->profileInfo['paymentDetails']['cardDetails']['cardName']
             : $this->user->lname;
-        $paymentProfile = $this->user->cim->paymentProfiles()->create([
+        $paymentProfile = $cim->paymentProfiles()->create([
             'profile_id' => $profileInfo['profileId'],
             'payment_profile_id' => $profileInfo['paymentProfileIds'][0],
             'last_name' => $cardName,
@@ -153,7 +161,7 @@ class PaymentService
         $this->cart->cim_payment_profile_id = $paymentProfile->id;
         $this->cart->save();
 
-        return $this->user->cim;
+        return $cim;
     }
 
     public function voidTransaction($transactionId)

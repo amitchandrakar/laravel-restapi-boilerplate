@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\V1;
 
 use App\Alonti\Cart\CartManager;
+use App\Http\Resources\Api\V1\CategoryIndexResource;
 use App\Models\Cart;
 use App\Models\Category;
 use App\Models\Dietary;
@@ -30,7 +31,7 @@ class CategoryController extends Controller
      * handles dietary preferences, and displays banner content
      *
      * @param  string|null  $invitee  Optional invitee context parameter
-     * @return \Illuminate\View\View
+     * @return \Illuminate\Http\JsonResponse
      */
     public function index($invitee = null)
     {
@@ -63,19 +64,19 @@ class CategoryController extends Controller
         // Check if help popup should be shown
         $help = request()->help ? true : false;
 
-        return view(
-            'home',
-            compact([
-                'categories',
-                'lunchCategory',
-                'individualCart',
-                'cartInfo',
-                'individualDietaryId',
-                'fromDate',
-                'currentDate',
-                'help',
-                'bannerSetting',
-            ])
+        return $this->successResponse(
+            CategoryIndexResource::make([
+                'categories' => $categories,
+                'lunch_category' => $lunchCategory,
+                'individual_cart' => $individualCart,
+                'cart_info' => $cartInfo,
+                'individual_dietary_id' => $individualDietaryId,
+                'from_date' => $fromDate?->format('Y-m-d'),
+                'current_date' => $currentDate->format('Y-m-d'),
+                'help' => $help,
+                'banner_setting' => $bannerSetting,
+            ]),
+            'Success'
         );
     }
 }

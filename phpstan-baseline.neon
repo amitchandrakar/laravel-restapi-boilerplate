@@ -1201,127 +1201,127 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:addFreeItem\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:addFreeItem\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:anetValidationMsg\(\) with return type void returns mixed but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:anetValidationMsg\(\) with return type void returns mixed but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:anetValidationMsg\(\) with return type void returns string but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:anetValidationMsg\(\) with return type void returns string but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:applyCoupon\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:applyCoupon\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:applyRewards\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:applyRewards\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:clientErrorHandler\(\) with return type void returns string but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:clientErrorHandler\(\) with return type void returns string but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:delete\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:delete\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:deleteServingOption\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:deleteServingOption\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:placeOrder\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:placeOrder\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:removeCard\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:removeCard\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:resetCoupon\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:resetCoupon\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:resetRewards\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:resetRewards\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:splCookieValidation\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:splCookieValidation\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:storeDelivery\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:storeDelivery\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 3
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:storePayment\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:storePayment\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:storeServingOption\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:storeServingOption\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 2
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:storeTipAmount\(\) with return type void returns mixed but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:storeTipAmount\(\) with return type void returns mixed but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:update\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:update\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:updateMsg\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:updateMsg\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:updateOrder\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:updateOrder\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\CartController\:\:updateTip\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:updateTip\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
@@ -1345,7 +1345,7 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Parameter \$request of method App\\Http\\Controllers\\Api\\CartController\:\:applyCoupon\(\) has invalid type App\\Http\\Requests\\Api\\V1\\CouponRequest\.$#'
+			message: '#^Parameter \$request of method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:applyCoupon\(\) has invalid type App\\Http\\Requests\\Api\\V1\\CouponRequest\.$#'
 			identifier: class.notFound
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
@@ -1357,13 +1357,13 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Result of method App\\Http\\Controllers\\Api\\CartController\:\:clientErrorHandler\(\) \(void\) is used\.$#'
+			message: '#^Result of method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:clientErrorHandler\(\) \(void\) is used\.$#'
 			identifier: method.void
 			count: 2
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
 
 		-
-			message: '#^Result of method App\\Http\\Controllers\\Api\\CartController\:\:storeTipAmount\(\) \(void\) is used\.$#'
+			message: '#^Result of method App\\Http\\Controllers\\Api\\V1\\Api\\CartController\:\:storeTipAmount\(\) \(void\) is used\.$#'
 			identifier: method.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/CartController.php
@@ -1495,7 +1495,7 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Api/UserController.php
 
 		-
-			message: '#^Call to method getActiveCart\(\) on an unknown class App\\Http\\Controllers\\Api\\CartManager\.$#'
+			message: '#^Call to method getActiveCart\(\) on an unknown class App\\Http\\Controllers\\Api\\V1\\Api\\CartManager\.$#'
 			identifier: class.notFound
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/UserController.php
@@ -1525,7 +1525,7 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Api/UserController.php
 
 		-
-			message: '#^Class App\\Http\\Controllers\\Api\\CartManager not found\.$#'
+			message: '#^Class App\\Http\\Controllers\\Api\\V1\\Api\\CartManager not found\.$#'
 			identifier: class.notFound
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/UserController.php
@@ -1573,37 +1573,37 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\ZipcodeController\:\:getdeliveryinfo\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\ZipcodeController\:\:getdeliveryinfo\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\ZipcodeController\:\:pickupClosestCafe\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\ZipcodeController\:\:pickupClosestCafe\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\ZipcodeController\:\:retreiveCateringMgrInfo\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\ZipcodeController\:\:retreiveCateringMgrInfo\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\ZipcodeController\:\:search\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\ZipcodeController\:\:search\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\ZipcodeController\:\:setDeliveryAreaByZipId\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\ZipcodeController\:\:setDeliveryAreaByZipId\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\ZipcodeController\:\:validateDeliveryDateTime\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Api\\ZipcodeController\:\:validateDeliveryDateTime\(\) with return type void returns Illuminate\\Http\\JsonResponse but should not return anything\.$#'
 			identifier: return.void
 			count: 7
 			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
@@ -1625,204 +1625,6 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Api/V1/Api/ZipcodeController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Cart\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Cart\>\:\:\$order\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$account_status\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$active_cart_id\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$cafe\.$#'
-			identifier: property.notFound
-			count: 6
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$forgot_password_link_valid\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$type\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$zip\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Auth\\LoginController\:\:setSocailAuthConfigs\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Call to an undefined method App\\Models\\User\:\:mailer\(\)\.$#'
-			identifier: method.notFound
-			count: 3
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Call to function is_null\(\) with App\\Http\\Controllers\\Auth\\varchar will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Call to method getMessage\(\) on an unknown class Laravel\\Socialite\\Two\\InvalidStateException\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Call to static method driver\(\) on an unknown class Laravel\\Socialite\\Facades\\Socialite\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 1
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Cannot call method mailer\(\) on App\\Models\\User\|true\.$#'
-			identifier: method.nonObject
-			count: 2
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Caught class Laravel\\Socialite\\Two\\InvalidStateException not found\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Left side of && is always true\.$#'
-			identifier: booleanAnd.leftAlwaysTrue
-			count: 4
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\Auth\\LoginController\:\:callback\(\) with return type void returns Illuminate\\Http\\RedirectResponse but should not return anything\.$#'
-			identifier: return.void
-			count: 10
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\Auth\\LoginController\:\:createNewUser\(\) with return type void returns App\\Models\\User but should not return anything\.$#'
-			identifier: return.void
-			count: 1
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\Auth\\LoginController\:\:extractFirstNameLastName\(\) with return type void returns array\<string, string\> but should not return anything\.$#'
-			identifier: return.void
-			count: 1
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\Auth\\LoginController\:\:googleRecaptchaErrorMessage\(\) should return array but returns Illuminate\\Http\\Response\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\Auth\\LoginController\:\:redirect\(\) with return type void returns mixed but should not return anything\.$#'
-			identifier: return.void
-			count: 1
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\Auth\\LoginController\:\:validateGoogleRecaptcha\(\) has invalid return type App\\Http\\Controllers\\Auth\\success\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Offset ''first_name'' does not exist on null\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Offset ''last_name'' does not exist on null\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Offset ''middle_name'' does not exist on null\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^PHPDoc tag @param for parameter \$request with type mixed is not subtype of native type Illuminate\\Http\\Request\.$#'
-			identifier: parameter.phpDocType
-			count: 1
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Parameter \#1 \$json of function json_decode expects string, Psr\\Http\\Message\\StreamInterface given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Parameter \#1 \$user of static method Illuminate\\Support\\Facades\\Auth\:\:login\(\) expects Illuminate\\Contracts\\Auth\\Authenticatable, null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
-			identifier: argument.type
-			count: 3
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Parameter \$googleRecaptchaResponse of method App\\Http\\Controllers\\Auth\\LoginController\:\:validateGoogleRecaptcha\(\) has invalid type App\\Http\\Controllers\\Auth\\varchar\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Result of method App\\Http\\Controllers\\Auth\\LoginController\:\:createNewUser\(\) \(void\) is used\.$#'
-			identifier: method.void
-			count: 1
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Result of method App\\Http\\Controllers\\Auth\\LoginController\:\:extractFirstNameLastName\(\) \(void\) is used\.$#'
-			identifier: method.void
-			count: 1
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
-
-		-
-			message: '#^Result of static method Illuminate\\Support\\Facades\\Auth\:\:login\(\) \(void\) is used\.$#'
-			identifier: staticMethod.void
-			count: 1
-			path: app/Http/Controllers/Api/V1/Auth/LoginController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Cart\:\:\$groupOrderConfig\.$#'
@@ -2071,13 +1873,13 @@ parameters:
 			path: app/Http/Controllers/Api/V1/CartController.php
 
 		-
-			message: '#^Parameter \$request of method App\\Http\\Controllers\\CartController\:\:add\(\) has invalid type App\\Http\\Requests\\Api\\V1\\CartAddRequest\.$#'
+			message: '#^Parameter \$request of method App\\Http\\Controllers\\Api\\V1\\CartController\:\:add\(\) has invalid type App\\Http\\Requests\\Api\\V1\\CartAddRequest\.$#'
 			identifier: class.notFound
 			count: 2
 			path: app/Http/Controllers/Api/V1/CartController.php
 
 		-
-			message: '#^Parameter \$request of method App\\Http\\Controllers\\CartController\:\:update\(\) has invalid type App\\Http\\Requests\\Api\\V1\\CartUpdateRequest\.$#'
+			message: '#^Parameter \$request of method App\\Http\\Controllers\\Api\\V1\\CartController\:\:update\(\) has invalid type App\\Http\\Requests\\Api\\V1\\CartUpdateRequest\.$#'
 			identifier: class.notFound
 			count: 2
 			path: app/Http/Controllers/Api/V1/CartController.php
@@ -2215,7 +2017,7 @@ parameters:
 			path: app/Http/Controllers/Api/V1/GroupOrderController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\GroupOrderController\:\:inviteToOrder\(\) should return Illuminate\\View\\View but returns Illuminate\\Http\\RedirectResponse\.$#'
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\GroupOrderController\:\:inviteToOrder\(\) should return Illuminate\\View\\View but returns Illuminate\\Http\\RedirectResponse\.$#'
 			identifier: return.type
 			count: 1
 			path: app/Http/Controllers/Api/V1/GroupOrderController.php

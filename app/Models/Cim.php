@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+/**
+ * @property int|string $profile_id
+ */
 class Cim extends BaseModel
 {
     protected static $unguarded = true;

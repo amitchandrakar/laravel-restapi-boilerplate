@@ -2,14 +2,20 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Alonti\Auth\Cake\CakeHasher;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\V1\Controller;
+use App\Http\Resources\Api\V1\CustomerRewardsResource;
+use App\Http\Resources\Api\V1\DeliveryAreasResource;
+use App\Http\Resources\Api\V1\OrderDetailResource;
+use App\Http\Resources\Api\V1\OrdersListResource;
+use App\Http\Resources\Api\V1\ProfileResource;
+use App\Http\Resources\Api\V1\RedirectResource;
+use App\Http\Resources\Api\V1\ReferralRewardsResource;
 use App\Mail\ApplyHouseAccount;
 use App\Models\AbandonedCart;
 use App\Models\Cart;
-use App\Models\Category;
 use App\Models\Configuration;
 use App\Models\CustomerReferral;
 use App\Models\Order;
@@ -34,9 +40,6 @@ class UserController extends Controller
 
     public function profile()
     {
-        $requestFromInvitee = config()->get('app.request-from-invitee');
-        $categories = Category::getCategories($requestFromInvitee);
-        view()->share('menuCategories', $categories);
         $user = auth()->user()->toArray();
         unset($user['password']);
         $states = State::all();
@@ -50,18 +53,21 @@ class UserController extends Controller
             ? session()->get('UserDeliveryInformation.alontiDeliveryAreaList')
             : [];
 
-        return view('user.profile', compact('user', 'states', 'deliveryAreaCount', 'deliveryAreaChosen', 'cafeList'));
+        return $this->successResponse(
+            ProfileResource::make([
+                'user' => $user,
+                'states' => $states,
+                'delivery_area_count' => $deliveryAreaCount,
+                'delivery_area_chosen' => $deliveryAreaChosen,
+                'cafe_list' => $cafeList,
+            ]),
+            'Success'
+        );
     }
 
     public function orders()
     {
         Session::forget('cart-id-lock');
-        // dd(Session::get('cart-id-lock'));
-
-        $requestFromInvitee = config()->get('app.request-from-invitee');
-        $categories = Category::getCategories($requestFromInvitee);
-
-        view()->share('menuCategories', $categories);
 
         $userActiveCart = auth()->user()->active_cart_id ? Cart::find(auth()->user()->active_cart_id) : null;
         $activeOrders = auth()
@@ -71,7 +77,7 @@ class UserController extends Controller
             ->with(['order', 'order.time', 'shipping'])
             ->orderBy('id', 'asc')
             ->get();
-
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Cart> $activeOrders */
         $activeGroupOrders = auth()
             ->user()
             ->carts()
@@ -79,7 +85,7 @@ class UserController extends Controller
             ->with(['order', 'order.time', 'shipping'])
             ->orderBy('id', 'asc')
             ->get();
-
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Cart> $activeGroupOrders */
         $individualCart = Cart::individual()->mine()->pending()->first();
         $individualCartCount = $individualCart ? $individualCart->items()->count() : 0;
 
@@ -219,8 +225,8 @@ class UserController extends Controller
 
         $orderStatus = ['Delivered', 'Canceled'];
         $pastOrders = auth()->user()->orders()->whereIn('status', $orderStatus)->with('time')->get();
-
-        $pastOrders = $pastOrders->map(function ($order) {
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Order> $pastOrders */
+        $pastOrders = $pastOrders->map(function (\App\Models\Order $order) {
             return [
                 'total' => '$' . round($order->total, 2),
                 'order_type' => $order->group_order_id ? 'Group Order' : 'Catering',
@@ -245,26 +251,26 @@ class UserController extends Controller
             ? session()->get('UserDeliveryInformation.alontiDeliveryAreaList')
             : [];
 
-        return view(
-            'user.orders',
-            compact(
-                'activeOrders',
-                'pastOrders',
-                'individualCart',
-                'individualCartCount',
-                'userActiveCart',
-                'deliveryAreaCount',
-                'deliveryAreaChosen',
-                'cafeList',
-                'activeGroupOrders'
-            )
+        return $this->successResponse(
+            OrdersListResource::make([
+                'active_orders' => $activeOrders,
+                'past_orders' => $pastOrders,
+                'individual_cart' => $individualCart,
+                'individual_cart_count' => $individualCartCount,
+                'user_active_cart' => $userActiveCart,
+                'delivery_area_count' => $deliveryAreaCount,
+                'delivery_area_chosen' => $deliveryAreaChosen,
+                'cafe_list' => $cafeList,
+                'active_group_orders' => $activeGroupOrders,
+            ]),
+            'Success'
         );
     }
 
     public function viewOrder($hashid = null)
     {
         if ($hashid == null) {
-            return redirect('/profile/orders')->with('notify-failure', 'Order is not found.');
+            return $this->notFoundResponse('Order is not found.');
         }
 
         $order = Order::findByEncryptedId($hashid);
@@ -288,35 +294,41 @@ class UserController extends Controller
             ->where('offmenus.order_id', $order->id)
             ->first();
 
-        return view(
-            'view-order',
-            compact(
-                'order',
-                'items',
-                'payments',
-                'deliveryTimes',
-                'deliveryAreaCount',
-                'deliveryAreaChosen',
-                'cafeList',
-                'servingOption'
-            )
+        return $this->successResponse(
+            OrderDetailResource::make([
+                'order' => $order,
+                'items' => $items,
+                'payments' => $payments,
+                'delivery_times' => $deliveryTimes,
+                'delivery_area_count' => $deliveryAreaCount,
+                'delivery_area_chosen' => $deliveryAreaChosen,
+                'cafe_list' => $cafeList,
+                'serving_option' => $servingOption,
+            ]),
+            'Success'
         );
     }
 
     public function editGroupCartFromAdmin($cartId)
     {
         if ($cartId == null) {
-            return redirect('/profile/orders')->with('notify-failure', 'Cart is not found.');
+            return $this->notFoundResponse('Cart is not found.');
         }
         $cart = Cart::find($cartId);
+        if (!$cart) {
+            return $this->notFoundResponse('Cart is not found.');
+        }
 
-        return redirect('/profile/edit-cart/' . $cart->encrypted_id);
+        return $this->successResponse(
+            RedirectResource::make(['redirect' => '/profile/edit-cart/' . $cart->encrypted_id]),
+            'Success'
+        );
     }
 
     public function editGroupCart($hashid = null)
     {
         if ($hashid == null) {
-            return redirect('/profile/orders')->with('notify-failure', 'Cart is not found.');
+            return $this->notFoundResponse('Cart is not found.');
         }
 
         $user = auth()->user();
@@ -324,9 +336,9 @@ class UserController extends Controller
         if ($user && $user->active_cart_id) {
             $cart = Cart::find($user->active_cart_id);
             if ($cart && $cart->order_id) {
-                return redirect('/profile/orders')->with(
-                    'notify-failure',
-                    'Already some of your order is in edit mode. Please do update that and proceed.'
+                return $this->errorResponse(
+                    'Already some of your order is in edit mode. Please do update that and proceed.',
+                    409
                 );
             }
         }
@@ -361,13 +373,13 @@ class UserController extends Controller
             $cart->updateDeliveryArea($deliveryInfo->zipcode, $deliveryInfo->state_id, $deliveryInfo->cafe->id);
         }
 
-        return redirect('/summary');
+        return $this->successResponse(RedirectResource::make(['redirect' => '/summary']), 'Success');
     }
 
     public function editOrder($hashid = null)
     {
         if ($hashid == null) {
-            return redirect('/profile/orders')->with('notify-failure', 'Order is not found.');
+            return $this->notFoundResponse('Order is not found.');
         }
 
         $userData = auth()->user();
@@ -375,46 +387,43 @@ class UserController extends Controller
         $order = Order::findByEncryptedId($hashid);
 
         if ($order->web) {
-            return redirect('/profile/orders')->with(
-                'notify-failure',
-                'This order was placed by cafe manager, Please contact kitchen if you want to make any changes.'
+            return $this->errorResponse(
+                'This order was placed by cafe manager, Please contact kitchen if you want to make any changes.',
+                403
             );
         }
 
         if (in_array($order->status, ['Delivered', 'Canceled'])) {
-            return redirect('/profile/orders')->with('notify-failure', 'This order has been delivered.');
+            return $this->errorResponse('This order has been delivered.', 403);
         }
 
         $cart = new Cart();
         $allowEditOrder = $cart->cartItemsAndOptionsCurrentStatus($order->cart->items);
 
         if (!$allowEditOrder) {
-            return redirect('/profile/orders')->with(
-                'notify-failure',
-                'Some of your menu items are unavailable. Please contact your kitchen (' . $order->cafe->phone . ').'
+            return $this->errorResponse(
+                'Some of your menu items are unavailable. Please contact your kitchen (' . $order->cafe->phone . ').',
+                400
             );
         }
 
         if ($userData->active_cart_id) {
             $cart = Cart::find($userData->active_cart_id);
             if ($cart && $cart->order_id && $cart->order_id != $order->id) {
-                return redirect('/profile/orders')->with(
-                    'notify-failure',
-                    'Already some of your order is in edit mode. Please do update that and proceed.'
+                return $this->errorResponse(
+                    'Already some of your order is in edit mode. Please do update that and proceed.',
+                    409
                 );
             }
         }
 
         // Check if order can be edited (must be at least 24 hours before delivery)
         if ($order->hoursUntilDelivery() < 24) {
-            return redirect('/profile/orders')->with(
-                'notify-failure',
-                'This order is locked hence you can not edit this order.'
-            );
+            return $this->errorResponse('This order is locked hence you can not edit this order.', 403);
         }
 
         if ($order->cart->status) {
-            return redirect('/summary');
+            return $this->successResponse(RedirectResource::make(['redirect' => '/summary']), 'Success');
         }
 
         if (auth()->user()->active_cart_id != $order->cart->id) {
@@ -436,11 +445,10 @@ class UserController extends Controller
             $deliveryInfo = session()->get('UserDeliveryInformation.alontiDeliveryArea');
             $cartData->updateDeliveryArea($deliveryInfo->zipcode, $deliveryInfo->state_id, $deliveryInfo->cafe->id);
 
-            return redirect('/summary');
-            // ->with('notify-failure', 'The listed item price will be updated if you change your delivery zipcode');
-        } else {
-            return redirect('/summary')->with('notify-failure', 'This order is already in edit mode.');
+            return $this->successResponse(RedirectResource::make(['redirect' => '/summary']), 'Success');
         }
+
+        return $this->errorResponse('This order is already in edit mode.', 409);
     }
 
     public function updatePhone()
@@ -451,7 +459,7 @@ class UserController extends Controller
                 'phone' => request('phone'),
             ]);
 
-        return ['success' => true, 'message' => 'The record has been saved.'];
+        return $this->successResponse(null, 'The record has been saved.');
     }
 
     public function updateAddress()
@@ -488,7 +496,7 @@ class UserController extends Controller
                     : auth()->user()->longitude,
             ]);
 
-        return ['success' => true, 'message' => 'Address was saved successfully.'];
+        return $this->successResponse(null, 'Address was saved successfully.');
     }
 
     public function updateCmpyPhone()
@@ -499,7 +507,7 @@ class UserController extends Controller
                 'secondary_phone' => request('secondary_phone'),
             ]);
 
-        return ['success' => true, 'message' => 'The record has been saved.'];
+        return $this->successResponse(null, 'The record has been saved.');
     }
 
     public function updateSecondaryPhone()
@@ -510,7 +518,7 @@ class UserController extends Controller
                 'secondary_phone' => request('secondary_phone'),
             ]);
 
-        return ['success' => true, 'message' => 'The record has been saved.'];
+        return $this->successResponse(null, 'The record has been saved.');
     }
 
     public function updateSmsOptIn()
@@ -522,7 +530,7 @@ class UserController extends Controller
                 'sms_opt_in' => $smsOptIn,
             ]);
 
-        return ['success' => true, 'message' => 'The record has been saved.'];
+        return $this->successResponse(null, 'The record has been saved.');
     }
 
     public function updatePassword(CakeHasher $hasher)
@@ -536,12 +544,12 @@ class UserController extends Controller
                 ]);
         }
 
-        return ['success' => true, 'message' => 'The record has been saved.'];
+        return $this->successResponse(null, 'The record has been saved.');
     }
 
     public function attachHouseAccount()
     {
-        return view('user.attach-house-account');
+        return $this->successResponse(null, 'Attach house account form data.');
     }
 
     public function applyHouseAccount()
@@ -575,15 +583,14 @@ class UserController extends Controller
 
         if ($sent) {
             $msg = 'Your account application has been sent successfully.';
-            session()->flash('notify-success', $msg);
 
-            return response()->json(['success' => $sent, 'message' => $msg]);
+            return $this->successResponse(null, $msg);
         }
 
-        return response()->json([
-            'success' => $sent,
-            'message' => 'There was a problem while send account application. Please make sure that provide email is valid.',
-        ]);
+        return $this->errorResponse(
+            'There was a problem while send account application. Please make sure that provide email is valid.',
+            400
+        );
     }
 
     public function updateLastName()
@@ -594,7 +601,7 @@ class UserController extends Controller
                 'lname' => request('lname'),
             ]);
 
-        return ['success' => true, 'message' => 'The record has been saved.'];
+        return $this->successResponse(null, 'The record has been saved.');
     }
 
     public function updateFirstName()
@@ -605,13 +612,13 @@ class UserController extends Controller
                 'fname' => request('fname'),
             ]);
 
-        return ['success' => true, 'message' => 'The record has been saved.'];
+        return $this->successResponse(null, 'The record has been saved.');
     }
 
     public function deleteCart($hashId)
     {
         if ($hashId == null) {
-            return redirect('/profile/orders')->with('notify-failure', 'Cart is not found.');
+            return $this->notFoundResponse('Cart is not found.');
         }
 
         $cart = Cart::findByEncryptedId($hashId);
@@ -639,36 +646,33 @@ class UserController extends Controller
                 $user->save();
             }
 
-            return redirect('/profile/orders')->with('notify-success', 'Your cart is deleted successfully');
-        } else {
-            return redirect('/profile/orders')->with(
-                'notify-failure',
-                'You can not delete your cart since order is placed for this cart'
+            return $this->successResponse(
+                RedirectResource::make(['redirect' => '/profile/orders']),
+                'Your cart is deleted successfully'
             );
         }
+
+        return $this->errorResponse('You can not delete your cart since order is placed for this cart', 403);
     }
 
     public function cancelOrder($hashId = null)
     {
         if ($hashId == null) {
-            return redirect('/profile/orders')->with('notify-failure', 'Order is not found.');
+            return $this->notFoundResponse('Order is not found.');
         }
 
         $order = Order::findByEncryptedId($hashId);
 
         if ($order->web) {
-            return redirect('/profile/orders')->with(
-                'notify-failure',
-                'This order was placed by cafe manager, Please contact kitchen if you want to cancel.'
+            return $this->errorResponse(
+                'This order was placed by cafe manager, Please contact kitchen if you want to cancel.',
+                403
             );
         }
 
         // Check if order can be cancelled (must be at least 24 hours before delivery)
         if ($order->hoursUntilDelivery() < 24) {
-            return redirect('/profile/orders')->with(
-                'notify-failure',
-                'This order is locked hence you can not cancel this order.'
-            );
+            return $this->errorResponse('This order is locked hence you can not cancel this order.', 403);
         }
 
         $order->status = 'Canceled';
@@ -676,16 +680,19 @@ class UserController extends Controller
         if ($order->save()) {
             $order->mailer()->sendOrderCanceled();
 
-            return redirect('/profile/orders')->with('notify-success', 'Your order is canceled successfully');
-        } else {
-            return redirect('/profile/orders')->with('notify-failure', 'Something went wrong, please try again');
+            return $this->successResponse(
+                RedirectResource::make(['redirect' => '/profile/orders']),
+                'Your order is canceled successfully'
+            );
         }
+
+        return $this->errorResponse('Something went wrong, please try again', 500);
     }
 
     public function invoiceDownload($hashId)
     {
         if (!$hashId) {
-            return redirect('/profile/orders')->with('notify-failure', 'Order is not found.');
+            return $this->notFoundResponse('Order is not found.');
         }
 
         $order = Order::findByEncryptedId($hashId);
@@ -706,9 +713,6 @@ class UserController extends Controller
 
     public function customerRewards()
     {
-        $requestFromInvitee = config()->get('app.request-from-invitee');
-        $categories = Category::getCategories($requestFromInvitee);
-        view()->share('menuCategories', $categories);
         $user = auth()->user();
         $states = State::all();
         $deliveryAreaCount = session()->has('UserDeliveryInformation.alontiDeliveryAreaCount')
@@ -723,26 +727,23 @@ class UserController extends Controller
         $rewardEmail = $user->myconfig ? $user->myconfig->reward_email : $user->email;
         $rewards = app(Reward::class)->earnedAmazonRewardHistory($user->id);
 
-        return view(
-            'user.reward',
-            compact(
-                'user',
-                'cashoutAmount',
-                'deliveryAreaCount',
-                'deliveryAreaChosen',
-                'partialAmount',
-                'rewardConfig',
-                'rewardEmail',
-                'rewards'
-            )
+        return $this->successResponse(
+            CustomerRewardsResource::make([
+                'user' => $user,
+                'cashout_amount' => $cashoutAmount,
+                'delivery_area_count' => $deliveryAreaCount,
+                'delivery_area_chosen' => $deliveryAreaChosen,
+                'partial_amount' => $partialAmount,
+                'reward_config' => $rewardConfig,
+                'reward_email' => $rewardEmail,
+                'rewards' => $rewards,
+            ]),
+            'Success'
         );
     }
 
     public function customerReferralRewards()
     {
-        $requestFromInvitee = config()->get('app.request-from-invitee');
-        $categories = Category::getCategories($requestFromInvitee);
-        view()->share('menuCategories', $categories);
         $user = auth()->user();
         $states = State::all();
         $deliveryAreaCount = session()->has('UserDeliveryInformation.alontiDeliveryAreaCount')
@@ -773,9 +774,16 @@ class UserController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view(
-            'user.referral_reward',
-            compact('user', 'deliveryAreaCount', 'deliveryAreaChosen', 'allowRefer', 'referralConfig', 'referedEmails')
+        return $this->successResponse(
+            ReferralRewardsResource::make([
+                'user' => $user,
+                'delivery_area_count' => $deliveryAreaCount,
+                'delivery_area_chosen' => $deliveryAreaChosen,
+                'allow_refer' => $allowRefer,
+                'referral_config' => $referralConfig,
+                'refered_emails' => $referedEmails,
+            ]),
+            'Success'
         );
     }
 
@@ -814,6 +822,13 @@ class UserController extends Controller
             ? session()->get('UserDeliveryInformation.deliveryAreaChosen')
             : false;
 
-        return view('user.referred_customer', compact('deliveryAreaCount', 'deliveryAreaChosen', 'referredCustomers'));
+        return $this->successResponse(
+            DeliveryAreasResource::make([
+                'delivery_area_count' => $deliveryAreaCount,
+                'delivery_area_chosen' => $deliveryAreaChosen,
+                'referred_customers' => $referredCustomers,
+            ]),
+            'Success'
+        );
     }
 }

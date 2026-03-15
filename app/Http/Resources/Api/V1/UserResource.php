@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api\V1;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/**
- * @mixin \App\Models\User
- */
 class UserResource extends JsonResource
 {
     /**
@@ -19,19 +17,22 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        /** @var User $user */
+        $user = $this->resource;
+
         return [
-            'id' => $this->id,
-            'uuid' => $this->uuid,
-            'name' => $this->name,
-            'email' => $this->email,
-            'dob' => $this->dob,
-            'company_name' => $this->company_name,
-            'salary' => $this->salary,
-            'contact_number' => $this->contact_number,
-            'status' => $this->status,
-            'account_type' => $this->account_type,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'id' => $user->id,
+            'uuid' => $user->uuid,
+            'name' => $user->name,
+            'email' => $user->email,
+            'dob' => $user->dob ?? null,
+            'company_name' => $user->company_name ?? null,
+            'salary' => $user->salary ?? null,
+            'contact_number' => $user->contact_number ?? null,
+            'status' => $user->status ?? null,
+            'account_type' => $user->account_type ?? null,
+            'created_at' => $user->created_at,
+            'updated_at' => $user->updated_at,
         ];
     }
 }

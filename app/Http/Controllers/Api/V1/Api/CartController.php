@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\V1\Api;
 
 use App\Alonti\Cart\CartManager;
 use App\Alonti\Coupon\CouponManager;
@@ -240,8 +240,6 @@ class CartController extends Controller
                 if (!empty($discountFreeCategoryMessage)) {
                     $message .= ' ' . $discountFreeCategoryMessage;
                 }
-
-                Session::flash('notify-success', $message);
             } else {
                 $data['msg'] = 'This item is not exist in the cart';
             }

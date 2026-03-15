@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AttachRequestId;
 use App\Http\Middleware\EnsureSanctumToken;
 use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\PermissionMiddleware;
@@ -23,91 +24,17 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
         ]);
 
-        // Force JSON response for all API routes
+        // API middleware: request ID first, then force JSON
         $middleware->api(
             append: [
+                AttachRequestId::class,
                 ForceJsonResponse::class,
                 // EnsureSanctumToken::class,
             ]
         );
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        $exceptions->render(function (
-            \Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e,
-            \Illuminate\Http\Request $request
-        ) {
-            if ($request->is('api/*')) {
-                return response()->json(
-                    [
-                        'success' => false,
-                        'message' => 'Resource not found',
-                    ],
-                    404
-                );
-            }
-        });
-
-        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
-            if ($request->is('api/*')) {
-                return response()->json(
-                    [
-                        'success' => false,
-                        'message' => 'Unauthenticated',
-                        'code' => 401,
-                    ],
-                    401
-                );
-            }
-        });
-
-        $exceptions->render(function (
-            \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException $e,
-            \Illuminate\Http\Request $request
-        ) {
-            if ($request->is('api/*')) {
-                return response()->json(
-                    [
-                        'success' => false,
-                        'message' => 'Method not allowed',
-                        'code' => 405,
-                    ],
-                    405
-                );
-            }
-        });
-
-        $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {
-            if ($request->is('api/*')) {
-                // If specific exception handlers didn't catch it, and it's API
-                // We let Laravel handle debug mode rendering if app.debug is true
-                // But if we want to FORCE strict JSON:
-                if (!config('app.debug')) {
-                    return response()->json(
-                        [
-                            'success' => false,
-                            'message' => 'Server error',
-                            'code' => 500,
-                        ],
-                        500
-                    );
-                }
-                // If debug is true, we might want to let Laravel render the detailed error,
-                // but FORCE JSON via middleware.
-                // However, the user asked for "proper json".
-                // Laravel's default debug JSON is "message", "exception", "trace".
-                // If we want our schema, we must wrap it.
-                if (config('app.debug')) {
-                    return response()->json(
-                        [
-                            'success' => false,
-                            'message' => $e->getMessage(),
-                            'code' => 500,
-                            'trace' => collect($e->getTrace())->take(5)->toArray(),
-                        ],
-                        500
-                    );
-                }
-            }
-        });
+        // API exceptions are handled by App\Exceptions\Handler (expectsJson / api/*)
+        // so we do not register inline renderers here for api/*.
     })
     ->create();

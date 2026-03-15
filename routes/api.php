@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\ApiResponseBuilder;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -10,19 +11,19 @@ use Illuminate\Support\Facades\Route;
 
 // Test route
 Route::get('/', function () {
-    return response()->json([
-        'success' => true,
-        'message' => 'API is working',
-        'version' => 'v1',
-    ]);
+    return ApiResponseBuilder::success(['version' => 'v1'], 'API is working', 200);
 });
 
 // Health check endpoint (no auth required)
 Route::get('health', function () {
-    return response()->json([
-        'status' => 'up',
-        'timestamp' => now()->toIso8601String(),
-    ]);
+    return ApiResponseBuilder::success(
+        [
+            'status' => 'up',
+            'timestamp' => now()->utc()->format('Y-m-d\TH:i:s.v\Z'),
+        ],
+        'OK',
+        200
+    );
 });
 
 // Load V1 routes
@@ -30,11 +31,11 @@ Route::prefix('v1')->group(base_path('routes/api/v1.php'));
 
 // Fallback for undefined routes
 Route::fallback(function () {
-    return response()->json(
-        [
-            'success' => false,
-            'message' => 'Endpoint not found',
-        ],
-        404
+    return ApiResponseBuilder::error(
+        'Endpoint not found',
+        404,
+        ApiResponseBuilder::ERROR_NOT_FOUND,
+        'Endpoint not found',
+        null
     );
 });

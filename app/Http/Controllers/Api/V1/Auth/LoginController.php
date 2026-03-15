@@ -2,13 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Alonti\Auth\Cake\CakeHasher;
 use App\Alonti\Cart\CartManager;
 use App\Alonti\User\UserManager;
 use App\Alonti\ZipManager\ZipManager;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\V1\Controller;
+use App\Http\Resources\Api\V1\AuthLoginResource;
+use App\Http\Resources\Api\V1\ForgotPasswordResource;
+use App\Http\Resources\Api\V1\LoginPageResource;
+use App\Http\Resources\Api\V1\RedirectResource;
+use App\Http\Resources\Api\V1\RegisterFormResource;
+use App\Http\Resources\Api\V1\ResetPasswordResource;
 use App\Models\Cart;
 use App\Models\Configuration;
 use App\Models\CustomerReferral;
@@ -17,11 +23,8 @@ use App\Models\Order;
 use App\Models\State;
 use App\Models\User;
 use App\Models\UserConfiguration;
-use App\Traits\SocialAuthSettings;
 use Exception;
-use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
-use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -32,9 +35,7 @@ use Laravel\Socialite\Two\InvalidStateException;
 
 class LoginController extends Controller
 {
-    use AuthenticatesUsers, SocialAuthSettings;
-
-    protected $redirectTo = 'hello';
+    protected $redirectTo = '/';
 
     public $cartManager;
 
@@ -85,52 +86,40 @@ class LoginController extends Controller
             if ($hasAMatch || session()->has('errorMessage')) {
                 $redirect = $hasAMatch ? url()->current() . '?backto=' . urlencode('/') : $redirect;
 
-                return redirect($redirect)->with('errorMessage', session('errorMessage'));
+                return $this->errorResponse(session('errorMessage', 'An error occurred'), 400);
             }
 
-            return redirect($redirect);
+            return $this->successResponse(RedirectResource::make(['redirect' => $redirect]), 'Success');
         }
 
         $cartInfo = $this->cartManager->getActiveCart();
         $redirectDeliveryDetailPage = $cartInfo && $cartInfo->items->isNotEmpty();
         $socialLoginSettings = DB::select('select * from settings')[0];
 
-        return view('login.login', compact('redirectDeliveryDetailPage', 'socialLoginSettings'));
+        return $this->successResponse(
+            LoginPageResource::make([
+                'redirect_delivery_detail_page' => $redirectDeliveryDetailPage,
+                'social_login_settings' => $socialLoginSettings,
+            ]),
+            'Success'
+        );
     }
 
     public function verifyLogin(CartManager $cartManager)
     {
-        /* Disabling google recaptcha because of an issue
-        // Google Recaptcha request
-        $gRecaptchaResponse = request()->g_recaptcha;
-
-        if (is_null($gRecaptchaResponse) ) {
-            // If $gRecaptchaResponse is null means there could be any error with "site url" on google recaptcha admin console or with google recaptcha key)
-            return $this->googleRecaptchaErrorMessage();
-        }
-
-        // Validate Google Recaptcha
-        $validateRecaptcha = $this->validateGoogleRecaptcha($gRecaptchaResponse);
-
-        if (!$validateRecaptcha) {
-            // If $validateRecaptcha is null means there could be any error with google recaptcha secret or with code)
-            return $this->googleRecaptchaErrorMessage();
-        }
-        */
-
         $credentials = request()->only('email', 'password');
         $data = User::where('email', $credentials['email'])->first();
         if ($data && $data->account_status == 'Deleted') {
             $cafeManagerEmail = str_ireplace('@alonti.com', '', $data->cafe->csmUser->email) . '@alonti.com';
 
-            return response([
-                'status' => false,
-                'success' => 'Your account was deactivated. Please contact your catering sales manager ' .
+            return $this->errorResponse(
+                'Your account was deactivated. Please contact your catering sales manager ' .
                     $data->cafe->csmUser->name .
                     ' at ' .
                     $cafeManagerEmail .
                     ' to reactivate your account.',
-            ]);
+                403
+            );
         }
 
         // It must be before attempting to loging
@@ -192,55 +181,37 @@ class LoginController extends Controller
             }
         }
 
-        $url = session()->get('url.backto', '/');
-
-        if ($msg) {
-            return response(['status' => true, 'exception' => true, 'success' => $msg, 'redirectTo' => $url]);
+        if (!$success) {
+            return $this->errorResponse('Login attempt failure', 401);
         }
 
-        return response(['status' => true, 'exception' => false, 'success' => $success, 'redirectTo' => $url]);
-    }
+        $token = $user->createToken('auth-token')->plainTextToken;
+        $userData = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'fname' => $user->fname ?? null,
+            'lname' => $user->lname ?? null,
+            'phone' => $user->phone ?? null,
+        ];
 
-    /**
-     * Show Google Recaptcha error message
-     *
-     * @return array of status and message
-     */
-    public function googleRecaptchaErrorMessage()
-    {
-        return response(['status' => false, 'success' => 'Google Recaptcha verification failed. Please try again.']);
-    }
-
-    /**
-     * Verify Google Recaptcha to send secret and response to site verify url - https://www.google.com/recaptcha/api/siteverify
-     *
-     * @param  varchar  $googleRecaptchaResponse  value coming from login page
-     * @return success response or null
-     */
-    public function validateGoogleRecaptcha($googleRecaptchaResponse)
-    {
-        $client = new Client();
-
-        $googleRecaptchaResponse = is_null($googleRecaptchaResponse) ? '' : $googleRecaptchaResponse;
-
-        $secret = config('app.google_recaptcha_secret');
-
-        $response = $client->post('https://www.google.com/recaptcha/api/siteverify', [
-            'form_params' => [
-                'secret' => $secret,
-                'response' => $googleRecaptchaResponse,
-            ],
-        ]);
-        $body = json_decode((string) $response->getBody());
-
-        return $body->success;
+        return $this->successResponse(
+            AuthLoginResource::make([
+                'token' => $token,
+                'user' => $userData,
+            ]),
+            $msg ?: 'Success'
+        );
     }
 
     public function guestCheckout()
     {
         session()->put('via-guest-checkout', true);
 
-        return redirect(session()->get('url.backto', '/'));
+        return $this->successResponse(
+            RedirectResource::make(['redirect' => session()->get('url.backto', '/')]),
+            'Success'
+        );
     }
 
     public function logout()
@@ -249,7 +220,7 @@ class LoginController extends Controller
         session()->remove('via-guest-checkout');
         session()->remove('url');
 
-        return redirect('/')->with('notify-success', 'You have been successfully logged out.');
+        return $this->successResponse(null, 'You have been successfully logged out.');
     }
 
     public function forgotPassword()
@@ -260,17 +231,16 @@ class LoginController extends Controller
         if ($user) {
             $user->mailer()->sendForgotPasswordEmail();
 
-            return [
-                'success' => true,
-                'account' => true,
-                'message' => 'Please follow your mail to reset your password',
-            ];
+            return $this->successResponse(
+                ForgotPasswordResource::make(['account' => true]),
+                'Please follow your mail to reset your password'
+            );
         }
 
-        return [
-            'success' => true,
-            'message' => 'This Email ID is not registered. Kindly enter your Alonti login ID to receive your password.',
-        ];
+        return $this->successResponse(
+            null,
+            'This Email ID is not registered. Kindly enter your Alonti login ID to receive your password.'
+        );
     }
 
     public function resetPassword(string $hash)
@@ -278,17 +248,17 @@ class LoginController extends Controller
         [$forgot_password_link, $user_id] = explode('_', $hash);
 
         if (!$user_id || !$forgot_password_link) {
-            return 'Not a valid password link';
+            return $this->errorResponse('Not a valid password link', 400);
         }
 
         $user = User::select('id', 'forgot_password_link', 'forgot_password_link_valid')->find($user_id);
 
         if (!$user || !$user->forgot_password_link_valid) {
-            return 'Not a valid password link';
+            return $this->errorResponse('Not a valid password link', 400);
         }
         session()->put('user.reset_password_id', $user->id);
 
-        return view('login.reset-password');
+        return $this->successResponse(ResetPasswordResource::make(['user_id' => $user->id]), 'Success');
     }
 
     public function saveResetPassword(CakeHasher $hasher)
@@ -297,7 +267,7 @@ class LoginController extends Controller
 
         $user_id = session()->get('user.reset_password_id');
         if (!$user_id) {
-            return ['success' => false, 'message' => 'Reset password session has expired.'];
+            return $this->errorResponse('Reset password session has expired.', 400);
         }
         $hashed_password = $hasher->make($password);
 
@@ -309,7 +279,7 @@ class LoginController extends Controller
         ]);
         session()->forget('user.reset_password_id');
 
-        return ['success' => true, 'message' => 'Your password has been reset successfully.'];
+        return $this->successResponse(null, 'Your password has been reset successfully.');
     }
 
     public function register()
@@ -337,16 +307,16 @@ class LoginController extends Controller
         $industries = Industry::all();
         $states = State::all();
 
-        return view(
-            'login.register',
-            compact(
-                'industries',
-                'states',
-                'displayRewardGreet',
-                'displayReferralRewardGreet',
-                'referralConfig',
-                'toEmail'
-            )
+        return $this->successResponse(
+            RegisterFormResource::make([
+                'industries' => $industries,
+                'states' => $states,
+                'display_reward_greet' => $displayRewardGreet,
+                'display_referral_reward_greet' => $displayReferralRewardGreet,
+                'referral_config' => $referralConfig,
+                'to_email' => $toEmail,
+            ]),
+            'Success'
         );
     }
 
@@ -357,10 +327,7 @@ class LoginController extends Controller
         DB::beginTransaction();
         $userRecord = User::where(['email' => $registrationData['email'], 'group_id' => 5])->first();
         if ($userRecord && !$userRecord->type) {
-            return [
-                'success' => false,
-                'message' => 'The given email already exists. Please select another one.',
-            ];
+            return $this->errorResponse('The given email already exists. Please select another one.', 409);
         }
         $storedFile = null;
         if (request()->has('file') && request('file')) {
@@ -481,7 +448,10 @@ class LoginController extends Controller
         $uri = $uri ?: '/';
         $url = url('/login') . '?backto=' . urlencode($uri);
 
-        return ['success' => true, 'message' => 'User has been registered successfully.', 'redirectTo' => $url];
+        return $this->successResponse(
+            RedirectResource::make(['redirect' => $url]),
+            'User has been registered successfully.'
+        );
     }
 
     public function adminLogin($encryptedUserId = null)
@@ -500,22 +470,22 @@ class LoginController extends Controller
             if ($user && $user->account_status == 'Deleted') {
                 $cafeManagerEmail = str_ireplace('@alonti.com', '', $user->cafe->csmUser->email) . '@alonti.com';
 
-                return redirect('/')->with(
-                    'notify-failure',
+                return $this->errorResponse(
                     'Your account was deactivated. Please contact your catering sales manager ' .
                         $user->cafe->csmUser->name .
                         ' at ' .
                         $cafeManagerEmail .
-                        ' to reactivate your account.'
+                        ' to reactivate your account.',
+                    403
                 );
             }
             $success = Auth::login($user);
             $authUser = auth()->user();
             if ($authUser) {
-                return redirect('/')->with('notify-success', 'Logged in successfully');
-            } else {
-                return redirect('/')->with('notify-failure', 'Login attempt failure');
+                return $this->successResponse(null, 'Logged in successfully');
             }
+
+            return $this->errorResponse('Login attempt failure', 401);
         }
     }
 
@@ -568,13 +538,12 @@ class LoginController extends Controller
             } catch (InvalidStateException $e) {
                 // Check if the exception message contains "state"
                 if (strpos($e->getMessage(), 'state') !== false) {
-                    return redirect($urlFailed)->with('error', 'You have cancelled the login process.');
-                } else {
-                    // Log or handle other cases as needed
-                    Log::error('LinkedIn OAuth Error: ' . $e->getMessage());
-
-                    return redirect($urlFailed)->with(['errorMessage' => 'An error occurred. Please try again later.']);
+                    return $this->errorResponse('You have cancelled the login process.', 400);
                 }
+                // Log or handle other cases as needed
+                Log::error('LinkedIn OAuth Error: ' . $e->getMessage());
+
+                return $this->errorResponse('An error occurred. Please try again later.', 500);
             } catch (RequestException $e) {
                 if ($e->hasResponse()) {
                     try {
@@ -587,20 +556,18 @@ class LoginController extends Controller
                     // Log or handle the error message as needed
                     Log::error('Facebook OAuth Error: ' . $errorMessage);
 
-                    return redirect($urlFailed)->with(['errorMessage' => $errorMessage]);
+                    return $this->errorResponse($errorMessage, 500);
                 }
                 // Handle other exceptions
                 Log::error('Request Exception: ' . $e->getMessage());
 
-                return redirect($urlFailed)->with(['errorMessage' => 'An error occurred. Please try again later.']);
+                return $this->errorResponse('An error occurred. Please try again later.', 500);
             } catch (Exception $e) {
-                return redirect($urlFailed)->with(['errorMessage' => $e->getMessage()]);
+                return $this->errorResponse($e->getMessage(), 500);
             }
 
             if (!$data->email) {
-                return redirect($urlFailed)->with([
-                    'errorMessage' => 'Not able to access your email at this time. Please try again later.',
-                ]);
+                return $this->errorResponse('Not able to access your email at this time. Please try again later.', 400);
             }
 
             $user = User::where(['email' => $data->email])->first();
@@ -609,20 +576,20 @@ class LoginController extends Controller
                 $user = $this->createNewUser($data);
                 Auth::login($user, true);
 
-                return redirect($urlSuccess);
+                return $this->successResponse(RedirectResource::make(['redirect' => $urlSuccess]), 'Success');
             }
 
             if ($user->account_status === 'Deleted') {
-                // dd('Account deleted');
                 $cafeManagerEmail = str_ireplace('@alonti.com', '', $user->cafe->csmUser->email) . '@alonti.com';
 
-                return redirect($urlFailed)->with([
-                    'errorMessage' => 'Your account was deactivated. Please contact your catering sales manager ' .
+                return $this->errorResponse(
+                    'Your account was deactivated. Please contact your catering sales manager ' .
                         $user->cafe->csmUser->name .
                         ' at ' .
                         $cafeManagerEmail .
                         ' to reactivate your account.',
-                ]);
+                    403
+                );
             }
 
             $cartManager = new CartManager();
@@ -684,9 +651,9 @@ class LoginController extends Controller
                 }
             }
 
-            return redirect($urlSuccess);
+            return $this->successResponse(RedirectResource::make(['redirect' => $urlSuccess]), 'Success');
         } catch (Exception $e) {
-            return redirect($urlFailed)->with(['errorMessage' => $e->getMessage()]);
+            return $this->errorResponse($e->getMessage(), 500);
         }
     }
 

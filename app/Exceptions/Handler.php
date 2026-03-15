@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Helpers\HttpStatusCode;
+use App\Support\ApiResponseBuilder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -12,6 +13,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
@@ -63,7 +65,6 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $e): JsonResponse|\Symfony\Component\HttpFoundation\Response
     {
-        // Check if request expects JSON (API request)
         if ($request->expectsJson() || $request->is('api/*')) {
             return $this->handleApiException($request, $e);
         }
@@ -72,7 +73,7 @@ class Handler extends ExceptionHandler
     }
 
     /**
-     * Handle API exceptions
+     * Handle API exceptions with consistent envelope.
      */
     protected function handleApiException(
         Request $request,
@@ -80,174 +81,185 @@ class Handler extends ExceptionHandler
     ): \Symfony\Component\HttpFoundation\Response {
         $exception = $this->prepareException($exception);
 
-        // Custom API Exception
         if ($exception instanceof ApiException) {
             return $exception->render();
         }
 
-        // Validation Exception
         if ($exception instanceof ValidationException) {
             return $this->convertValidationExceptionToResponse($exception, $request);
         }
 
-        // Model Not Found Exception
         if ($exception instanceof ModelNotFoundException) {
-            return $this->notFoundResponse('Resource not found');
+            return ApiResponseBuilder::error(
+                'Resource not found',
+                HttpStatusCode::NOT_FOUND,
+                ApiResponseBuilder::ERROR_NOT_FOUND,
+                'Resource not found',
+                null
+            );
         }
 
-        // Not Found Exception
         if ($exception instanceof NotFoundHttpException) {
-            return $this->notFoundResponse('Endpoint not found');
+            return ApiResponseBuilder::error(
+                'Endpoint not found',
+                HttpStatusCode::NOT_FOUND,
+                ApiResponseBuilder::ERROR_NOT_FOUND,
+                'Endpoint not found',
+                null
+            );
         }
 
-        // Method Not Allowed Exception
         if ($exception instanceof MethodNotAllowedHttpException) {
-            return $this->errorResponse('Method not allowed', HttpStatusCode::METHOD_NOT_ALLOWED);
+            return ApiResponseBuilder::error(
+                'Method not allowed',
+                HttpStatusCode::METHOD_NOT_ALLOWED,
+                ApiResponseBuilder::ERROR_METHOD_NOT_ALLOWED,
+                'Method not allowed',
+                null
+            );
         }
 
-        // Authentication Exception
         if ($exception instanceof AuthenticationException) {
-            return $this->errorResponse($exception->getMessage() ?: 'Unauthenticated', HttpStatusCode::UNAUTHORIZED);
+            return ApiResponseBuilder::error(
+                $exception->getMessage() ?: 'Unauthenticated',
+                HttpStatusCode::UNAUTHORIZED,
+                ApiResponseBuilder::ERROR_UNAUTHORIZED,
+                $exception->getMessage() ?: 'Unauthenticated',
+                null
+            );
         }
 
-        // Authorization Exception
         if ($exception instanceof AuthorizationException) {
-            return $this->errorResponse($exception->getMessage() ?: 'Forbidden', HttpStatusCode::FORBIDDEN);
+            return ApiResponseBuilder::error(
+                $exception->getMessage() ?: 'Forbidden',
+                HttpStatusCode::FORBIDDEN,
+                ApiResponseBuilder::ERROR_FORBIDDEN,
+                $exception->getMessage() ?: 'Forbidden',
+                null
+            );
         }
 
-        // Too Many Requests Exception
         if ($exception instanceof TooManyRequestsHttpException) {
-            return $this->errorResponse('Too many requests', HttpStatusCode::TOO_MANY_REQUESTS)->withHeaders(
-                $exception->getHeaders()
+            $response = ApiResponseBuilder::error(
+                'Too many requests',
+                HttpStatusCode::TOO_MANY_REQUESTS,
+                ApiResponseBuilder::ERROR_TOO_MANY_REQUESTS,
+                'Too many requests',
+                null
             );
+
+            return $response->withHeaders($exception->getHeaders());
         }
 
-        // HTTP Exception
         if ($exception instanceof HttpException) {
-            return $this->errorResponse(
-                $exception->getMessage() ?: HttpStatusCode::getText($exception->getStatusCode()),
-                $exception->getStatusCode()
+            $message = $exception->getMessage() ?: HttpStatusCode::getText($exception->getStatusCode());
+
+            return ApiResponseBuilder::error(
+                $message,
+                $exception->getStatusCode(),
+                ApiResponseBuilder::ERROR_GENERIC,
+                $message,
+                null
             );
         }
 
-        // Query Exception (Database errors)
         if ($exception instanceof QueryException) {
             return $this->handleQueryException($exception);
         }
 
-        // Default server error
-        return $this->errorResponse(
-            config('app.debug') ? $exception->getMessage() : 'Internal server error',
+        // Default server error: never expose internals to client
+        Log::error('Unhandled API exception', [
+            'message' => $exception->getMessage(),
+            'exception' => get_class($exception),
+            'file' => $exception->getFile(),
+            'line' => $exception->getLine(),
+        ]);
+
+        return ApiResponseBuilder::error(
+            'Internal server error',
             HttpStatusCode::INTERNAL_SERVER_ERROR,
-            config('app.debug') ? $this->getExceptionDetails($exception) : null
+            ApiResponseBuilder::ERROR_INTERNAL,
+            'Internal server error',
+            null
         );
     }
 
     /**
-     * Convert validation exception to JSON response
+     * Convert validation exception to JSON response with envelope and field-level error.fields.
      */
     protected function convertValidationExceptionToResponse(
         ValidationException $exception,
         $request
     ): \Symfony\Component\HttpFoundation\Response {
-        return response()->json(
-            [
-                'success' => false,
-                'message' => $exception->getMessage() ?: 'Validation failed',
-                'errors' => $exception->errors(),
-            ],
-            HttpStatusCode::UNPROCESSABLE_ENTITY
+        $message = $exception->getMessage() ?: 'Validation failed';
+        $fields = ApiResponseBuilder::normalizeValidationFields($exception->errors());
+
+        return ApiResponseBuilder::error(
+            $message,
+            HttpStatusCode::UNPROCESSABLE_ENTITY,
+            ApiResponseBuilder::ERROR_VALIDATION,
+            'Invalid input',
+            $fields
         );
     }
 
     /**
-     * Handle database query exceptions
+     * Handle database query exceptions. Never expose SQL, bindings, or file paths to the client.
      */
     protected function handleQueryException(QueryException $exception): JsonResponse
     {
-        if (config('app.debug')) {
-            return $this->errorResponse(
-                'Database error: ' . $exception->getMessage(),
-                HttpStatusCode::INTERNAL_SERVER_ERROR,
-                [
-                    'sql' => $exception->getSql(),
-                    'bindings' => $exception->getBindings(),
-                ]
-            );
-        }
+        Log::error('Database query exception', [
+            'message' => $exception->getMessage(),
+            'sql' => $exception->getSql(),
+        ]);
 
-        // Check for common database errors
         $errorCode = $exception->errorInfo[1] ?? null;
 
         return match ($errorCode) {
-            1062 => $this->errorResponse('Duplicate entry', HttpStatusCode::CONFLICT),
-            1451 => $this->errorResponse('Cannot delete: referenced by other records', HttpStatusCode::CONFLICT),
-            1452 => $this->errorResponse('Invalid reference', HttpStatusCode::BAD_REQUEST),
-            default => $this->errorResponse('Database error', HttpStatusCode::INTERNAL_SERVER_ERROR),
+            1062 => ApiResponseBuilder::error(
+                'Duplicate entry',
+                HttpStatusCode::CONFLICT,
+                ApiResponseBuilder::ERROR_CONFLICT,
+                'Duplicate entry',
+                null
+            ),
+            1451 => ApiResponseBuilder::error(
+                'Cannot delete: referenced by other records',
+                HttpStatusCode::CONFLICT,
+                ApiResponseBuilder::ERROR_CONFLICT,
+                'Cannot delete: referenced by other records',
+                null
+            ),
+            1452 => ApiResponseBuilder::error(
+                'Invalid reference',
+                HttpStatusCode::BAD_REQUEST,
+                ApiResponseBuilder::ERROR_BAD_REQUEST,
+                'Invalid reference',
+                null
+            ),
+            default => ApiResponseBuilder::error(
+                'Database error',
+                HttpStatusCode::INTERNAL_SERVER_ERROR,
+                ApiResponseBuilder::ERROR_DB_ERROR,
+                'Database error',
+                null
+            ),
         };
     }
 
     /**
-     * Get exception details for debugging
-     */
-    protected function getExceptionDetails(Throwable $exception): array
-    {
-        return [
-            'exception' => get_class($exception),
-            'file' => $exception->getFile(),
-            'line' => $exception->getLine(),
-            'message' => $exception->getMessage(),
-            'trace' => collect($exception->getTrace())
-                ->take(10)
-                ->map(
-                    fn($trace) => [
-                        'file' => $trace['file'] ?? 'unknown',
-                        'line' => $trace['line'] ?? 0,
-                        'function' => $trace['function'],
-                    ]
-                )
-                ->toArray(),
-        ];
-    }
-
-    /**
-     * Standard error response helper
-     */
-    protected function errorResponse(string $message, int $code = 400, mixed $errors = null): JsonResponse
-    {
-        $response = [
-            'success' => false,
-            'message' => $message,
-        ];
-
-        if ($errors !== null) {
-            $response['errors'] = $errors;
-        }
-
-        // Add correlation ID if available
-        if (request()->hasHeader('X-Correlation-ID')) {
-            $response['correlation_id'] = request()->header('X-Correlation-ID');
-        }
-
-        return response()->json($response, $code);
-    }
-
-    /**
-     * Standard not found response helper
-     */
-    protected function notFoundResponse(string $message = 'Not found'): JsonResponse
-    {
-        return $this->errorResponse($message, HttpStatusCode::NOT_FOUND);
-    }
-
-    /**
-     * Handle unauthenticated user
+     * Handle unauthenticated user.
      */
     protected function unauthenticated(
         $request,
         AuthenticationException $exception
     ): \Symfony\Component\HttpFoundation\Response {
-        // Always return JSON for API routes
-        return $this->errorResponse($exception->getMessage() ?: 'Unauthenticated', HttpStatusCode::UNAUTHORIZED);
+        return ApiResponseBuilder::error(
+            $exception->getMessage() ?: 'Unauthenticated',
+            HttpStatusCode::UNAUTHORIZED,
+            ApiResponseBuilder::ERROR_UNAUTHORIZED,
+            $exception->getMessage() ?: 'Unauthenticated',
+            null
+        );
     }
 }

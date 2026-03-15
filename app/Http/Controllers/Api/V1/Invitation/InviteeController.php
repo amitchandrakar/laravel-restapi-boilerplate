@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Invitation;
+namespace App\Http\Controllers\Api\V1\Invitation;
 
 use App\Alonti\Cart\CartManager;
 use App\Alonti\Invitation\InvitationManager;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\V1\Controller;
+use App\Http\Resources\Api\V1\InviteeIndexResource;
+use App\Http\Resources\Api\V1\InviteeOrderCompleteResource;
 use App\Models\Cart;
 use App\Models\CartInvitee;
 use App\Models\Category;
@@ -58,18 +60,18 @@ class InviteeController extends Controller
             $invitee_total = round($cartInfo->totalForInvitee(session()->get('invitation.invitee_id')), 2);
         }
 
-        return view(
-            'invitation.invitee.index',
-            compact(
-                'categories',
-                'budget',
-                'invitee_total',
-                'goConfigExist',
-                'inviteeNameExist',
-                'budgetActive',
-                'individualCart',
-                'cartInfo'
-            )
+        return $this->successResponse(
+            InviteeIndexResource::make([
+                'categories' => $categories,
+                'budget' => $budget,
+                'invitee_total' => $invitee_total,
+                'go_config_exist' => $goConfigExist,
+                'invitee_name_exist' => $inviteeNameExist,
+                'budget_active' => $budgetActive,
+                'individual_cart' => $individualCart,
+                'cart_info' => $cartInfo,
+            ]),
+            'Success'
         );
     }
 
@@ -83,11 +85,12 @@ class InviteeController extends Controller
             $cartInvitee->cart->order &&
             in_array($cartInvitee->cart->order->status, ['Delivered', 'Canceled'])
         ) {
-            return redirect('/')->with(
-                'notify-failure',
-                'The order has been placed, for further information please contact your group leader.'
+            return $this->errorResponse(
+                'The order has been placed, for further information please contact your group leader.',
+                400
             );
-        } elseif ($cartInvitee->cart->groupOrderConfig) {
+        }
+        if ($cartInvitee->cart->groupOrderConfig) {
             $responseTime = strtotime(
                 $cartInvitee->cart->groupOrderConfig->response_date .
                     ' ' .
@@ -96,9 +99,9 @@ class InviteeController extends Controller
             $timeZone = abs($cartInvitee->cart->cafe->market->timezone_difference);
             $timeZoneHours = strtotime('-' . $timeZone . ' hours');
             if ($timeZoneHours >= $responseTime) {
-                return redirect('/')->with(
-                    'notify-failure',
-                    'You missed the order deadline. Please contact your group leader if you need lunch.'
+                return $this->errorResponse(
+                    'You missed the order deadline. Please contact your group leader if you need lunch.',
+                    400
                 );
             } else {
                 $proceed = true;
@@ -120,68 +123,66 @@ class InviteeController extends Controller
                 }
 
                 if ($goConfigExist && ($budgetActive && $budget < $inviteeCartTotal)) {
-                    return redirect('/invitation/summary')->with(
-                        'notify-failure',
+                    return $this->errorResponse(
                         'Your order value exceeds your allocated budget of $' .
                             round($budget, 2) .
-                            '. Please adjust your order accordingly.'
+                            '. Please adjust your order accordingly.',
+                        400
                     );
-                } else {
-                    $itemAvailableValidation = app(CartManager::class)->storeItemValidation(
-                        $cartInvitee->cart,
-                        $inviteeItems
-                    );
-
-                    if (!$itemAvailableValidation['status']) {
-                        return redirect('/invitation/summary')->with('notify-failure', $itemAvailableValidation['msg']);
-                    } else {
-                        if ($cartInvitee) {
-                            $cartInvitee->response = CartInvitee::RESPONSE_COMPLETED;
-                            $cartInvitee->save();
-                        }
-
-                        foreach ($inviteeItems as $item) {
-                            $item->cart->calculateAndUpdate();
-                        }
-
-                        $invitationManager = app(InvitationManager::class);
-                        $invitee = $invitationManager->getInvitee();
-                        $user = User::where(['email' => $invitee->email]);
-                        $leader = $invitationManager->getLeader();
-                        // send email to leader that invitee completed the order
-                        $cartInvitee->mailer()->sendOrderCompletionByInvitee();
-                        $invitationManager->expireInvitation = true;
-                        $invitee_total = 0;
-                        $budget = 0;
-
-                        return view(
-                            'invitation.invitee.order-complete',
-                            compact('leader', 'user', 'budget', 'invitee_total', 'goConfigExist', 'budgetActive')
-                        );
-                    }
                 }
-            } else {
-                return redirect('/')->with(
-                    'notify-failure',
-                    'The invite is no longer valid as you have completed your order.'
+                $itemAvailableValidation = app(CartManager::class)->storeItemValidation(
+                    $cartInvitee->cart,
+                    $inviteeItems
+                );
+
+                if (!$itemAvailableValidation['status']) {
+                    return $this->errorResponse($itemAvailableValidation['msg'], 400);
+                }
+                if ($cartInvitee) {
+                    $cartInvitee->response = CartInvitee::RESPONSE_COMPLETED;
+                    $cartInvitee->save();
+                }
+
+                foreach ($inviteeItems as $item) {
+                    $item->cart->calculateAndUpdate();
+                }
+
+                $invitationManager = app(InvitationManager::class);
+                $invitee = $invitationManager->getInvitee();
+                $user = User::where(['email' => $invitee->email]);
+                $leader = $invitationManager->getLeader();
+                // send email to leader that invitee completed the order
+                $cartInvitee->mailer()->sendOrderCompletionByInvitee();
+                $invitationManager->expireInvitation = true;
+                $invitee_total = 0;
+                $budget = 0;
+
+                return $this->successResponse(
+                    InviteeOrderCompleteResource::make([
+                        'leader' => $leader,
+                        'user' => $user,
+                        'budget' => $budget,
+                        'invitee_total' => $invitee_total,
+                        'go_config_exist' => $goConfigExist,
+                        'budget_active' => $budgetActive,
+                    ]),
+                    'Order complete'
                 );
             }
+
+            return $this->errorResponse('The invite is no longer valid as you have completed your order.', 400);
         }
     }
 
     public function addName()
     {
-        $data['status'] = false;
-        $data['msg'] = 'Something went wrong, please try again ';
-        $data['result'] = [];
-
         if (request()->has('name')) {
             $name = request()->get('name');
             session()->put('invitation.invitee_name', $name);
-            $data['status'] = true;
-            $data['msg'] = 'Success';
+
+            return $this->successResponse(null, 'Success');
         }
 
-        return response()->json($data);
+        return $this->errorResponse('Something went wrong, please try again', 400);
     }
 }

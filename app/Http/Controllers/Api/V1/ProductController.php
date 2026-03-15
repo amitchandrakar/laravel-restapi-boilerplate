@@ -2,11 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\V1;
 
 use App\Alonti\Cart\CartManager;
 use App\Alonti\Invitation\InvitationManager;
 use App\Alonti\ZipManager\ZipManager;
+use App\Http\Resources\Api\V1\ProductBoxLunchDetailResource;
+use App\Http\Resources\Api\V1\ProductDetailResource;
+use App\Http\Resources\Api\V1\ProductIndexResource;
 use App\Models\CartItem;
 use App\Models\Category;
 use App\Models\Dietary;
@@ -51,8 +54,6 @@ class ProductController extends Controller
 
         $categories = Category::getCategories($requestFromInvitee);
 
-        view()->share('menuCategories', $categories);
-
         $stateId = $zipManager->getDeliveryZipcodeStateId();
         $url = UniqueUrl::getUniqueUrlByUrl($name);
 
@@ -88,10 +89,23 @@ class ProductController extends Controller
                     $requestFromInvitee
                 );
 
-                view()->share('subCategories', $compact['category']['subCategories']);
-                view()->share('dietaries', $compact['dietaries']);
-
-                return view('products.index', $compact);
+                return $this->successResponse(
+                    ProductIndexResource::make([
+                        'category' => $compact['category'],
+                        'delivery_area_count' => $compact['deliveryAreaCount'] ?? null,
+                        'delivery_area_chosen' => $compact['deliveryAreaChosen'] ?? null,
+                        'cafe_list' => $compact['cafeList'] ?? null,
+                        'dietary' => $compact['dietary'] ?? null,
+                        'budget' => $compact['budget'] ?? null,
+                        'invitee_total' => $compact['invitee_total'] ?? null,
+                        'request_from_invitee' => $compact['requestFromInvitee'] ?? null,
+                        'go_config_exist' => $compact['goConfigExist'] ?? null,
+                        'budget_active' => $compact['budgetActive'] ?? null,
+                        'dietaries' => $compact['dietaries'],
+                        'url' => $compact['url'] ?? null,
+                    ]),
+                    'Success'
+                );
             }
 
             $category = Category::getCategoryAndProductList($url->entity_id, $stateId, $requestFromInvitee);
@@ -120,19 +134,28 @@ class ProductController extends Controller
                 $compact['category']['subCategories'],
                 $requestFromInvitee
             );
-            view()->share('subCategories', $subCategories);
-            view()->share('dietaries', $dietaries);
 
             if (!$category || ($category->subCategories->count() == 0 && $category->products->count() == 0)) {
-                $catRedirect = $requestFromInvitee ? '/invitation' : '/';
-
-                return redirect($catRedirect)->with(
-                    'notify-failure',
-                    'These products are not available for cafe ' . $cafeName
-                );
+                return $this->errorResponse('These products are not available for cafe ' . $cafeName, 400);
             }
 
-            return view('products.index', $compact);
+            return $this->successResponse(
+                ProductIndexResource::make([
+                    'category' => $category,
+                    'delivery_area_count' => $deliveryAreaCount,
+                    'delivery_area_chosen' => $deliveryAreaChosen,
+                    'cafe_list' => $cafeList,
+                    'dietary' => $dietary,
+                    'budget' => $budget,
+                    'invitee_total' => $invitee_total,
+                    'request_from_invitee' => $requestFromInvitee,
+                    'go_config_exist' => $goConfigExist,
+                    'budget_active' => $budgetActive,
+                    'dietaries' => $dietaries,
+                    'url' => $url,
+                ]),
+                'Success'
+            );
         }
 
         $item = '';
@@ -152,12 +175,10 @@ class ProductController extends Controller
                     $itemAvailability = app(CartManager::class)->itemAvailability($cartInfo, $input);
 
                     if (!$itemAvailability['status']) {
-                        $proRedirect = $requestFromInvitee ? '/invitation/summary' : '/summary';
-
-                        return redirect($proRedirect)->with(
-                            'notify-failure',
+                        return $this->errorResponse(
                             $itemAvailability['msg'] .
-                                ', please delete the unavailable product and choose from the available products and proceed.'
+                                ', please delete the unavailable product and choose from the available products and proceed.',
+                            400
                         );
                     }
                 }
@@ -201,49 +222,47 @@ class ProductController extends Controller
                 $cartItems = CartItem::getBoxLunchItems();
                 $products = $this->getBoxLunchProducts($product->category->id, $stateId);
 
-                return view(
-                    'products.box_lunch_details',
-                    compact(
-                        'product',
-                        'products',
-                        'cartItems',
-                        'item',
-                        'requestFromInvitee',
-                        'deliveryAreaCount',
-                        'deliveryAreaChosen',
-                        'cafeList',
-                        'budget',
-                        'requestFromInvitee',
-                        'otherItemTotalForInvitee',
-                        'editItem',
-                        'invitee_total',
-                        'goConfigExist',
-                        'inviteeName',
-                        'budgetActive',
-                        'url'
-                    )
+                return $this->successResponse(
+                    ProductBoxLunchDetailResource::make([
+                        'product' => $product,
+                        'products' => $products,
+                        'cart_items' => $cartItems,
+                        'item' => $item,
+                        'request_from_invitee' => $requestFromInvitee,
+                        'delivery_area_count' => $deliveryAreaCount,
+                        'delivery_area_chosen' => $deliveryAreaChosen,
+                        'cafe_list' => $cafeList,
+                        'budget' => $budget,
+                        'other_item_total_for_invitee' => $otherItemTotalForInvitee,
+                        'edit_item' => $editItem,
+                        'invitee_total' => $invitee_total,
+                        'go_config_exist' => $goConfigExist,
+                        'invitee_name' => $inviteeName,
+                        'budget_active' => $budgetActive,
+                        'url' => $url,
+                    ]),
+                    'Success'
                 );
             }
 
-            return view(
-                'products.details',
-                compact(
-                    'product',
-                    'item',
-                    'requestFromInvitee',
-                    'deliveryAreaCount',
-                    'deliveryAreaChosen',
-                    'cafeList',
-                    'budget',
-                    'requestFromInvitee',
-                    'otherItemTotalForInvitee',
-                    'editItem',
-                    'invitee_total',
-                    'goConfigExist',
-                    'inviteeName',
-                    'budgetActive',
-                    'url'
-                )
+            return $this->successResponse(
+                ProductDetailResource::make([
+                    'product' => $product,
+                    'item' => $item,
+                    'request_from_invitee' => $requestFromInvitee,
+                    'delivery_area_count' => $deliveryAreaCount,
+                    'delivery_area_chosen' => $deliveryAreaChosen,
+                    'cafe_list' => $cafeList,
+                    'budget' => $budget,
+                    'other_item_total_for_invitee' => $otherItemTotalForInvitee,
+                    'edit_item' => $editItem,
+                    'invitee_total' => $invitee_total,
+                    'go_config_exist' => $goConfigExist,
+                    'invitee_name' => $inviteeName,
+                    'budget_active' => $budgetActive,
+                    'url' => $url,
+                ]),
+                'Success'
             );
         }
     }

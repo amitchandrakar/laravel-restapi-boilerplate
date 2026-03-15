@@ -21,6 +21,24 @@ use Illuminate\Support\Facades\Log;
  * - State-based pricing updates
  * - Delivery fee calculations
  * - Individual vs group order differentiation
+ *
+ * @property int|null $id
+ * @property int $status
+ * @property int|null $order_id
+ * @property int|null $group_order_id
+ * @property string|null $order_name
+ * @property string|null $encrypted_id
+ * @property \App\Models\Order|null $order
+ * @property \Illuminate\Database\Eloquent\Collection<int, \App\Models\CartItem> $items
+ * @property \App\Models\User|null $user
+ * @property \App\Models\Cafe|null $cafe
+ * @property \App\Models\Shipping|null $shipping
+ * @property \App\Models\Billing|null $billing
+ * @property \App\Models\Payment|null $payment
+ * @property \App\Models\Coupon|null $coupon
+ * @property \App\Models\Reward|null $reward
+ * @property \App\Models\AbandonedCart|null $abandonedCart
+ * @property \App\Models\GroupOrderConfiguration|null $groupOrderConfig
  */
 class Cart extends BaseModel
 {

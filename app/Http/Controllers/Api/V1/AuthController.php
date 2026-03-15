@@ -10,6 +10,8 @@ use App\Http\Requests\Api\V1\LoginRequest;
 use App\Http\Requests\Api\V1\RegisterRequest;
 use App\Http\Requests\Api\V1\ResetPasswordRequest;
 use App\Http\Requests\Api\V1\UpdateProfileRequest;
+use App\Http\Resources\Api\V1\AuthLoginResource;
+use App\Http\Resources\Api\V1\TokenResource;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Services\AuthService;
 use App\Traits\ApiResponse;
@@ -30,11 +32,11 @@ class AuthController extends Controller
         $result = $this->authService->register($request->validated());
 
         return $this->createdResponse(
-            [
+            AuthLoginResource::make([
                 'user' => UserResource::make($result['user']),
                 'token' => $result['token'],
                 'token_type' => 'Bearer',
-            ],
+            ]),
             'User registered successfully'
         );
     }
@@ -47,11 +49,11 @@ class AuthController extends Controller
         $result = $this->authService->login($request->only('email', 'password'));
 
         return $this->successResponse(
-            [
+            AuthLoginResource::make([
                 'user' => UserResource::make($result['user']),
                 'token' => $result['token'],
                 'token_type' => 'Bearer',
-            ],
+            ]),
             'Login successful'
         );
     }
@@ -82,10 +84,10 @@ class AuthController extends Controller
         $result = $this->authService->refresh($request->user());
 
         return $this->successResponse(
-            [
+            TokenResource::make([
                 'token' => $result['token'],
                 'token_type' => 'Bearer',
-            ],
+            ]),
             'Token refreshed successfully'
         );
     }

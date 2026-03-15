@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\V1;
 
 use App\Alonti\ZipManager\ZipManager;
+use App\Http\Resources\Api\V1\OrderReceiptResource;
+use App\Http\Resources\Api\V1\OrderUpdatedReceiptResource;
+use App\Http\Resources\Api\V1\RedirectResource;
 use App\Models\Cart;
 use App\Models\Category;
 use App\Models\CustomerReferral;
@@ -13,6 +16,7 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ReferralSalesArea;
 use App\Models\Time;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -34,20 +38,19 @@ class OrderController extends Controller
      * Validates no active order is in edit mode before creating new order.
      *
      * @param  ZipManager  $zipManager  Service for ZIP code and delivery area management
-     * @return \Illuminate\Http\RedirectResponse
      */
-    public function startNewOrder(ZipManager $zipManager)
+    public function startNewOrder(ZipManager $zipManager): JsonResponse
     {
         // Check if user has an active cart with existing order in edit mode
         $user = auth()->user()->fresh();
         if ($user->active_cart_id) {
             $userActiveCart = Cart::find($user->active_cart_id);
             if ($userActiveCart && $userActiveCart->order_id) {
-                return redirect('/profile/orders')->with(
-                    'notify-failure',
+                return $this->errorResponse(
                     'Already this order #' .
                         $userActiveCart->order_id .
-                        ' is in edit mode. Please do update that and proceed.'
+                        ' is in edit mode. Please do update that and proceed.',
+                    409
                 );
             }
         }
@@ -70,7 +73,7 @@ class OrderController extends Controller
         $user->active_cart_id = $cart->id;
         $user->save();
 
-        return redirect('/');
+        return $this->successResponse(RedirectResource::make(['redirect' => '/']), 'Success');
     }
 
     /**
@@ -78,12 +81,10 @@ class OrderController extends Controller
      *
      * Redirects to the group order creation flow where users can set up
      * group order parameters and invite participants.
-     *
-     * @return \Illuminate\Http\RedirectResponse
      */
-    public function startGroupOrder()
+    public function startGroupOrder(): JsonResponse
     {
-        return redirect('/group-order/start');
+        return $this->successResponse(RedirectResource::make(['redirect' => '/group-order/start']), 'Success');
     }
 
     /**
@@ -93,9 +94,8 @@ class OrderController extends Controller
      * and delivery area before allowing reorder.
      *
      * @param  ZipManager  $zipManager  Service for ZIP code and delivery area validation
-     * @return \Illuminate\Http\RedirectResponse
      */
-    public function reorder(ZipManager $zipManager)
+    public function reorder(ZipManager $zipManager): JsonResponse
     {
         // Clear any existing individual cart before reordering
         $individualCart = Cart::individual()->mine()->pending()->first();
@@ -110,27 +110,27 @@ class OrderController extends Controller
         // Check if all items from the original order are still available
         $allowReOrder = $cart->cartItemsAndOptionsCurrentStatus($order->cart->items);
         if (!$allowReOrder) {
-            return redirect('/profile/orders')->with(
-                'notify-failure',
-                'Some of your menu items are unavailable. Please contact your kitchen (' . $order->cafe->phone . ').'
+            return $this->errorResponse(
+                'Some of your menu items are unavailable. Please contact your kitchen (' . $order->cafe->phone . ').',
+                400
             );
         }
         // Validate delivery area for reorder
         $user = Auth::user();
         $zipRecord = $zipManager->getAlontiDeliveryArea();
         if (!$zipRecord) {
-            return redirect('profile/orders')->with(
-                'notify-failure',
-                'Your postal code lies outside our normal delivery area'
-            );
+            return $this->errorResponse('Your postal code lies outside our normal delivery area', 400);
         }
         // Create the reorder and redirect to cart summary
         $reorder = $order->reorder($zipRecord);
         if (!$reorder) {
-            return redirect('profile/orders')->with('notify-failure', 'Your order does not have any items');
+            return $this->errorResponse('Your order does not have any items', 400);
         }
 
-        return redirect('/summary')->with('notify-success', 'Your order has been re-ordered successfully.');
+        return $this->successResponse(
+            RedirectResource::make(['redirect' => '/summary']),
+            'Your order has been re-ordered successfully.'
+        );
     }
 
     /**
@@ -140,9 +140,8 @@ class OrderController extends Controller
      * campaign tracking if promotional codes were used.
      *
      * @param  int  $id  Order ID
-     * @return \Illuminate\Http\RedirectResponse
      */
-    public function checkReceipt($id)
+    public function checkReceipt($id): JsonResponse
     {
         // Get order and create secure receipt URL with campaign tracking
         $order = Order::find($id);
@@ -153,7 +152,10 @@ class OrderController extends Controller
             $campaignTracking = '/utm_source=promo_code&utm_campaign=' . urlencode($order->cart->promotionType->name);
         }
 
-        return redirect('order/receipt/' . $hashId . $campaignTracking);
+        return $this->successResponse(
+            RedirectResource::make(['redirect' => 'order/receipt/' . $hashId . $campaignTracking]),
+            'Success'
+        );
     }
 
     /**
@@ -163,9 +165,8 @@ class OrderController extends Controller
      * for promotional code analytics.
      *
      * @param  int  $id  Order ID
-     * @return \Illuminate\Http\RedirectResponse
      */
-    public function updateReceipt($id)
+    public function updateReceipt($id): JsonResponse
     {
         // Get order and create secure updated receipt URL
         $order = Order::find($id);
@@ -176,7 +177,10 @@ class OrderController extends Controller
             $campaignTracking = '/utm_source=promo_code&utm_campaign=' . urlencode($order->cart->promotionType->name);
         }
 
-        return redirect('order/updated-receipt/' . $hashId . $campaignTracking);
+        return $this->successResponse(
+            RedirectResource::make(['redirect' => 'order/updated-receipt/' . $hashId . $campaignTracking]),
+            'Success'
+        );
     }
 
     /**
@@ -187,9 +191,8 @@ class OrderController extends Controller
      *
      * @param  string  $hashid  Encrypted order ID for security
      * @param  string|null  $campaignTrack  Campaign tracking parameters
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
      */
-    public function receipt($hashid, $campaignTrack = null)
+    public function receipt($hashid, $campaignTrack = null): JsonResponse
     {
         // Find order by encrypted ID for security
         $order = Order::findByEncryptedId($hashid);
@@ -272,27 +275,27 @@ class OrderController extends Controller
                 ->where('offmenus.order_id', $order->id)
                 ->first();
 
-            return view(
-                'receipt',
-                compact(
-                    'id',
-                    'user',
-                    'splOccassionCategory',
-                    'tingaChickenPowerBowl',
-                    'soupCategory',
-                    'order',
-                    'items',
-                    'payments',
-                    'deliveryTimes',
-                    'deliveryAreaCount',
-                    'deliveryAreaChosen',
-                    'cafeList',
-                    'servingOption'
-                )
+            return $this->successResponse(
+                OrderReceiptResource::make([
+                    'id' => $id,
+                    'user' => $user,
+                    'spl_occassion_category' => $splOccassionCategory,
+                    'tinga_chicken_power_bowl' => $tingaChickenPowerBowl,
+                    'soup_category' => $soupCategory,
+                    'order' => $order,
+                    'items' => $items,
+                    'payments' => $payments,
+                    'delivery_times' => $deliveryTimes,
+                    'delivery_area_count' => $deliveryAreaCount,
+                    'delivery_area_chosen' => $deliveryAreaChosen,
+                    'cafe_list' => $cafeList,
+                    'serving_option' => $servingOption,
+                ]),
+                'Success'
             );
-        } else {
-            return redirect('/')->with('notify-failure', 'Not found your order.');
         }
+
+        return $this->notFoundResponse('Not found your order.');
     }
 
     /**
@@ -303,9 +306,8 @@ class OrderController extends Controller
      *
      * @param  string  $hashid  Encrypted order ID for security
      * @param  string|null  $campaignTrack  Campaign tracking parameters
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
      */
-    public function updatedReceipt($hashid, $campaignTrack = null)
+    public function updatedReceipt($hashid, $campaignTrack = null): JsonResponse
     {
         // Find order by encrypted ID and process if found
         $order = Order::findByEncryptedId($hashid);
@@ -339,12 +341,19 @@ class OrderController extends Controller
                 }
             }
 
-            return view(
-                'updated-receipt',
-                compact('id', 'user', 'splOccassionCategory', 'tingaChickenPowerBowl', 'soupCategory', 'allowRefer')
+            return $this->successResponse(
+                OrderUpdatedReceiptResource::make([
+                    'id' => $id,
+                    'user' => $user,
+                    'spl_occassion_category' => $splOccassionCategory,
+                    'tinga_chicken_power_bowl' => $tingaChickenPowerBowl,
+                    'soup_category' => $soupCategory,
+                    'allow_refer' => $allowRefer,
+                ]),
+                'Success'
             );
-        } else {
-            return redirect('/')->with('notify-failure', 'Not found your order.');
         }
+
+        return $this->notFoundResponse('Not found your order.');
     }
 }

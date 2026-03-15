@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+/**
+ * @property \App\Models\Time|null $time
+ * @property int|bool|null $paper_products
+ */
 class Shipping extends BaseModel
 {
     protected $table = 'oj_shipping_address';

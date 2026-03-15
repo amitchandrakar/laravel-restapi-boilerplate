@@ -2,12 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\V1;
 
 use App\Alonti\Cart\CartManager;
 use App\Alonti\Invitation\InvitationManager;
 use App\Alonti\View\OrderGroupSelect;
 use App\Alonti\ZipManager\ZipManager;
+use App\Http\Resources\Api\V1\GroupInviteCreatedResource;
+use App\Http\Resources\Api\V1\GroupOrderLoginResource;
+use App\Http\Resources\Api\V1\InviteToOrderResource;
+use App\Http\Resources\Api\V1\RedirectResource;
+use App\Http\Resources\Api\V1\RemoveInviteeResource;
 use App\Models\AbandonedCart;
 use App\Models\Cart;
 use App\Models\CartInvitee;
@@ -33,9 +38,9 @@ class GroupOrderController extends Controller
         if (Auth::user()) {
             $cartInfo = app(CartManager::class)->getActiveCart();
             if ($cartInfo && $cartInfo->order) {
-                return redirect('/summary')->with(
-                    'notify-failure',
-                    'Some of your order is edit mode. Please complete and start your group order'
+                return $this->errorResponse(
+                    'Some of your order is edit mode. Please complete and start your group order',
+                    409
                 );
             }
             $individualCart = Cart::individual()->mine()->pending()->first();
@@ -44,22 +49,31 @@ class GroupOrderController extends Controller
                 // $individualCart->discardCart();
             }
 
-            return redirect('/group-order/invite-to-order');
-        } else {
-            return redirect('/group-order/login');
+            return $this->successResponse(
+                RedirectResource::make(['redirect' => '/group-order/invite-to-order']),
+                'Success'
+            );
         }
+
+        return $this->successResponse(RedirectResource::make(['redirect' => '/group-order/login']), 'Success');
     }
 
     public function login()
     {
         $socialLoginSettings = DB::select('select * from settings')[0];
 
-        return view('group-order.login', ['isGroupOrder' => true, 'socialLoginSettings' => $socialLoginSettings]);
+        return $this->successResponse(
+            GroupOrderLoginResource::make([
+                'is_group_order' => true,
+                'social_login_settings' => $socialLoginSettings,
+            ]),
+            'Success'
+        );
     }
 
     public function invitePeople()
     {
-        return redirect('/group-order/start');
+        return $this->successResponse(RedirectResource::make(['redirect' => '/group-order/start']), 'Success');
     }
 
     public function createInviteList()
@@ -88,10 +102,10 @@ class GroupOrderController extends Controller
         } else {
             $alreadyExists = auth()->user()->group_orders()->where('name', $groupDetails['groupName'])->exists();
             if ($alreadyExists) {
-                return [
-                    'success' => false,
-                    'message' => "There is already a group named '{$groupDetails['groupName']}'. Please provide a different name.",
-                ];
+                return $this->errorResponse(
+                    "There is already a group named '{$groupDetails['groupName']}'. Please provide a different name.",
+                    409
+                );
             }
             $groupOrder = GroupOrder::create([
                 'user_id' => Auth::user()->id,
@@ -126,18 +140,18 @@ class GroupOrderController extends Controller
             $inviteesArray['selectedEmails'] = $invitees;
             $this->sendInvitations($zipManager, $inviteesArray);
         }
-        Session::flash('notify-success', "Group '{$groupOrder->name}' has been updated successfully." . $additionalMsg);
 
-        return ['success' => true, 'gid' => $groupOrder->id];
+        return $this->successResponse(
+            GroupInviteCreatedResource::make(['gid' => $groupOrder->id]),
+            "Group '{$groupOrder->name}' has been updated successfully." . $additionalMsg
+        );
     }
 
     public function sendInvitations(ZipManager $zipManager, $invitees = [])
     {
         // Validate user authentication
         if (!Auth::user()) {
-            Session::flash('notify-success', 'Your session logged out.');
-
-            return ['success' => true, 'redirectTo' => '/login'];
+            return $this->successResponse(RedirectResource::make(['redirect' => '/login']), 'Your session logged out.');
         }
 
         $cartRecord = [];
@@ -192,12 +206,11 @@ class GroupOrderController extends Controller
         $group->save();
         $cart->mailer()->sendInvitationToInvitees($invitationIds);
         $cart->mailer()->sendGroupOrderNotificationToCsm();
-        Session::flash(
-            'notify-success',
+
+        return $this->successResponse(
+            RedirectResource::make(['redirect' => '/']),
             'Invitation has been sent to invitees. Please check your cart to get the updates.'
         );
-
-        return ['success' => true, 'redirectTo' => '/'];
     }
 
     /**
@@ -208,13 +221,13 @@ class GroupOrderController extends Controller
      * new group orders and editing existing configurations.
      *
      * @param  ZipManager  $zipManager  Service for delivery area management
-     * @return \Illuminate\View\View
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\View\View
      */
     public function inviteToOrder(ZipManager $zipManager)
     {
         // Ensure user is authenticated
         if (!Auth::user()) {
-            return redirect('/login');
+            return $this->unauthorizedResponse('Authentication required');
         }
         // Initialize configuration variables from request parameters
         $group_order_id = request('gid');
@@ -253,7 +266,6 @@ class GroupOrderController extends Controller
             $cartInviteeIds = CartInvitee::where([
                 'cart_id' => $cartId,
             ])->pluck('invitee_id');
-            view()->share(compact('cartId', 'configId', 'group_order_id', 'cartInviteeIds'));
         } else {
             // Handle new group order creation - clear active cart if it's a group order
             $cart = Auth::user()->active_cart_id ? Cart::find(Auth::user()->active_cart_id) : null;
@@ -263,20 +275,6 @@ class GroupOrderController extends Controller
                 $user->save();
             }
         }
-        // Share configuration data with view
-        view()->share(
-            compact(
-                'configData',
-                'shippingData',
-                'choosenDeliveryDate',
-                'choosenResponseDate',
-                'updateGroupOrderConfig',
-                'inviteeDefaultMeal',
-                'optionSelection',
-                'cartInfo',
-                'edit'
-            )
-        );
 
         // Get user's group orders and prepare for display
         $group_orders = Auth::user()->group_orders;
@@ -329,24 +327,24 @@ class GroupOrderController extends Controller
                 ? true
                 : false;
 
-        return view(
-            'group-order.invite-to-order',
-            compact(
-                'group_order_id',
-                'group_orders',
-                'deliveryTimes',
-                'inviteeResponseTimes',
-                'inviteeProducts',
-                'inviteeBudget',
-                'minProductPrice',
-                'maxDefaultBudget',
-                'maxProductPrice',
-                'configData',
-                'shippingData',
-                'states',
-                'previousGroup',
-                'allowWeekendOrders'
-            )
+        return $this->successResponse(
+            InviteToOrderResource::make([
+                'group_order_id' => $group_order_id,
+                'group_orders' => $group_orders,
+                'delivery_times' => $deliveryTimes,
+                'invitee_response_times' => $inviteeResponseTimes,
+                'invitee_products' => $inviteeProducts,
+                'invitee_budget' => $inviteeBudget,
+                'min_product_price' => $minProductPrice,
+                'max_default_budget' => $maxDefaultBudget,
+                'max_product_price' => $maxProductPrice,
+                'config_data' => $configData,
+                'shipping_data' => $shippingData,
+                'states' => $states,
+                'previous_group' => $previousGroup,
+                'allow_weekend_orders' => $allowWeekendOrders,
+            ]),
+            'Success'
         );
     }
 
@@ -375,7 +373,7 @@ class GroupOrderController extends Controller
      *
      * @param  ZipManager  $zipManager  Service for delivery area management
      * @param  array  $invitees  Array of invitee data and configuration
-     * @return array JSON response with success/error status
+     * @return \Illuminate\Http\JsonResponse
      */
     public function sendInvitation(ZipManager $zipManager, $invitees = [])
     {
@@ -389,10 +387,10 @@ class GroupOrderController extends Controller
 
         // Validate weekend delivery is allowed for this market
         if ($zipCode->cafe->market->allow_weekend_orders == 0 && $isWeekend) {
-            return [
-                'success' => false,
-                'message' => 'Currently, we are not allowing weekend orders for the specified zip code. Please choose a different delivery date that is not on the weekend.',
-            ];
+            return $this->errorResponse(
+                'Currently, we are not allowing weekend orders for the specified zip code. Please choose a different delivery date that is not on the weekend.',
+                400
+            );
         }
 
         // Validate night order time restrictions
@@ -401,16 +399,14 @@ class GroupOrderController extends Controller
 
         // Check if night delivery is allowed for this market
         if ($zipCode->cafe->market->allow_night_orders == 0 && in_array($deliveryTimeSelected, $nightOrderTimeSlots)) {
-            return [
-                'success' => false,
-                'message' => 'Currently, we are not available to delivery after 4:30 PM for the specified zip code. Please select a delivery time before 4:30 PM.',
-            ];
+            return $this->errorResponse(
+                'Currently, we are not available to delivery after 4:30 PM for the specified zip code. Please select a delivery time before 4:30 PM.',
+                400
+            );
         }
 
         if (!Auth::user()) {
-            Session::flash('notify-success', 'Your session logged out.');
-
-            return ['success' => true, 'redirectTo' => '/login'];
+            return $this->successResponse(RedirectResource::make(['redirect' => '/login']), 'Your session logged out.');
         }
         $cartRecord = [];
         if (!$invitees) {
@@ -460,12 +456,11 @@ class GroupOrderController extends Controller
         $group->save();
         $cart->mailer()->sendInvitationToInvitees($invitationIds);
         $cart->mailer()->sendGroupOrderNotificationToCsm();
-        Session::flash(
-            'notify-success',
+
+        return $this->successResponse(
+            RedirectResource::make(['redirect' => '/']),
             'Invitation has been sent to invitees. Please check your cart to get the updates.'
         );
-
-        return ['success' => true, 'redirectTo' => '/'];
     }
 
     /**
@@ -519,7 +514,7 @@ class GroupOrderController extends Controller
         $group->name = $req['text'];
         $group->save();
 
-        return ['success' => true, 'message' => 'Group name has been updated'];
+        return $this->successResponse(null, 'Group name has been updated');
     }
 
     public function deleteGroupName()
@@ -543,21 +538,16 @@ class GroupOrderController extends Controller
             }
             if (!$pendingCart) {
                 if ($group->delete()) {
-                    Session::flash('notify-success', 'Group name has been deleted successfully.');
-
-                    return ['success' => true, 'message' => 'Group name has been deleted'];
-                } else {
-                    return ['success' => false, 'message' => 'Group name has not been deleted'];
+                    return $this->successResponse(null, 'Group name has been deleted');
                 }
-            } else {
-                return [
-                    'success' => false,
-                    'message' => 'You can delete the group if you dont have any pending cart or order',
-                ];
+
+                return $this->errorResponse('Group name has not been deleted', 400);
             }
-        } else {
-            return ['success' => false, 'message' => 'Group name has not been deleted'];
+
+            return $this->errorResponse('You can delete the group if you dont have any pending cart or order', 409);
         }
+
+        return $this->errorResponse('Group name has not been deleted', 400);
     }
 
     public function removeInvitee()
@@ -580,17 +570,16 @@ class GroupOrderController extends Controller
                     'cart_id' => $editCartId,
                 ])->pluck('invitee_id');
 
-                return [
-                    'success' => true,
-                    'message' => 'Invitee has been removed from this group order',
-                    'cartInviteeIds' => $cartInviteeIds,
-                ];
-            } else {
-                return ['success' => false, 'message' => 'This invitee is not associated with this order.'];
+                return $this->successResponse(
+                    RemoveInviteeResource::make(['cart_invitee_ids' => $cartInviteeIds]),
+                    'Invitee has been removed from this group order'
+                );
             }
-        } else {
-            return ['success' => false, 'message' => 'Empty params'];
+
+            return $this->errorResponse('This invitee is not associated with this order.', 400);
         }
+
+        return $this->errorResponse('Empty params', 400);
     }
 
     /**
@@ -600,16 +589,16 @@ class GroupOrderController extends Controller
      * status, updates response, and sends notification to group leader.
      *
      * @param  string  $hashid  Encrypted cart invitee ID
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
     public function decline($hashid)
     {
         // Find and validate invitation status
         $cartInvitee = CartInvitee::findByEncryptedId($hashid);
         if ($cartInvitee && $cartInvitee->isOrdered()) {
-            return redirect('/')->with(
-                'notify-failure',
-                'The order has been placed, for further information please contact your group leader.'
+            return $this->errorResponse(
+                'The order has been placed, for further information please contact your group leader.',
+                400
             );
         }
 
@@ -622,12 +611,12 @@ class GroupOrderController extends Controller
             // Notify group leader of decline
             $cartInvitee->mailer()->sendDeclineNotification();
 
-            return redirect('/')->with('notify-success', 'You have declined the invitation.');
+            return $this->successResponse(null, 'You have declined the invitation.');
         }
 
-        return redirect('/')->with(
-            'notify-failure',
-            'Invitation has expired. Please contact the group leader for further assistance.'
+        return $this->errorResponse(
+            'Invitation has expired. Please contact the group leader for further assistance.',
+            400
         );
     }
 
@@ -639,16 +628,16 @@ class GroupOrderController extends Controller
      *
      * @param  InvitationManager  $invitationManager  Service for invitation session management
      * @param  string  $hashid  Encrypted cart invitee ID
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
     public function accept(InvitationManager $invitationManager, $hashid)
     {
         // Find and validate invitation
         $cartInvitee = CartInvitee::findByEncryptedId($hashid);
         if ($cartInvitee && $cartInvitee->isOrdered()) {
-            return redirect('/')->with(
-                'notify-failure',
-                'The order has been placed, for further information please contact your group leader.'
+            return $this->errorResponse(
+                'The order has been placed, for further information please contact your group leader.',
+                400
             );
         }
 
@@ -663,9 +652,9 @@ class GroupOrderController extends Controller
                 $timeZone = abs($cartInvitee->cart->cafe->market->timezone_difference);
                 $timeZoneHours = strtotime('-' . $timeZone . ' hours');
                 if ($timeZoneHours >= $responseTime) {
-                    return redirect('/')->with(
-                        'notify-failure',
-                        'You missed the order deadline. Please contact your group leader if you need lunch.'
+                    return $this->errorResponse(
+                        'You missed the order deadline. Please contact your group leader if you need lunch.',
+                        400
                     );
                 }
             }
@@ -678,16 +667,16 @@ class GroupOrderController extends Controller
                 // Create invitation session for ordering
                 $invitationManager->createSessionFor($cartInvitee);
 
-                return redirect('/invitation')->with('notify-success', 'You can start adding items to cart now.');
+                return $this->successResponse(
+                    RedirectResource::make(['redirect' => '/invitation']),
+                    'You can start adding items to cart now.'
+                );
             }
 
-            return redirect('/')->with(
-                'notify-failure',
-                'The invite is no longer valid as you have completed your order.'
-            );
-        } else {
-            return redirect('/')->with('notify-failure', 'The invite is no longer valid.');
+            return $this->errorResponse('The invite is no longer valid as you have completed your order.', 400);
         }
+
+        return $this->errorResponse('The invite is no longer valid.', 400);
     }
 
     public function remindInvite(Request $request)
@@ -735,7 +724,10 @@ class GroupOrderController extends Controller
             ->user()
             ->update(['active_cart_id' => null]);
 
-        return redirect('order/start-group-order')->with(['notify-success' => 'Start a new group order']);
+        return $this->successResponse(
+            RedirectResource::make(['redirect' => 'order/start-group-order']),
+            'Start a new group order'
+        );
     }
 
     public function activateGroupOrder()
@@ -747,18 +739,18 @@ class GroupOrderController extends Controller
                 $individualCart->discardCart();
             }
             $activeCart = $user->activeGroupOrder()->first();
-            $user->update(['active_cart_id' => $activeCart->id]);
+            if ($activeCart !== null) {
+                $user->update(['active_cart_id' => $activeCart->id]);
+            }
         }
 
-        return redirect('summary');
+        return $this->successResponse(RedirectResource::make(['redirect' => 'summary']), 'Success');
     }
 
     public function updateGroupOrderInvitation()
     {
         if (!Auth::user()) {
-            Session::flash('notify-success', 'Your session logged out.');
-
-            return ['success' => true, 'redirectTo' => '/login'];
+            return $this->successResponse(RedirectResource::make(['redirect' => '/login']), 'Your session logged out.');
         }
         $input = request()->all();
         $groupOrderConfig = GroupOrderConfiguration::where('id', '=', $input['configId'])
@@ -811,12 +803,11 @@ class GroupOrderController extends Controller
         $updatedCart = Cart::find($groupOrderConfig->cart->id);
         $updatedCart->mailer()->sendInvitationToInvitees($invitationIds, true);
         $updatedCart->mailer()->sendGroupOrderNotificationToCsm('update');
-        Session::flash(
-            'notify-success',
+
+        return $this->successResponse(
+            RedirectResource::make(['redirect' => '/']),
             'Updated invitation has been sent. Please check your cart to get the updates.'
         );
-
-        return ['success' => true, 'redirectTo' => '/'];
     }
 
     /**
@@ -825,7 +816,7 @@ class GroupOrderController extends Controller
     public function removeUnupdatedInvitee()
     {
         if (!request()->has('invitee')) {
-            return ['success' => false, 'message' => 'Empty params'];
+            return $this->errorResponse('Empty params', 400);
         }
 
         $invitee = request('invitee');
@@ -835,9 +826,9 @@ class GroupOrderController extends Controller
             $invitee->deleted_at = Carbon::now();
             $invitee->save();
 
-            return ['success' => true, 'message' => 'Invitee has been removed from this group order'];
+            return $this->successResponse(null, 'Invitee has been removed from this group order');
         }
 
-        return ['success' => false, 'message' => 'This invitee is not associated with this order.'];
+        return $this->errorResponse('This invitee is not associated with this order.', 400);
     }
 }
