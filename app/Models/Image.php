@@ -15,14 +15,16 @@ class Image extends BaseModel
 
     public static function getBasePath($value)
     {
-        $folders = [
-            config('custom.s3.url'),
-            config('custom.s3.folder'),
-            strtolower($value->entity_type),
+        $baseUrl = config('custom.s3.url');
+        $folder = config('custom.s3.folder');
+        $parts = array_filter([
+            rtrim((string) $baseUrl, '/'),
+            $folder ?: null,
+            strtolower((string) $value->entity_type),
             $value->entity_id,
-        ];
+        ], fn ($v) => $v !== null && $v !== '');
 
-        return implode('/', $folders);
+        return implode('/', $parts);
     }
 
     public function category()

@@ -6,13 +6,11 @@ namespace App\Mailer;
 
 use App\Mail\CsmWelcomeEmail;
 use App\Mail\CustomerReferralEmailToCsm;
-use App\Mail\PasswordResetEmail;
 use App\Mail\TaxExemptEmail;
 use App\Mail\UserAmazonGiftCardEmail;
 use App\Mail\UserReferralEmail;
 use App\Mail\UserSubscribeEmail;
 use App\Mail\UserUnsubscribeEmail;
-use App\Mail\WelcomeEmail;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -24,16 +22,6 @@ class UserMailer
     public function __construct(User $user)
     {
         $this->user = $user;
-    }
-
-    public function sendForgotPasswordEmail()
-    {
-        Mail::to($this->user->email)->send(new PasswordResetEmail($this->user));
-    }
-
-    public function sendWelcomeEmail()
-    {
-        Mail::to($this->user->email)->send(new WelcomeEmail($this->user));
     }
 
     public function sendCsmWelcomeEmail()

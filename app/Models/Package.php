@@ -17,4 +17,12 @@ class Package extends BaseModel
     {
         return $this->hasMany(StatePrice::class, 'entity_id')->where(['entity_type' => 'OjPackageSizes']);
     }
+
+    /**
+     * Alias for state_price() so eager loading with key 'statePrice' works.
+     */
+    public function statePrice()
+    {
+        return $this->state_price();
+    }
 }

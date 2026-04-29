@@ -56,6 +56,11 @@ class Category extends BaseModel
         return $category->get();
     }
 
+    public function image()
+    {
+        return $this->hasOne(Image::class, 'entity_id')->where(['entity_type' => self::ENTITY_TYPE]);
+    }
+
     /**
      * Get category with products and subcategories for state
      *
@@ -83,6 +88,7 @@ class Category extends BaseModel
                                                 'statePrice' => function ($query) use ($stateId) {
                                                     return $query->where('state_id', $stateId);
                                                 },
+                                                'image',
                                             ])
                                             ->active();
                                     },
@@ -108,6 +114,7 @@ class Category extends BaseModel
                                     'statePrice' => function ($query) use ($stateId) {
                                         return $query->where('state_id', $stateId);
                                     },
+                                    'image',
                                 ])
                                 ->active();
                         },
@@ -218,9 +225,47 @@ class Category extends BaseModel
         // ->with(['variant.option.selections']);
     }
 
-    public function image()
+    /**
+     * Get this category's id and all descendant category ids (full subtree).
+     *
+     * @return \Illuminate\Support\Collection<int, int>
+     */
+    private function getCategoryIdsIncludingDescendants(): \Illuminate\Support\Collection
     {
-        return $this->hasOne('App\Models\Image', 'entity_id')->where(['entity_type' => self::ENTITY_TYPE]);
+        $ids = collect([$this->id]);
+        $current = $ids;
+
+        do {
+            $next = Category::whereIn('parent_id', $current)
+                ->active()
+                ->availableInStore()
+                ->pluck('id');
+            if ($next->isEmpty()) {
+                break;
+            }
+            $ids = $ids->merge($next);
+            $current = $next;
+        } while (true);
+
+        return $ids;
+    }
+
+    /**
+     * Count products in this category and all descendant categories (full subtree).
+     */
+    public function getProductCountIncludingDescendants(): int
+    {
+        $categoryIds = $this->getCategoryIdsIncludingDescendants();
+
+        return Product::whereIn('category_id', $categoryIds)
+            ->active()
+            ->availableInStore()
+            ->count();
+    }
+
+    public function getImageUrlAttribute()
+    {
+        return $this->image?->filename ?? null;
     }
 
     public function uniqueurl()

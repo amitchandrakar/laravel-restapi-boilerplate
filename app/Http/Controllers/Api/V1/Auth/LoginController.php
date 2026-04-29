@@ -229,7 +229,14 @@ class LoginController extends Controller
         $user = User::where('email', $email)->first();
 
         if ($user) {
-            $user->mailer()->sendForgotPasswordEmail();
+            $token = \Illuminate\Support\Str::random(48);
+            $user->update([
+                'forgot_password_link' => $token,
+                'forgot_password_link_valid' => 1,
+            ]);
+
+            $hash = $token . '_' . $user->id;
+            \App\Events\ForgotPasswordRequestedEvent::dispatch($user, $hash);
 
             return $this->successResponse(
                 ForgotPasswordResource::make(['account' => true]),
@@ -323,72 +330,110 @@ class LoginController extends Controller
     public function createRegistration(CakeHasher $hasher)
     {
         $registrationData = request()->all();
-        $hashed_password = $hasher->make($registrationData['password']);
-        DB::beginTransaction();
-        $userRecord = User::where(['email' => $registrationData['email'], 'group_id' => 5])->first();
-        if ($userRecord && !$userRecord->type) {
-            return $this->errorResponse('The given email already exists. Please select another one.', 409);
-        }
-        $storedFile = null;
-        if (request()->has('file') && request('file')) {
-            $storedFile = Storage::disk(config('custom.tax_exempt_document_disk'))->put(
-                'tax-exempt-documents',
-                request('file')
-            );
+        $isCorporateSignup = filter_var($registrationData['isCorporateSignup'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $isTaxExempt = filter_var($registrationData['isTaxExempt'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+        $validator = \Illuminate\Support\Facades\Validator::make($registrationData, [
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+            'firstName' => [$isCorporateSignup ? 'nullable' : 'required'],
+            'lastname' => [$isCorporateSignup ? 'nullable' : 'required'],
+            'phone' => [$isCorporateSignup ? 'nullable' : 'required'],
+            'company' => ['required'],
+            'industrySelected' => ['required'],
+            'address' => ['required'],
+            'address_two' => ['required'],
+            'city' => ['required'],
+            'zipcode' => ['required'],
+            'stateSelected' => [$isCorporateSignup ? 'nullable' : 'required'],
+        ]);
+        if ($validator->fails()) {
+            return $this->errorResponse($validator->errors()->first(), 422);
         }
 
-        $prospect = $this->userManager->isEmailExistInProspect($registrationData['email']);
-        $findClosestCafe = $this->zipManager->findClosestZipcodeHavingCafe($registrationData['zipcode']);
-        $cafeIdExist = null;
-        if ($findClosestCafe && $findClosestCafe->count() > 0) {
-            $findClosestCafe = $findClosestCafe[0];
-            $cafeIdExist = $findClosestCafe->cafe->id;
-        } elseif (session()->has('UserDeliveryInformation.alontiDeliveryArea')) {
-            $findClosestCafe = session()->get('UserDeliveryInformation.alontiDeliveryArea');
-            $cafeIdExist = $findClosestCafe->cafe->id;
-        } else {
-            $findClosestCafe = null;
-        }
-        $companyUser = $this->userManager->getCompanyUser($registrationData['company'], $cafeIdExist);
-        // $companyUser = ($findClosestCafe) ? $this->userManager->getCompanyUser($registrationData['company'],$findClosestCafe->cafe->id):null;
-        $state = State::where('id', $registrationData['stateSelected'])->first();
-        $data = [
-            'fname' => $registrationData['firstName'],
-            'lname' => $registrationData['lastname'],
-            'password' => $hashed_password,
-            'email' => $registrationData['email'],
-            'secondary_email' => $registrationData['secondaryemail'],
-            'phone' => $registrationData['phone'],
-            'secondary_phone' => isset($registrationData['secondaryphone'])
-                ? $registrationData['secondaryphone']
-                : null,
-            'company' => $registrationData['company'],
-            'industry_id' => $registrationData['industrySelected'],
-            'hsacct' => 0,
-            'group_id' => 5,
-            'txexempt' => 0,
-            'txexempt_file' => $storedFile,
-            'physical_addr' => $registrationData['address'],
-            'physical_addr2' => $registrationData['address_two'],
-            'physical_state' => $state ? $state->name : '',
-            'physical_city' => $registrationData['city'],
-            'physical_zip' => $registrationData['zipcode'],
-            'addr' => $registrationData['address'],
-            'city' => $registrationData['city'],
-            'state' => $state ? $state->name : '',
-            'addr2' => $registrationData['address_two'],
-            'zip' => $registrationData['zipcode'],
-            'profile_image' => '',
-            'unsubscribe_promotion' => $registrationData['subscribe'] ? '' : 'UNS',
-            'sms_opt_in' => filter_var($registrationData['sms_opt_in'] ?? false, FILTER_VALIDATE_BOOLEAN),
-            'cafe_id' => $cafeIdExist,
-            'company_user_id' => !$companyUser ? null : $companyUser->id,
-            'user_source' => $prospect ? 'mx_group' : 'alonti',
-            'user_source_id' => $prospect ? $prospect->id : null,
-            'customermenu_id' => 1,
-            'type' => 0,
-            'payment_id' => 4,
-        ];
+        $hashed_password = $hasher->make($registrationData['password']);
+
+        try {
+            $userRecord = User::where(['email' => $registrationData['email'], 'group_id' => 5])->first();
+            if ($userRecord && !$userRecord->type) {
+                return $this->errorResponse('The given email already exists. Please select another one.', 409);
+            }
+
+            $storedFile = null;
+            $taxExemptForm = request()->file('taxExemptForm') ?: request()->file('file');
+            if ($isTaxExempt && !$taxExemptForm) {
+                return $this->errorResponse('Tax exempt form is required when isTaxExempt is true.', 422);
+            }
+            if ($taxExemptForm) {
+                $validator = \Illuminate\Support\Facades\Validator::make(
+                    ['taxExemptForm' => $taxExemptForm],
+                    ['taxExemptForm' => ['file', 'mimetypes:application/pdf']]
+                );
+                if ($validator->fails()) {
+                    return $this->errorResponse('taxExemptForm must be a PDF.', 422);
+                }
+                $storedFile = Storage::disk(config('custom.tax_exempt_document_disk'))->putFile(
+                    'tax-exempt-documents',
+                    $taxExemptForm
+                );
+            }
+
+            DB::beginTransaction();
+
+            $prospect = $this->userManager->isEmailExistInProspect($registrationData['email']);
+            $findClosestCafe = $this->zipManager->findClosestZipcodeHavingCafe($registrationData['zipcode']);
+            $cafeIdExist = null;
+            if ($findClosestCafe && $findClosestCafe->count() > 0) {
+                $findClosestCafe = $findClosestCafe[0];
+                $cafeIdExist = $findClosestCafe->cafe->id;
+            } elseif (session()->has('UserDeliveryInformation.alontiDeliveryArea')) {
+                $findClosestCafe = session()->get('UserDeliveryInformation.alontiDeliveryArea');
+                $cafeIdExist = $findClosestCafe->cafe->id;
+            } else {
+                $findClosestCafe = null;
+            }
+            $companyUser = $this->userManager->getCompanyUser($registrationData['company'], $cafeIdExist);
+            // $companyUser = ($findClosestCafe) ? $this->userManager->getCompanyUser($registrationData['company'],$findClosestCafe->cafe->id):null;
+            $state = isset($registrationData['stateSelected']) && $registrationData['stateSelected']
+                ? State::where('id', $registrationData['stateSelected'])->first()
+                : null;
+            $data = [
+                'fname' => $registrationData['firstName'] ?? '',
+                'lname' => $registrationData['lastname'] ?? '',
+                'password' => $hashed_password,
+                'email' => $registrationData['email'],
+                'secondary_email' => $registrationData['secondaryemail'] ?? null,
+                'phone' => $registrationData['phone'] ?? '',
+                'secondary_phone' => isset($registrationData['secondaryphone'])
+                    ? $registrationData['secondaryphone']
+                    : null,
+                'company' => $registrationData['company'],
+                'industry_id' => $registrationData['industrySelected'],
+                'hsacct' => 0,
+                'group_id' => 5,
+                'txexempt' => $isTaxExempt ? 1 : 0,
+                'txexempt_file' => $storedFile,
+                'physical_addr' => $registrationData['address'],
+                'physical_addr2' => $registrationData['address_two'],
+                'physical_state' => $state ? $state->name : '',
+                'physical_city' => $registrationData['city'],
+                'physical_zip' => $registrationData['zipcode'],
+                'addr' => $registrationData['address'],
+                'city' => $registrationData['city'],
+                'state' => $state ? $state->name : '',
+                'addr2' => $registrationData['address_two'],
+                'zip' => $registrationData['zipcode'],
+                'profile_image' => '',
+                'unsubscribe_promotion' => ($registrationData['subscribe'] ?? false) ? '' : 'UNS',
+                'sms_opt_in' => filter_var($registrationData['sms_opt_in'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'cafe_id' => $cafeIdExist,
+                'company_user_id' => !$companyUser ? null : $companyUser->id,
+                'user_source' => $prospect ? 'mx_group' : 'alonti',
+                'user_source_id' => $prospect ? $prospect->id : null,
+                'customermenu_id' => 1,
+                'type' => 0,
+                'payment_id' => 4,
+            ];
 
         /* Lat Long update */
         $address = $data['addr'] . ' ' . $data['city'] . ' ' . $data['state'] . ' ' . $data['zip'];
@@ -404,10 +449,8 @@ class LoginController extends Controller
 
         if ($userRecord && $userRecord->type) {
             $registeredUser = $userRecord->update($data);
-            $userRecord->mailer()->sendWelcomeEmail();
         } else {
             $registeredUser = User::create($data);
-            $registeredUser->mailer()->sendWelcomeEmail();
         }
         if ($registeredUser) {
             $referralRecord = CustomerReferral::where([
@@ -442,16 +485,28 @@ class LoginController extends Controller
                 $registeredUser->mailer()->sendTaxExemptionEmail();
             }
         }
-        DB::commit();
+            DB::commit();
 
-        $uri = session('url.backto') ? str_replace(url('/'), '', session('url.backto')) : '/';
-        $uri = $uri ?: '/';
-        $url = url('/login') . '?backto=' . urlencode($uri);
+            $uri = session('url.backto') ? str_replace(url('/'), '', session('url.backto')) : '/';
+            $uri = $uri ?: '/';
+            $url = url('/login') . '?backto=' . urlencode($uri);
 
-        return $this->successResponse(
-            RedirectResource::make(['redirect' => $url]),
-            'User has been registered successfully.'
-        );
+            return $this->successResponse(
+                RedirectResource::make(['redirect' => $url]),
+                'User has been registered successfully.'
+            );
+        } catch (\Throwable $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+
+            \Illuminate\Support\Facades\Log::error('Registration failed', [
+                'message' => $e->getMessage(),
+                'exception' => get_class($e),
+            ]);
+
+            return $this->serverErrorResponse('Registration failed');
+        }
     }
 
     public function adminLogin($encryptedUserId = null)

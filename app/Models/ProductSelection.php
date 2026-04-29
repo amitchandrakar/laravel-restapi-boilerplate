@@ -18,7 +18,12 @@ class ProductSelection extends BaseModel
 
     public function option()
     {
-        return $this->hasAndBelongsToMany(ProductOption::class, 'product_option_id');
+        return $this->belongsToMany(
+            ProductOption::class,
+            'oj_product_option_selections',
+            'product_selection_id',
+            'product_option_id'
+        )->whereNull('oj_product_option_selections.deleted_at');
     }
 
     public function state_price()

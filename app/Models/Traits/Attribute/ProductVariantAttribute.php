@@ -42,6 +42,8 @@ trait ProductVariantAttribute
 
     public function getPackageOptionAttribute()
     {
-        return substr($this->name, 0, strrpos($this->name, ':'));
+        $pos = strrpos($this->name ?? '', ':');
+
+        return $pos !== false ? substr($this->name, 0, $pos) : ($this->name ?? '');
     }
 }

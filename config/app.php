@@ -55,6 +55,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Frontend reset password URL
+    |--------------------------------------------------------------------------
+    |
+    | Used for building reset-password links in emails sent by notifications.
+    |
+    */
+
+    'frontend_reset_password_url' => env('FRONTEND_RESET_PASSWORD_URL', ''),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

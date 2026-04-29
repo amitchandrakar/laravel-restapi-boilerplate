@@ -15,6 +15,10 @@ class Product extends BaseModel
 
     protected $table = 'oj_products';
 
+    protected $casts = [
+        'is_featured' => 'boolean',
+    ];
+
     public static function getProductsByCategororyId($categoryId, $stateId)
     {
         $products = Product::with([
@@ -203,8 +207,12 @@ class Product extends BaseModel
             }
         });
 
-        $this->package = $this->packages[0];
-        $this->price = $this->package->statePrice->price;
+        $firstPackage = $this->packages->first();
+        $this->package = $firstPackage;
+        $statePrice = $firstPackage && $firstPackage->statePrice
+            ? $firstPackage->statePrice->first()
+            : null;
+        $this->price = $statePrice ? (float) $statePrice->price : 0;
         $this->getParentCategoryId($this->category);
     }
 
@@ -271,11 +279,9 @@ class Product extends BaseModel
                 $package->package_name = $package->package_name;
                 $package->package_option = $package->package_option;
                 $package->tooltip = $package->tooltip;
-                $package->statePrice = $package->statePrice->getPrice(
-                    $package->id,
-                    ProductVariant::ENTITY_TYPE,
-                    $stateId
-                );
+                $package->statePrice = $package->statePrice
+                    ? $package->statePrice->getPrice($package->id, ProductVariant::ENTITY_TYPE, $stateId)
+                    : StatePrice::getPrice($package->id, ProductVariant::ENTITY_TYPE, $stateId);
 
                 if ($package->options->isNotEmpty()) {
                     $package->options->map(function ($option) {
@@ -287,7 +293,7 @@ class Product extends BaseModel
                             $sel->statePrice = $sel->statePrice;
                             $sel->dietary = $sel->dietary;
                             $sel->selection_name = $sel->selection_name;
-                            $sel->price = $sel->statePrice->price;
+                            $sel->price = $sel->statePrice ? (float) $sel->statePrice->price : 0;
                         });
                         $option->error_message = $option->error_message;
                     });
@@ -313,7 +319,10 @@ class Product extends BaseModel
             $product->formatProductImage();
             $product->formatProductDietary();
             $product->formatProductVariant($stateId);
-            $product->price = $product->packages->count() == 1 ? $product->packages[0]->statePrice->price : null;
+            $firstPackage = $product->packages->first();
+            $product->price = $product->packages->count() == 1 && $firstPackage && $firstPackage->statePrice
+                ? $firstPackage->statePrice->price
+                : null;
             $product->uniqueurl = $product->uniqueurl;
 
             return $product;

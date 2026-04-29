@@ -28,7 +28,9 @@ class ProductOption extends BaseModel
             'oj_product_option_selections',
             'product_option_id',
             'product_selection_id'
-        )->whereNull('oj_product_option_selections.deleted_at');
+        )->whereNull('oj_product_option_selections.deleted_at')
+            ->orderBy('oj_product_selections.display_order')
+            ->orderBy('oj_product_selections.id');
     }
 
     public function variant()

@@ -6,65 +6,100 @@ use App\Http\Controllers\Api\V1\Api\CartController as ApiCartController;
 use App\Http\Controllers\Api\V1\Api\EzCaterController;
 use App\Http\Controllers\Api\V1\Api\UserController as ApiUserController;
 use App\Http\Controllers\Api\V1\Api\ZipcodeController;
+use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\Auth\ApiAuthController;
 use App\Http\Controllers\Api\V1\Auth\LoginController;
 use App\Http\Controllers\Api\V1\Auth\UserController as AuthUserController;
 use App\Http\Controllers\Api\V1\CartController;
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\CategoryPageController;
 use App\Http\Controllers\Api\V1\EmailCampaignController;
+use App\Http\Controllers\Api\V1\GlobalContextController;
 use App\Http\Controllers\Api\V1\GroupOrderController;
+use App\Http\Controllers\Api\V1\HomepageController;
 use App\Http\Controllers\Api\V1\Invitation\InviteeController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\ProductController;
+use App\Http\Controllers\Api\V1\SearchController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+// Homepage APIs (no auth)
+Route::get('/global-context', [GlobalContextController::class, 'globalContext']);
+Route::get('/homepage', [HomepageController::class, 'index']);
+
+// Categories & Products (no auth)
+Route::get('/categories', [CategoryPageController::class, 'index']);
+Route::get('/categories/{slug}', [CategoryPageController::class, 'show']);
+Route::get('/products/{uniqueUrl}', [CategoryPageController::class, 'showProduct']);
+Route::get('/search', [SearchController::class, 'index']);
+
+// JSON-first Auth APIs (no auth)
+Route::prefix('auth')->group(function () {
+    Route::post('/login', [ApiAuthController::class, 'login']);
+    Route::post('/register', [ApiAuthController::class, 'register']);
+    Route::post('/forgot-password', [ApiAuthController::class, 'forgotPassword']);
+    Route::post('/reset-password', [ApiAuthController::class, 'resetPassword']);
+});
+
+// Protected profile and notifications APIs (Bearer token required; optional user_id/userId must match auth user)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/profile', [AuthController::class, 'me']);
+    Route::patch('/profile', [AuthController::class, 'updateProfile']);
+
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+    Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+});
 
 Route::get('/home', [CategoryController::class, 'index']); // Home page route
 Route::post('/login/verify', [LoginController::class, 'verifyLogin']);
 
-Route::post('unsubscribe', [EmailCampaignController::class, 'unsubscribe']);
-Route::post('subscribe', [EmailCampaignController::class, 'subscribe']);
+// Route::post('unsubscribe', [EmailCampaignController::class, 'unsubscribe']);
+// Route::post('subscribe', [EmailCampaignController::class, 'subscribe']);
 
-Route::group(['namespace' => 'Auth', 'middleware' => ['auth.delivery', 'no-cache']], function () {
-    Route::get('/login', [LoginController::class, 'login'])->name('login');
-    Route::get('/guest-checkout', [LoginController::class, 'guestCheckout']);
-    Route::get('/register', [LoginController::class, 'register']);
-    Route::post('/register', [LoginController::class, 'createRegistration']);
-    Route::get('/logout', [LoginController::class, 'logout']);
-    Route::post('forgot-password', [LoginController::class, 'forgotPassword']);
-    Route::get('reset-password/{hash}', [LoginController::class, 'resetPassword']);
-    Route::post('reset-password', [LoginController::class, 'saveResetPassword']);
-    Route::get('/login-as-admin/{hashId}', [LoginController::class, 'adminLogin']);
+// Route::group(['namespace' => 'Auth', 'middleware' => ['auth.delivery', 'no-cache']], function () {
+//     Route::get('/login', [LoginController::class, 'login'])->name('login');
+//     Route::get('/guest-checkout', [LoginController::class, 'guestCheckout']);
+//     Route::get('/register', [LoginController::class, 'register']);
+//     Route::post('/register', [LoginController::class, 'createRegistration']);
+//     Route::get('/logout', [LoginController::class, 'logout']);
+//     Route::post('forgot-password', [LoginController::class, 'forgotPassword']);
+//     Route::get('reset-password/{hash}', [LoginController::class, 'resetPassword']);
+//     Route::post('reset-password', [LoginController::class, 'saveResetPassword']);
+//     Route::get('/login-as-admin/{hashId}', [LoginController::class, 'adminLogin']);
 
-    Route::group(['middleware' => ['auth', 'auth.delivery', 'no-cache']], function () {
-        Route::get('/refer-a-friend', [AuthUserController::class, 'customerReferralRewards']);
-        Route::group(['prefix' => '/profile'], function () {
-            Route::get('/', [AuthUserController::class, 'profile']);
-            Route::get('/orders', [AuthUserController::class, 'orders']);
-            Route::get('/view-order/{hashid}', [AuthUserController::class, 'viewOrder']);
-            Route::get('/edit-order/{hashid}', [AuthUserController::class, 'editOrder']);
-            Route::get('/edit-cart/{hashid}', [AuthUserController::class, 'editGroupCart']);
-            Route::get('/delete-cart/{hashid}', [AuthUserController::class, 'deleteCart']);
-            Route::get('/cancel-order/{hashid}', [AuthUserController::class, 'cancelOrder']);
-            Route::get('invoice/download/{hashid}', [AuthUserController::class, 'invoiceDownload']);
-            Route::get('/rewards', [AuthUserController::class, 'customerRewards']);
-            Route::get('/cash-out', [AuthUserController::class, 'cashOut']);
-            Route::get('/referred-customers', [AuthUserController::class, 'referredCustomerStatus']);
-            Route::get('/edit-group-cart-from-admin/{id}', [AuthUserController::class, 'editGroupCartFromAdmin']);
-        });
-        Route::group(['prefix' => '/user'], function () {
-            Route::post('/update-phone', [AuthUserController::class, 'updatePhone']);
-            Route::post('/update-address', [AuthUserController::class, 'updateAddress']);
-            Route::post('/update-cmpy-phone', [AuthUserController::class, 'updateCmpyPhone']);
-            Route::post('/update-secondary-phone', [AuthUserController::class, 'updateSecondaryPhone']);
-            Route::post('/update-password', [AuthUserController::class, 'updatePassword']);
-            Route::get('/attach-house-account', [AuthUserController::class, 'attachHouseAccount']);
-            Route::post('/apply-house-account', [AuthUserController::class, 'applyHouseAccount']);
-            Route::post('/update-last-name', [AuthUserController::class, 'updateLastName']);
-            Route::post('/update-first-name', [AuthUserController::class, 'updateFirstName']);
-            Route::post('/update-sms-opt-in', [AuthUserController::class, 'updateSmsOptIn']);
-        });
-    });
-});
+//     Route::group(['middleware' => ['auth', 'auth.delivery', 'no-cache']], function () {
+//         Route::get('/refer-a-friend', [AuthUserController::class, 'customerReferralRewards']);
+//         Route::group(['prefix' => '/profile'], function () {
+//             Route::get('/', [AuthUserController::class, 'profile']);
+//             Route::get('/orders', [AuthUserController::class, 'orders']);
+//             Route::get('/view-order/{hashid}', [AuthUserController::class, 'viewOrder']);
+//             Route::get('/edit-order/{hashid}', [AuthUserController::class, 'editOrder']);
+//             Route::get('/edit-cart/{hashid}', [AuthUserController::class, 'editGroupCart']);
+//             Route::get('/delete-cart/{hashid}', [AuthUserController::class, 'deleteCart']);
+//             Route::get('/cancel-order/{hashid}', [AuthUserController::class, 'cancelOrder']);
+//             Route::get('invoice/download/{hashid}', [AuthUserController::class, 'invoiceDownload']);
+//             Route::get('/rewards', [AuthUserController::class, 'customerRewards']);
+//             Route::get('/cash-out', [AuthUserController::class, 'cashOut']);
+//             Route::get('/referred-customers', [AuthUserController::class, 'referredCustomerStatus']);
+//             Route::get('/edit-group-cart-from-admin/{id}', [AuthUserController::class, 'editGroupCartFromAdmin']);
+//         });
+//         Route::group(['prefix' => '/user'], function () {
+//             Route::post('/update-phone', [AuthUserController::class, 'updatePhone']);
+//             Route::post('/update-address', [AuthUserController::class, 'updateAddress']);
+//             Route::post('/update-cmpy-phone', [AuthUserController::class, 'updateCmpyPhone']);
+//             Route::post('/update-secondary-phone', [AuthUserController::class, 'updateSecondaryPhone']);
+//             Route::post('/update-password', [AuthUserController::class, 'updatePassword']);
+//             Route::get('/attach-house-account', [AuthUserController::class, 'attachHouseAccount']);
+//             Route::post('/apply-house-account', [AuthUserController::class, 'applyHouseAccount']);
+//             Route::post('/update-last-name', [AuthUserController::class, 'updateLastName']);
+//             Route::post('/update-first-name', [AuthUserController::class, 'updateFirstName']);
+//             Route::post('/update-sms-opt-in', [AuthUserController::class, 'updateSmsOptIn']);
+//         });
+//     });
+// });
 
 Route::group(['prefix' => '/order', 'middleware' => ['auth', 'auth.delivery', 'no-cache']], function () {
     Route::get('/start-new-order', [OrderController::class, 'startNewOrder']);
