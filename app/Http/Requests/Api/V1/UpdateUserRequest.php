@@ -33,7 +33,7 @@ class UpdateUserRequest extends ApiFormRequest
                 'string',
                 'email',
                 'max:255',
-                Rule::unique('users')->ignore($this->route('user') ?? $this->user), // Handle route param or explicit user
+                Rule::unique('alonti_users')->ignore($this->route('user') ?? $this->user), // Handle route param or explicit user
             ],
             'password' => ['sometimes', 'nullable', 'confirmed', Password::defaults()],
         ];

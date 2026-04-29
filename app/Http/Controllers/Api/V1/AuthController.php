@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Events\ForgotPasswordRequestedEvent;
 use App\Http\Requests\Api\V1\ChangePasswordRequest;
 use App\Http\Requests\Api\V1\ForgotPasswordRequest;
 use App\Http\Requests\Api\V1\LoginRequest;
@@ -13,10 +14,13 @@ use App\Http\Requests\Api\V1\UpdateProfileRequest;
 use App\Http\Resources\Api\V1\AuthLoginResource;
 use App\Http\Resources\Api\V1\TokenResource;
 use App\Http\Resources\Api\V1\UserResource;
+use App\Models\User;
 use App\Services\AuthService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -194,8 +198,16 @@ class AuthController extends Controller
      */
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
-        // TODO: Implement password reset email logic via Service if needed
-        // For now leaving as is or moving to service if logic expands
+        /** @var User|null $user */
+        $user = User::where('email', $request->input('email'))->first();
+        if ($user) {
+            $token = Str::random(48);
+            $user->update([
+                'forgot_password_link' => $token,
+                'forgot_password_link_valid' => 1,
+            ]);
+            ForgotPasswordRequestedEvent::dispatch($user, $token);
+        }
 
         return $this->successResponse(null, 'Password reset link sent to your email');
     }
@@ -205,7 +217,18 @@ class AuthController extends Controller
      */
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
-        // TODO: Implement password reset logic via Service if needed
+        /** @var User|null $user */
+        $user = User::where('email', $request->input('email'))->first();
+        if (!$user || !$user->forgot_password_link_valid || $user->forgot_password_link !== $request->input('token')) {
+            return $this->errorResponse('Invalid or expired reset token', 400);
+        }
+
+        $user->update([
+            'password' => Hash::make((string) $request->input('password')),
+            'forgot_password_link' => '',
+            'forgot_password_link_valid' => 0,
+        ]);
+        $user->tokens()->delete();
 
         return $this->successResponse(null, 'Password reset successfully');
     }

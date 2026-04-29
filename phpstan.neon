@@ -6,12 +6,12 @@ parameters:
     paths:
         - app
 
-    # Exclude Auth controllers that use Laravel auth traits (removed in L11) until traits are added
+    # Optional legacy excludes to avoid failures if files are absent.
     excludePaths:
-        - app/Http/Controllers/Api/V1/Auth/ForgotPasswordController.php
-        - app/Http/Controllers/Api/V1/Auth/LoginController.php
-        - app/Http/Controllers/Api/V1/Auth/RegisterController.php
-        - app/Http/Controllers/Api/V1/Auth/ResetPasswordController.php
+        - app/Http/Controllers/Api/V1/Auth/ForgotPasswordController.php (?)
+        - app/Http/Controllers/Api/V1/Auth/LoginController.php (?)
+        - app/Http/Controllers/Api/V1/Auth/RegisterController.php (?)
+        - app/Http/Controllers/Api/V1/Auth/ResetPasswordController.php (?)
 
     # Level (0-9) - start with 5 for production
     level: 5

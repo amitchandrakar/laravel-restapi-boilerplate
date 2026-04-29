@@ -15,4 +15,3 @@ class ForgotPasswordRequestedListener implements ShouldQueue
         $event->user->notify(new ForgotPasswordNotification($event->resetHash));
     }
 }
-

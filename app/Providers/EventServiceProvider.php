@@ -18,12 +18,7 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
-        UserCreatedEvent::class => [
-            UserCreatedListener::class,
-        ],
-        ForgotPasswordRequestedEvent::class => [
-            ForgotPasswordRequestedListener::class,
-        ],
+        UserCreatedEvent::class => [UserCreatedListener::class],
+        ForgotPasswordRequestedEvent::class => [ForgotPasswordRequestedListener::class],
     ];
 }
-

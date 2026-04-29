@@ -28,11 +28,9 @@ class WelcomeEmailNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage())
-            ->subject('Welcome to Alonti')
-            ->view('emails.welcome', [
-                'user' => $notifiable,
-            ]);
+        return (new MailMessage())->subject('Welcome to Alonti')->view('emails.welcome', [
+            'user' => $notifiable,
+        ]);
     }
 
     /**
