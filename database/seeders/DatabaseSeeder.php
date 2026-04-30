@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             RbacSeeder::class,
             PackageCatalogSeeder::class,
             DemoAuthUsersSeeder::class,
+            DemoTeamUsersSeeder::class,
             DemoSubscriptionPaymentSeeder::class,
             DemoUsersSeeder::class,
             DemoUserComplianceSeeder::class,

@@ -91,11 +91,13 @@ class DemoAuthUsersSeeder extends Seeder
 
     private function assignRoleIfExists(User $user, string $roleName, string $guard): void
     {
-        if (!Role::query()->where('name', $roleName)->where('guard_name', $guard)->exists()) {
+        $role = Role::query()->where('name', $roleName)->where('guard_name', $guard)->first();
+        if (!$role instanceof Role) {
             return;
         }
 
         $user->syncRoles([$roleName]);
+        $user->forceFill(['role_id' => $role->id])->save();
     }
 
     private function upsertSubscriptionForUser(int $userId, string $packageCode): void

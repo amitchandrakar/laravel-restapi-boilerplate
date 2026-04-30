@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Observers;
 
 use App\Events\UserCreatedEvent;
+use App\Events\UserLifecycleEvent;
 use App\Models\User;
 use Illuminate\Support\Str;
 
@@ -26,6 +27,7 @@ class UserObserver
     public function created(User $user): void
     {
         UserCreatedEvent::dispatch($user);
+        UserLifecycleEvent::dispatch($user, 'created');
     }
 
     /**
@@ -33,7 +35,7 @@ class UserObserver
      */
     public function updated(User $user): void
     {
-        //
+        UserLifecycleEvent::dispatch($user, 'updated');
     }
 
     /**
@@ -41,7 +43,7 @@ class UserObserver
      */
     public function deleted(User $user): void
     {
-        //
+        UserLifecycleEvent::dispatch($user, 'deleted');
     }
 
     /**

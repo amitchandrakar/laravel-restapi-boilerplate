@@ -7,6 +7,8 @@ namespace App\Models;
 use Illuminate\Auth\Authenticatable as UserAuthenticatable;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
@@ -42,6 +44,25 @@ class User extends BaseModel implements Authenticatable, AuthorizableContract
             'deleted_at' => 'datetime',
             'date_of_birth' => 'date',
         ];
+    }
+
+    public function scopeCandidates($query)
+    {
+        return $query->whereHas('primaryRole', static function (Builder $builder): void {
+            $builder->where('name', 'candidate');
+        });
+    }
+
+    public function scopeTeamUsers($query)
+    {
+        return $query->whereHas('primaryRole', static function (Builder $builder): void {
+            $builder->where('name', '!=', 'candidate');
+        });
+    }
+
+    public function primaryRole(): BelongsTo
+    {
+        return $this->belongsTo(Role::class, 'role_id');
     }
 
     /**

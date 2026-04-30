@@ -524,6 +524,8 @@ class DemoUsersSeeder extends Seeder
         ];
 
         $now = now();
+        $guard = (string) config('auth.defaults.guard', 'web');
+        $candidateRoleId = (int) Role::query()->where('name', 'candidate')->where('guard_name', $guard)->value('id');
 
         foreach ($profiles as $index => $row) {
             $email = $row['user']['email'];
@@ -534,11 +536,11 @@ class DemoUsersSeeder extends Seeder
             $user = User::create(
                 array_merge($row['user'], [
                     'password' => self::DEMO_PASSWORD,
+                    'role_id' => $candidateRoleId > 0 ? $candidateRoleId : null,
                 ])
             );
 
-            $guard = (string) config('auth.defaults.guard', 'web');
-            if (Role::query()->where('name', 'candidate')->where('guard_name', $guard)->exists()) {
+            if ($candidateRoleId > 0) {
                 $user->assignRole('candidate');
             }
 
