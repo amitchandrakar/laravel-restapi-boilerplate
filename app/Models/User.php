@@ -47,8 +47,6 @@ class User extends BaseModel implements Authenticatable
      */
     protected function hidden(): array
     {
-        return [
-            'password',
-        ];
+        return ['password'];
     }
 }

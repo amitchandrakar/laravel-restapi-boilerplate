@@ -41,7 +41,10 @@ return new class extends Migration {
                 $table->uuid('uuid')->unique();
                 $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
                 $table->foreignId('package_id')->constrained('packages')->restrictOnDelete();
-                $table->string('subscription_status', 32)->default('pending')->comment('active|expired|cancelled|pending');
+                $table
+                    ->string('subscription_status', 32)
+                    ->default('pending')
+                    ->comment('active|expired|cancelled|pending');
                 $table->timestamp('started_at')->nullable();
                 $table->timestamp('ends_at')->nullable();
                 $table->boolean('auto_renew')->default(false);
@@ -86,7 +89,10 @@ return new class extends Migration {
                 $table->string('gateway_reference_id', 255)->nullable();
                 $table->decimal('amount', 14, 2);
                 $table->string('currency', 8)->default('INR');
-                $table->string('payment_status', 32)->default('pending')->comment('pending|success|failed|refunded|cancelled');
+                $table
+                    ->string('payment_status', 32)
+                    ->default('pending')
+                    ->comment('pending|success|failed|refunded|cancelled');
                 $table->string('payment_method', 32)->nullable()->comment('upi|card|netbanking|wallet|cash|manual');
                 $table->timestamp('paid_at')->nullable();
                 $table->text('failed_reason')->nullable();

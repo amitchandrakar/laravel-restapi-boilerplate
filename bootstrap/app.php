@@ -3,11 +3,11 @@
 use App\Http\Middleware\AttachRequestId;
 use App\Http\Middleware\EnsureSanctumToken;
 use App\Http\Middleware\ForceJsonResponse;
-use App\Http\Middleware\PermissionMiddleware;
-use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Spatie\Permission\Middleware\PermissionMiddleware;
+use Spatie\Permission\Middleware\RoleMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(

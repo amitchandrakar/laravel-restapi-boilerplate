@@ -23,7 +23,10 @@ return new class extends Migration {
                 $table->boolean('is_profile_photo')->default(false);
                 $table->unsignedSmallInteger('sort_order')->default(0);
                 $table->boolean('is_active')->default(true);
-                $table->unsignedBigInteger('uploaded_by')->nullable()->comment('users.id when uploaded by staff or another user.');
+                $table
+                    ->unsignedBigInteger('uploaded_by')
+                    ->nullable()
+                    ->comment('users.id when uploaded by staff or another user.');
                 $table->timestamps();
                 $table->softDeletes();
 
@@ -40,7 +43,9 @@ return new class extends Migration {
                 $table->foreignId('degree_id')->nullable()->constrained('degrees')->nullOnDelete();
                 $table->string('field_of_study', 255)->nullable();
                 $table->string('institution_name', 255)->nullable();
-                $table->string('education_type', 32)->comment('school|diploma|graduation|post_graduation|doctorate|other');
+                $table
+                    ->string('education_type', 32)
+                    ->comment('school|diploma|graduation|post_graduation|doctorate|other');
                 $table->unsignedSmallInteger('start_year')->nullable();
                 $table->unsignedSmallInteger('end_year')->nullable();
                 $table->string('grade_or_percentage', 64)->nullable();

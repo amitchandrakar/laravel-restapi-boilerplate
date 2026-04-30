@@ -21,7 +21,10 @@ return new class extends Migration {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->unsignedBigInteger('profile_id')->nullable()->comment('Optional link to extended profile record when introduced.');
+            $table
+                ->unsignedBigInteger('profile_id')
+                ->nullable()
+                ->comment('Optional link to extended profile record when introduced.');
 
             $table->string('first_name', 128);
             $table->string('middle_name', 128)->nullable();
@@ -59,9 +62,15 @@ return new class extends Migration {
             $table->string('hometown_district', 128)->nullable();
             $table->string('hometown_village', 128)->nullable();
 
-            $table->string('occupation', 255)->nullable()->comment('Free-text occupation; see occupations master for structured data.');
+            $table
+                ->string('occupation', 255)
+                ->nullable()
+                ->comment('Free-text occupation; see occupations master for structured data.');
             $table->string('employer', 255)->nullable();
-            $table->decimal('income', 14, 2)->nullable()->comment('Annual or monthly income depending on product rules.');
+            $table
+                ->decimal('income', 14, 2)
+                ->nullable()
+                ->comment('Annual or monthly income depending on product rules.');
 
             $table->string('father_name', 255)->nullable();
             $table->string('father_occupation', 255)->nullable();
@@ -97,10 +106,16 @@ return new class extends Migration {
             $table->string('preferred_education', 255)->nullable();
             $table->string('preferred_community', 255)->nullable();
 
-            $table->string('status', 32)->default('active')->comment('Account lifecycle: active, suspended, pending_verification, etc.');
+            $table
+                ->string('status', 32)
+                ->default('active')
+                ->comment('Account lifecycle: active, suspended, pending_verification, etc.');
             $table->unsignedBigInteger('created_by')->nullable()->comment('users.id of creator when applicable.');
             $table->unsignedBigInteger('updated_by')->nullable()->comment('users.id of last updater when applicable.');
-            $table->unsignedBigInteger('deleted_by')->nullable()->comment('users.id of soft-delete actor when applicable.');
+            $table
+                ->unsignedBigInteger('deleted_by')
+                ->nullable()
+                ->comment('users.id of soft-delete actor when applicable.');
 
             $table->timestamps();
             $table->softDeletes();

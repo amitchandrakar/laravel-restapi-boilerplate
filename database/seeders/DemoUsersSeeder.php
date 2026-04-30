@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +27,7 @@ class DemoUsersSeeder extends Seeder
         $langEnId = (int) DB::table('languages')->where('code', 'en')->value('id');
         $langHiId = (int) DB::table('languages')->where('code', 'hi')->value('id');
 
-        $degreeId = static fn (string $name): int => (int) DB::table('degrees')->where('name', $name)->value('id');
+        $degreeId = static fn(string $name): int => (int) DB::table('degrees')->where('name', $name)->value('id');
 
         $profiles = [
             [
@@ -43,7 +44,7 @@ class DemoUsersSeeder extends Seeder
                     'hometown_city' => 'Pune',
                     'occupation' => 'Software Engineer',
                     'employer' => 'TechNova Pvt Ltd',
-                    'income' => 1850000.00,
+                    'income' => 1850000.0,
                     'height' => '5ft 11in',
                     'diet' => 'vegetarian',
                     'smoking' => 'never',
@@ -55,10 +56,29 @@ class DemoUsersSeeder extends Seeder
                     'status' => 'active',
                 ],
                 'education' => [
-                    ['degree' => 'Bachelor of Engineering', 'field' => 'Computer Science', 'institution' => 'IIT Bombay', 'education_type' => 'graduation', 'start_year' => 2013, 'end_year' => 2017, 'grade_or_percentage' => '8.2 CGPA', 'is_highest' => true],
+                    [
+                        'degree' => 'Bachelor of Engineering',
+                        'field' => 'Computer Science',
+                        'institution' => 'IIT Bombay',
+                        'education_type' => 'graduation',
+                        'start_year' => 2013,
+                        'end_year' => 2017,
+                        'grade_or_percentage' => '8.2 CGPA',
+                        'is_highest' => true,
+                    ],
                 ],
                 'siblings' => [
-                    ['name' => 'Priya Mehta', 'gender' => 'female', 'relation_type' => 'sister', 'marital_status' => 'married', 'occupation' => 'Interior designer', 'education' => 'B.Des', 'age' => 32, 'is_elder' => true, 'sort_order' => 0],
+                    [
+                        'name' => 'Priya Mehta',
+                        'gender' => 'female',
+                        'relation_type' => 'sister',
+                        'marital_status' => 'married',
+                        'occupation' => 'Interior designer',
+                        'education' => 'B.Des',
+                        'age' => 32,
+                        'is_elder' => true,
+                        'sort_order' => 0,
+                    ],
                 ],
                 'partner' => [
                     'preferred_gender' => 'female',
@@ -71,7 +91,7 @@ class DemoUsersSeeder extends Seeder
                     'preferred_drinking' => 'socially',
                     'preferred_education' => 'Graduate or higher',
                     'preferred_occupation' => 'Any professional',
-                    'preferred_income_min' => 800000.00,
+                    'preferred_income_min' => 800000.0,
                     'preferred_city_id' => $cityMumbaiId,
                     'preferred_community' => 'Open to all',
                     'preferred_other_criteria' => 'Family-oriented, enjoys travel.',
@@ -91,7 +111,7 @@ class DemoUsersSeeder extends Seeder
                     'current_country' => 'India',
                     'occupation' => 'Physician',
                     'employer' => 'City General Hospital',
-                    'income' => 2200000.00,
+                    'income' => 2200000.0,
                     'height' => '5ft 4in',
                     'diet' => 'vegetarian',
                     'smoking' => 'never',
@@ -102,8 +122,24 @@ class DemoUsersSeeder extends Seeder
                     'status' => 'active',
                 ],
                 'education' => [
-                    ['degree' => 'MBBS', 'field' => 'General Medicine', 'institution' => 'BJ Medical College', 'education_type' => 'graduation', 'start_year' => 2015, 'end_year' => 2020, 'is_highest' => false],
-                    ['degree' => 'Master of Science', 'field' => 'Public Health', 'institution' => 'TISS Mumbai', 'education_type' => 'post_graduation', 'start_year' => 2021, 'end_year' => 2023, 'is_highest' => true],
+                    [
+                        'degree' => 'MBBS',
+                        'field' => 'General Medicine',
+                        'institution' => 'BJ Medical College',
+                        'education_type' => 'graduation',
+                        'start_year' => 2015,
+                        'end_year' => 2020,
+                        'is_highest' => false,
+                    ],
+                    [
+                        'degree' => 'Master of Science',
+                        'field' => 'Public Health',
+                        'institution' => 'TISS Mumbai',
+                        'education_type' => 'post_graduation',
+                        'start_year' => 2021,
+                        'end_year' => 2023,
+                        'is_highest' => true,
+                    ],
                 ],
                 'siblings' => [],
                 'partner' => [
@@ -131,7 +167,7 @@ class DemoUsersSeeder extends Seeder
                     'current_country' => 'India',
                     'occupation' => 'Chartered Accountant',
                     'employer' => 'Kulkarni & Associates',
-                    'income' => 2400000.00,
+                    'income' => 2400000.0,
                     'height' => '5ft 9in',
                     'diet' => 'non_vegetarian',
                     'smoking' => 'never',
@@ -140,11 +176,36 @@ class DemoUsersSeeder extends Seeder
                     'status' => 'active',
                 ],
                 'education' => [
-                    ['degree' => 'Bachelor of Engineering', 'field' => 'Mechanical', 'institution' => 'COEP Pune', 'education_type' => 'graduation', 'start_year' => 2011, 'end_year' => 2015, 'is_highest' => false],
-                    ['degree' => 'MBA', 'field' => 'Finance', 'institution' => 'IIM Ahmedabad', 'education_type' => 'post_graduation', 'start_year' => 2016, 'end_year' => 2018, 'is_highest' => true],
+                    [
+                        'degree' => 'Bachelor of Engineering',
+                        'field' => 'Mechanical',
+                        'institution' => 'COEP Pune',
+                        'education_type' => 'graduation',
+                        'start_year' => 2011,
+                        'end_year' => 2015,
+                        'is_highest' => false,
+                    ],
+                    [
+                        'degree' => 'MBA',
+                        'field' => 'Finance',
+                        'institution' => 'IIM Ahmedabad',
+                        'education_type' => 'post_graduation',
+                        'start_year' => 2016,
+                        'end_year' => 2018,
+                        'is_highest' => true,
+                    ],
                 ],
                 'siblings' => [
-                    ['name' => 'Neha Kulkarni', 'gender' => 'female', 'relation_type' => 'sister', 'marital_status' => 'single', 'occupation' => 'Lawyer', 'age' => 29, 'is_elder' => false, 'sort_order' => 0],
+                    [
+                        'name' => 'Neha Kulkarni',
+                        'gender' => 'female',
+                        'relation_type' => 'sister',
+                        'marital_status' => 'single',
+                        'occupation' => 'Lawyer',
+                        'age' => 29,
+                        'is_elder' => false,
+                        'sort_order' => 0,
+                    ],
                 ],
                 'partner' => [
                     'preferred_gender' => 'female',
@@ -167,7 +228,7 @@ class DemoUsersSeeder extends Seeder
                     'current_city' => 'Mumbai',
                     'occupation' => 'Architect',
                     'employer' => 'Studio Desai Architects',
-                    'income' => 1650000.00,
+                    'income' => 1650000.0,
                     'height' => '5ft 5in',
                     'diet' => 'vegetarian',
                     'smoking' => 'never',
@@ -176,7 +237,15 @@ class DemoUsersSeeder extends Seeder
                     'status' => 'active',
                 ],
                 'education' => [
-                    ['degree' => 'Bachelor of Engineering', 'field' => 'Architecture', 'institution' => 'Sir JJ College', 'education_type' => 'graduation', 'start_year' => 2014, 'end_year' => 2019, 'is_highest' => true],
+                    [
+                        'degree' => 'Bachelor of Engineering',
+                        'field' => 'Architecture',
+                        'institution' => 'Sir JJ College',
+                        'education_type' => 'graduation',
+                        'start_year' => 2014,
+                        'end_year' => 2019,
+                        'is_highest' => true,
+                    ],
                 ],
                 'siblings' => [],
                 'partner' => [
@@ -199,7 +268,7 @@ class DemoUsersSeeder extends Seeder
                     'current_city' => 'Pune',
                     'occupation' => 'Teacher',
                     'employer' => 'Symbiosis International School',
-                    'income' => 980000.00,
+                    'income' => 980000.0,
                     'height' => '5ft 10in',
                     'diet' => 'vegetarian',
                     'smoking' => 'never',
@@ -207,7 +276,15 @@ class DemoUsersSeeder extends Seeder
                     'status' => 'active',
                 ],
                 'education' => [
-                    ['degree' => 'Master of Science', 'field' => 'Mathematics', 'institution' => 'University of Pune', 'education_type' => 'post_graduation', 'start_year' => 2014, 'end_year' => 2016, 'is_highest' => true],
+                    [
+                        'degree' => 'Master of Science',
+                        'field' => 'Mathematics',
+                        'institution' => 'University of Pune',
+                        'education_type' => 'post_graduation',
+                        'start_year' => 2014,
+                        'end_year' => 2016,
+                        'is_highest' => true,
+                    ],
                 ],
                 'siblings' => [],
                 'partner' => [
@@ -230,7 +307,7 @@ class DemoUsersSeeder extends Seeder
                     'current_city' => 'Mumbai',
                     'occupation' => 'Software Engineer',
                     'employer' => 'CloudScale India',
-                    'income' => 1420000.00,
+                    'income' => 1420000.0,
                     'height' => '5ft 3in',
                     'diet' => 'vegetarian',
                     'smoking' => 'never',
@@ -238,10 +315,27 @@ class DemoUsersSeeder extends Seeder
                     'status' => 'pending_verification',
                 ],
                 'education' => [
-                    ['degree' => 'Bachelor of Engineering', 'field' => 'Information Technology', 'institution' => 'VJTI Mumbai', 'education_type' => 'graduation', 'start_year' => 2016, 'end_year' => 2020, 'is_highest' => true],
+                    [
+                        'degree' => 'Bachelor of Engineering',
+                        'field' => 'Information Technology',
+                        'institution' => 'VJTI Mumbai',
+                        'education_type' => 'graduation',
+                        'start_year' => 2016,
+                        'end_year' => 2020,
+                        'is_highest' => true,
+                    ],
                 ],
                 'siblings' => [
-                    ['name' => 'Rahul Joshi', 'gender' => 'male', 'relation_type' => 'brother', 'marital_status' => 'single', 'occupation' => 'Student', 'age' => 22, 'is_elder' => false, 'sort_order' => 0],
+                    [
+                        'name' => 'Rahul Joshi',
+                        'gender' => 'male',
+                        'relation_type' => 'brother',
+                        'marital_status' => 'single',
+                        'occupation' => 'Student',
+                        'age' => 22,
+                        'is_elder' => false,
+                        'sort_order' => 0,
+                    ],
                 ],
                 'partner' => [
                     'preferred_gender' => 'male',
@@ -262,7 +356,7 @@ class DemoUsersSeeder extends Seeder
                     'current_city' => 'Mumbai',
                     'occupation' => 'Physician',
                     'employer' => 'Lilavati Hospital',
-                    'income' => 3100000.00,
+                    'income' => 3100000.0,
                     'height' => '6ft 0in',
                     'diet' => 'non_vegetarian',
                     'smoking' => 'never',
@@ -270,8 +364,24 @@ class DemoUsersSeeder extends Seeder
                     'status' => 'active',
                 ],
                 'education' => [
-                    ['degree' => 'MBBS', 'field' => 'Medicine', 'institution' => 'KEM Hospital', 'education_type' => 'graduation', 'start_year' => 2009, 'end_year' => 2015, 'is_highest' => false],
-                    ['degree' => 'Master of Science', 'field' => 'Cardiology fellowship', 'institution' => 'AIIMS Delhi', 'education_type' => 'post_graduation', 'start_year' => 2018, 'end_year' => 2021, 'is_highest' => true],
+                    [
+                        'degree' => 'MBBS',
+                        'field' => 'Medicine',
+                        'institution' => 'KEM Hospital',
+                        'education_type' => 'graduation',
+                        'start_year' => 2009,
+                        'end_year' => 2015,
+                        'is_highest' => false,
+                    ],
+                    [
+                        'degree' => 'Master of Science',
+                        'field' => 'Cardiology fellowship',
+                        'institution' => 'AIIMS Delhi',
+                        'education_type' => 'post_graduation',
+                        'start_year' => 2018,
+                        'end_year' => 2021,
+                        'is_highest' => true,
+                    ],
                 ],
                 'siblings' => [],
                 'partner' => [
@@ -294,7 +404,7 @@ class DemoUsersSeeder extends Seeder
                     'current_city' => 'Pune',
                     'occupation' => 'Chartered Accountant',
                     'employer' => 'Deloitte India',
-                    'income' => 1950000.00,
+                    'income' => 1950000.0,
                     'height' => '5ft 6in',
                     'diet' => 'vegetarian',
                     'smoking' => 'never',
@@ -302,14 +412,22 @@ class DemoUsersSeeder extends Seeder
                     'status' => 'active',
                 ],
                 'education' => [
-                    ['degree' => 'MBA', 'field' => 'Finance', 'institution' => 'NMIMS Mumbai', 'education_type' => 'post_graduation', 'start_year' => 2016, 'end_year' => 2018, 'is_highest' => true],
+                    [
+                        'degree' => 'MBA',
+                        'field' => 'Finance',
+                        'institution' => 'NMIMS Mumbai',
+                        'education_type' => 'post_graduation',
+                        'start_year' => 2016,
+                        'end_year' => 2018,
+                        'is_highest' => true,
+                    ],
                 ],
                 'siblings' => [],
                 'partner' => [
                     'preferred_gender' => 'male',
                     'preferred_min_age' => 28,
                     'preferred_max_age' => 36,
-                    'preferred_income_min' => 1200000.00,
+                    'preferred_income_min' => 1200000.0,
                     'preferred_state_id' => $stateId,
                 ],
                 'avatar_img' => 48,
@@ -325,7 +443,7 @@ class DemoUsersSeeder extends Seeder
                     'current_city' => 'Mumbai',
                     'occupation' => 'Software Engineer',
                     'employer' => 'FinTech Labs',
-                    'income' => 2100000.00,
+                    'income' => 2100000.0,
                     'height' => '5ft 8in',
                     'diet' => 'non_vegetarian',
                     'smoking' => 'never',
@@ -333,7 +451,15 @@ class DemoUsersSeeder extends Seeder
                     'status' => 'active',
                 ],
                 'education' => [
-                    ['degree' => 'Bachelor of Engineering', 'field' => 'Electronics', 'institution' => 'BITS Pilani', 'education_type' => 'graduation', 'start_year' => 2014, 'end_year' => 2018, 'is_highest' => true],
+                    [
+                        'degree' => 'Bachelor of Engineering',
+                        'field' => 'Electronics',
+                        'institution' => 'BITS Pilani',
+                        'education_type' => 'graduation',
+                        'start_year' => 2014,
+                        'end_year' => 2018,
+                        'is_highest' => true,
+                    ],
                 ],
                 'siblings' => [],
                 'partner' => [
@@ -356,7 +482,7 @@ class DemoUsersSeeder extends Seeder
                     'current_city' => 'Pune',
                     'occupation' => 'Teacher',
                     'employer' => 'KV Pune',
-                    'income' => 920000.00,
+                    'income' => 920000.0,
                     'height' => '5ft 2in',
                     'diet' => 'vegetarian',
                     'smoking' => 'never',
@@ -364,10 +490,27 @@ class DemoUsersSeeder extends Seeder
                     'status' => 'active',
                 ],
                 'education' => [
-                    ['degree' => 'Master of Science', 'field' => 'Physics', 'institution' => 'Fergusson College', 'education_type' => 'post_graduation', 'start_year' => 2016, 'end_year' => 2018, 'is_highest' => true],
+                    [
+                        'degree' => 'Master of Science',
+                        'field' => 'Physics',
+                        'institution' => 'Fergusson College',
+                        'education_type' => 'post_graduation',
+                        'start_year' => 2016,
+                        'end_year' => 2018,
+                        'is_highest' => true,
+                    ],
                 ],
                 'siblings' => [
-                    ['name' => 'Suresh Reddy', 'gender' => 'male', 'relation_type' => 'brother', 'marital_status' => 'married', 'occupation' => 'Bank officer', 'age' => 35, 'is_elder' => true, 'sort_order' => 0],
+                    [
+                        'name' => 'Suresh Reddy',
+                        'gender' => 'male',
+                        'relation_type' => 'brother',
+                        'marital_status' => 'married',
+                        'occupation' => 'Bank officer',
+                        'age' => 35,
+                        'is_elder' => true,
+                        'sort_order' => 0,
+                    ],
                 ],
                 'partner' => [
                     'preferred_gender' => 'male',
@@ -388,9 +531,16 @@ class DemoUsersSeeder extends Seeder
                 continue;
             }
 
-            $user = User::create(array_merge($row['user'], [
-                'password' => self::DEMO_PASSWORD,
-            ]));
+            $user = User::create(
+                array_merge($row['user'], [
+                    'password' => self::DEMO_PASSWORD,
+                ])
+            );
+
+            $guard = (string) config('auth.defaults.guard', 'web');
+            if (Role::query()->where('name', 'candidate')->where('guard_name', $guard)->exists()) {
+                $user->assignRole('candidate');
+            }
 
             $userId = $user->id;
 

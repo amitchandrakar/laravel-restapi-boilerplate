@@ -22,7 +22,10 @@ return new class extends Migration {
                 $table->string('document_front_url', 2048)->nullable();
                 $table->string('document_back_url', 2048)->nullable();
                 $table->string('selfie_url', 2048)->nullable();
-                $table->string('verification_status', 32)->default('pending')->comment('pending|approved|rejected|resubmission_required');
+                $table
+                    ->string('verification_status', 32)
+                    ->default('pending')
+                    ->comment('pending|approved|rejected|resubmission_required');
                 $table->unsignedBigInteger('verified_by')->nullable()->comment('users.id of reviewer.');
                 $table->timestamp('verified_at')->nullable();
                 $table->text('rejection_reason')->nullable();

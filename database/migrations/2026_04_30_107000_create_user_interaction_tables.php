@@ -53,7 +53,10 @@ return new class extends Migration {
                 $table->foreignId('from_user_id')->constrained('users')->cascadeOnDelete();
                 $table->foreignId('to_user_id')->constrained('users')->cascadeOnDelete();
                 $table->text('request_message')->nullable();
-                $table->string('request_status', 32)->default('pending')->comment('pending|accepted|rejected|cancelled');
+                $table
+                    ->string('request_status', 32)
+                    ->default('pending')
+                    ->comment('pending|accepted|rejected|cancelled');
                 $table->timestamp('responded_at')->nullable();
                 $table->text('response_message')->nullable();
                 $table->timestamps();

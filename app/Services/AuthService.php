@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +14,8 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class AuthService
 {
+    private const LOGIN_GUARD = 'web';
+
     /**
      * Register a new user.
      *
@@ -25,6 +28,11 @@ class AuthService
         /** @var User $user */
         $user = User::create($data);
 
+        $guard = (string) config('auth.defaults.guard', 'web');
+        if (Role::query()->where('name', 'candidate')->where('guard_name', $guard)->exists()) {
+            $user->assignRole('candidate');
+        }
+
         $token = $user->createToken('auth-token')->plainTextToken;
 
         return ['user' => $user, 'token' => $token];
@@ -33,22 +41,26 @@ class AuthService
     /**
      * Login user.
      *
-     * @return array{user: User, token: string}
+     * @return array{user: User, token: string, permissions: array<int, string>}
      *
      * @throws ValidationException
      */
     public function login(array $credentials): array
     {
-        if (!Auth::attempt($credentials)) {
+        if (!Auth::guard(self::LOGIN_GUARD)->attempt($credentials)) {
             throw new AuthenticationException('Invalid credentials');
         }
 
         /** @var User $user */
-        $user = Auth::user();
+        $user = Auth::guard(self::LOGIN_GUARD)->user();
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
-        return ['user' => $user, 'token' => $token];
+        return [
+            'user' => $user,
+            'token' => $token,
+            'permissions' => $user->getAllPermissions()->pluck('name')->values()->all(),
+        ];
     }
 
     /**
@@ -56,7 +68,11 @@ class AuthService
      */
     public function logout(User $user): void
     {
-        $user->currentAccessToken()->delete();
+        /** @var mixed $currentToken */
+        $currentToken = $user->currentAccessToken();
+        if (is_object($currentToken) && method_exists($currentToken, 'delete')) {
+            $currentToken->delete();
+        }
     }
 
     /**
@@ -66,7 +82,11 @@ class AuthService
      */
     public function refresh(User $user): array
     {
-        $user->currentAccessToken()->delete();
+        /** @var mixed $currentToken */
+        $currentToken = $user->currentAccessToken();
+        if (is_object($currentToken) && method_exists($currentToken, 'delete')) {
+            $currentToken->delete();
+        }
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
@@ -99,10 +119,19 @@ class AuthService
         ]);
 
         // Revoke all tokens except current one
-        $user
-            ->tokens()
-            ->where('id', '!=', $user->currentAccessToken()->id)
-            ->delete();
+        /** @var mixed $currentToken */
+        $currentToken = $user->currentAccessToken();
+        $currentTokenId = is_object($currentToken) && property_exists($currentToken, 'id') ? $currentToken->id : null;
+        if (is_numeric($currentTokenId)) {
+            $user
+                ->tokens()
+                ->where('id', '!=', (int) $currentTokenId)
+                ->delete();
+
+            return;
+        }
+
+        $user->tokens()->delete();
     }
 
     /**

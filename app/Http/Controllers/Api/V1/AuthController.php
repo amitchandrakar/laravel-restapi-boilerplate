@@ -80,6 +80,7 @@ class AuthController extends Controller
                 'user' => UserResource::make($result['user']),
                 'token' => $result['token'],
                 'token_type' => 'Bearer',
+                'permissions' => $result['permissions'],
             ]),
             'Login successful'
         );
