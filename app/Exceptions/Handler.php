@@ -15,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Spatie\Permission\Exceptions\UnauthorizedException as SpatieUnauthorizedException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -135,6 +136,16 @@ class Handler extends ExceptionHandler
                 HttpStatusCode::FORBIDDEN,
                 ApiResponseBuilder::ERROR_FORBIDDEN,
                 $exception->getMessage() ?: 'Forbidden',
+                null
+            );
+        }
+
+        if ($exception instanceof SpatieUnauthorizedException) {
+            return ApiResponseBuilder::error(
+                'Forbidden',
+                HttpStatusCode::FORBIDDEN,
+                ApiResponseBuilder::ERROR_FORBIDDEN,
+                'User does not have required permission.',
                 null
             );
         }

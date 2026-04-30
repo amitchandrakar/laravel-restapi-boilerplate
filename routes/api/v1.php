@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\Admin\CandidateUserController;
 use App\Http\Controllers\Api\V1\Admin\PackageController;
+use App\Http\Controllers\Api\V1\Admin\PaymentController;
 use App\Http\Controllers\Api\V1\Admin\TeamUserController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CandidateProfileController;
@@ -57,6 +58,17 @@ Route::prefix('admin')
         );
         Route::delete('packages/{package}', [PackageController::class, 'destroy'])->middleware(
             'permission:admin.packages.delete'
+        );
+        Route::get('payments', [PaymentController::class, 'index'])->middleware('permission:admin.payments.view');
+        Route::get('payments/{payment:uuid}', [PaymentController::class, 'show'])->middleware(
+            'permission:admin.payments.view'
+        );
+        Route::post('payments', [PaymentController::class, 'store'])->middleware('permission:admin.payments.add');
+        Route::match(['put', 'patch'], 'payments/{payment:uuid}', [PaymentController::class, 'update'])->middleware(
+            'permission:admin.payments.edit'
+        );
+        Route::delete('payments/{payment:uuid}', [PaymentController::class, 'destroy'])->middleware(
+            'permission:admin.payments.delete'
         );
 
         Route::get('team-users', [TeamUserController::class, 'index'])->middleware('permission:admin.teams.view');

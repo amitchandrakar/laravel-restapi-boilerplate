@@ -235,6 +235,18 @@ class RbacSeeder extends Seeder
                     'title' => 'Edit payments / approve',
                 ],
                 [
+                    'name' => 'admin.payments.add',
+                    'module_code' => 'admin_payments',
+                    'action' => 'add',
+                    'title' => 'Add payments',
+                ],
+                [
+                    'name' => 'admin.payments.delete',
+                    'module_code' => 'admin_payments',
+                    'action' => 'delete',
+                    'title' => 'Delete payments',
+                ],
+                [
                     'name' => 'admin.reports.state.view',
                     'module_code' => 'admin_reports_state',
                     'action' => 'view',
@@ -348,7 +360,9 @@ class RbacSeeder extends Seeder
             'admin.teams.view',
             'admin.packages.view',
             'admin.payments.view',
+            'admin.payments.add',
             'admin.payments.edit',
+            'admin.payments.delete',
             'admin.reports.state.view',
             'admin.reports.community.view',
             'admin.reports.education.view',

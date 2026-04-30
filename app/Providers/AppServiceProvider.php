@@ -11,6 +11,7 @@ use App\Observers\PackageObserver;
 use App\Observers\SubscriptionObserver;
 use App\Observers\UserObserver;
 use Hashids\Hashids;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -34,6 +35,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::before(static function ($user, string $ability): ?bool {
+            if ($user instanceof User && $user->hasRole('admin')) {
+                return true;
+            }
+
+            return null;
+        });
+
         User::observe(UserObserver::class);
         Package::observe(PackageObserver::class);
         Subscription::observe(SubscriptionObserver::class);
