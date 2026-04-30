@@ -6,20 +6,49 @@ namespace App\Models;
 
 use Illuminate\Auth\Authenticatable as UserAuthenticatable;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasPermissions;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends BaseModel implements Authenticatable
 {
-    use HasApiTokens, HasPermissions, HasRoles, Notifiable, UserAuthenticatable;
+    use HasApiTokens, HasPermissions, HasRoles, Notifiable, SoftDeletes, UserAuthenticatable;
 
-    const CREATED_AT = 'creation_date';
+    protected $table = 'users';
 
-    const UPDATED_AT = 'last_updated';
+    protected $guarded = [];
 
-    protected $table = 'alonti_users';
+    protected static function booted(): void
+    {
+        static::creating(static function (User $user): void {
+            if (!filled($user->uuid)) {
+                $user->uuid = (string) Str::uuid();
+            }
+        });
+    }
 
-    protected static $unguarded = true;
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'password' => 'hashed',
+            'deleted_at' => 'datetime',
+            'date_of_birth' => 'date',
+        ];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function hidden(): array
+    {
+        return [
+            'password',
+        ];
+    }
 }

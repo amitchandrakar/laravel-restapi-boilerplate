@@ -19,6 +19,8 @@ use App\Services\AuthService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -139,40 +141,16 @@ class AuthController extends Controller
         // Map API payload keys (camelCase) to User model columns.
         $mapped = [];
         if (array_key_exists('firstName', $validated)) {
-            $mapped['fname'] = $validated['firstName'];
+            $mapped['first_name'] = $validated['firstName'];
         }
         if (array_key_exists('lastName', $validated)) {
-            $mapped['lname'] = $validated['lastName'];
+            $mapped['last_name'] = $validated['lastName'];
         }
         if (array_key_exists('email', $validated)) {
             $mapped['email'] = $validated['email'];
         }
-        if (array_key_exists('secondaryEmail', $validated)) {
-            $mapped['secondary_email'] = $validated['secondaryEmail'];
-        }
         if (array_key_exists('phone', $validated)) {
             $mapped['phone'] = $validated['phone'];
-        }
-        if (array_key_exists('secondaryPhone', $validated)) {
-            $mapped['secondary_phone'] = $validated['secondaryPhone'];
-        }
-        if (array_key_exists('company', $validated)) {
-            $mapped['company'] = $validated['company'];
-        }
-        if (array_key_exists('address', $validated)) {
-            $mapped['addr'] = $validated['address'];
-        }
-        if (array_key_exists('address2', $validated)) {
-            $mapped['addr2'] = $validated['address2'];
-        }
-        if (array_key_exists('city', $validated)) {
-            $mapped['city'] = $validated['city'];
-        }
-        if (array_key_exists('state', $validated)) {
-            $mapped['state'] = $validated['state'];
-        }
-        if (array_key_exists('zip', $validated)) {
-            $mapped['zip'] = $validated['zip'];
         }
 
         $user = $this->authService->updateProfile($request->user(), $mapped);
@@ -201,12 +179,16 @@ class AuthController extends Controller
         /** @var User|null $user */
         $user = User::where('email', $request->input('email'))->first();
         if ($user) {
-            $token = Str::random(48);
-            $user->update([
-                'forgot_password_link' => $token,
-                'forgot_password_link_valid' => 1,
-            ]);
-            ForgotPasswordRequestedEvent::dispatch($user, $token);
+            $plainToken = Str::random(64);
+            DB::table('password_reset_tokens')->updateOrInsert(
+                ['email' => $user->email],
+                [
+                    'email' => $user->email,
+                    'token' => Hash::make($plainToken),
+                    'created_at' => now(),
+                ]
+            );
+            ForgotPasswordRequestedEvent::dispatch($user, $plainToken);
         }
 
         return $this->successResponse(null, 'Password reset link sent to your email');
@@ -217,17 +199,24 @@ class AuthController extends Controller
      */
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
+        $email = (string) $request->input('email');
         /** @var User|null $user */
-        $user = User::where('email', $request->input('email'))->first();
-        if (!$user || !$user->forgot_password_link_valid || $user->forgot_password_link !== $request->input('token')) {
+        $user = User::where('email', $email)->first();
+        $row = DB::table('password_reset_tokens')->where('email', $email)->first();
+
+        if (!$user || !$row || !Hash::check((string) $request->input('token'), (string) $row->token)) {
             return $this->errorResponse('Invalid or expired reset token', 400);
         }
 
-        $user->update([
-            'password' => Hash::make((string) $request->input('password')),
-            'forgot_password_link' => '',
-            'forgot_password_link_valid' => 0,
-        ]);
+        $expiresMinutes = (int) config('auth.passwords.users.expire', 60);
+        if ($row->created_at !== null && Carbon::parse($row->created_at)->addMinutes($expiresMinutes)->isPast()) {
+            return $this->errorResponse('Invalid or expired reset token', 400);
+        }
+
+        $user->password = (string) $request->input('password');
+        $user->save();
+
+        DB::table('password_reset_tokens')->where('email', $email)->delete();
         $user->tokens()->delete();
 
         return $this->successResponse(null, 'Password reset successfully');

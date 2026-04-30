@@ -7,7 +7,6 @@ namespace App\Services;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 
 class UserService
 {
@@ -24,9 +23,8 @@ class UserService
      */
     public function createUser(array $data): User
     {
-        if (isset($data['password'])) {
-            $data['password'] = Hash::make($data['password']);
-        }
+        unset($data['password_confirmation']);
+        $this->mapLegacyNameField($data);
 
         return DB::transaction(function () use ($data) {
             return User::create($data);
@@ -38,9 +36,8 @@ class UserService
      */
     public function updateUser(User $user, array $data): User
     {
-        if (isset($data['password'])) {
-            $data['password'] = Hash::make($data['password']);
-        }
+        unset($data['password_confirmation']);
+        $this->mapLegacyNameField($data);
 
         return DB::transaction(function () use ($user, $data) {
             $user->update($data);
@@ -57,5 +54,20 @@ class UserService
         return DB::transaction(function () use ($user) {
             return $user->delete();
         });
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function mapLegacyNameField(array &$data): void
+    {
+        if (!isset($data['name'])) {
+            return;
+        }
+
+        $parts = preg_split('/\s+/', trim((string) $data['name']), 2, PREG_SPLIT_NO_EMPTY);
+        $data['first_name'] = $parts[0] ?? '';
+        $data['last_name'] = $parts[1] ?? '';
+        unset($data['name']);
     }
 }

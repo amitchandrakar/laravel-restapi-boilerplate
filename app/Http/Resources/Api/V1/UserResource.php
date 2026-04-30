@@ -22,18 +22,12 @@ class UserResource extends JsonResource
 
         return [
             'id' => $user->id,
-            'firstName' => $user->fname,
-            'lastName' => $user->lname,
+            'uuid' => $user->uuid,
+            'firstName' => $user->first_name,
+            'lastName' => $user->last_name,
             'email' => $user->email,
-            'secondaryEmail' => $user->secondary_email,
             'phone' => $user->phone,
-            'secondaryPhone' => $user->secondary_phone,
-            'company' => $user->company,
-            'address' => $user->addr,
-            'address2' => $user->addr2,
-            'city' => $user->city,
-            'state' => $user->state,
-            'zip' => $user->zip,
+            'status' => $user->status,
         ];
     }
 }

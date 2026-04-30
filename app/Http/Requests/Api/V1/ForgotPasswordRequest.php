@@ -11,7 +11,7 @@ class ForgotPasswordRequest extends ApiFormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email|exists:alonti_users,email',
+            'email' => 'required|email|exists:users,email',
         ];
     }
 }

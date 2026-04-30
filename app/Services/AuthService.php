@@ -20,9 +20,7 @@ class AuthService
      */
     public function register(array $data): array
     {
-        if (isset($data['password'])) {
-            $data['password'] = Hash::make($data['password']);
-        }
+        $data = $this->mapRegisterPayload($data);
 
         /** @var User $user */
         $user = User::create($data);
@@ -97,7 +95,7 @@ class AuthService
         }
 
         $user->update([
-            'password' => Hash::make($newPassword),
+            'password' => $newPassword,
         ]);
 
         // Revoke all tokens except current one
@@ -105,5 +103,25 @@ class AuthService
             ->tokens()
             ->where('id', '!=', $user->currentAccessToken()->id)
             ->delete();
+    }
+
+    /**
+     * Map validated register payload (legacy `name`) to `users` columns.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function mapRegisterPayload(array $data): array
+    {
+        unset($data['password_confirmation']);
+
+        if (isset($data['name'])) {
+            $parts = preg_split('/\s+/', trim((string) $data['name']), 2, PREG_SPLIT_NO_EMPTY);
+            $data['first_name'] = $parts[0] ?? '';
+            $data['last_name'] = $parts[1] ?? '';
+            unset($data['name']);
+        }
+
+        return $data;
     }
 }

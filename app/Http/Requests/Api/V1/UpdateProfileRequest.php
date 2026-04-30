@@ -19,8 +19,8 @@ class UpdateProfileRequest extends ApiFormRequest
             'user_id' => 'sometimes',
             'userId' => 'sometimes',
 
-            'firstName' => 'sometimes|string|max:255',
-            'lastName' => 'sometimes|string|max:255',
+            'firstName' => 'sometimes|string|max:128',
+            'lastName' => 'sometimes|string|max:128',
             'email' => [
                 'sometimes',
                 'string',
@@ -28,15 +28,7 @@ class UpdateProfileRequest extends ApiFormRequest
                 'max:255',
                 Rule::unique($this->user()->getTable(), 'email')->ignore($this->user()->id),
             ],
-            'secondaryEmail' => 'sometimes|nullable|string|email|max:255',
-            'phone' => 'sometimes|nullable|string|max:50',
-            'secondaryPhone' => 'sometimes|nullable|string|max:50',
-            'company' => 'sometimes|nullable|string|max:255',
-            'address' => 'sometimes|nullable|string|max:255',
-            'address2' => 'sometimes|nullable|string|max:255',
-            'city' => 'sometimes|nullable|string|max:255',
-            'state' => 'sometimes|nullable|string|max:255',
-            'zip' => 'sometimes|nullable|string|max:20',
+            'phone' => 'sometimes|nullable|string|max:32',
         ];
     }
 }

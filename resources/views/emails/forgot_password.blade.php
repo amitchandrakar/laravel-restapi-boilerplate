@@ -7,7 +7,7 @@
   </head>
   <body style="font-family: Arial, sans-serif; line-height: 1.5; color: #111;">
     @php
-      $name = trim(($user->fname ?? '').' '.($user->lname ?? ''));
+      $name = trim(($user->first_name ?? '').' '.($user->last_name ?? ''));
       $display = $name !== '' ? $name : ($user->email ?? 'there');
     @endphp
 
