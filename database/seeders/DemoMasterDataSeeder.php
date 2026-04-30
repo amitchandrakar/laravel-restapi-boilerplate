@@ -29,46 +29,7 @@ class DemoMasterDataSeeder extends Seeder
             ]);
         }
 
-        $countryId = (int) DB::table('countries')->where('iso2', 'IN')->value('id');
-
-        if (DB::table('states')->where('country_id', $countryId)->where('code', 'MH')->doesntExist()) {
-            DB::table('states')->insert([
-                'country_id' => $countryId,
-                'name' => 'Maharashtra',
-                'code' => 'MH',
-                'is_active' => true,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
-        }
-
-        $stateId = (int) DB::table('states')->where('country_id', $countryId)->where('code', 'MH')->value('id');
-
-        if (DB::table('cities')->where('state_id', $stateId)->where('name', 'Mumbai')->doesntExist()) {
-            DB::table('cities')->insert([
-                'state_id' => $stateId,
-                'name' => 'Mumbai',
-                'is_active' => true,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
-        }
-
-        if (DB::table('cities')->where('state_id', $stateId)->where('name', 'Pune')->doesntExist()) {
-            DB::table('cities')->insert([
-                'state_id' => $stateId,
-                'name' => 'Pune',
-                'is_active' => true,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
-        }
-
-        $languages = [
-            ['name' => 'English', 'code' => 'en'],
-            ['name' => 'Hindi', 'code' => 'hi'],
-            ['name' => 'Marathi', 'code' => 'mr'],
-        ];
+        $languages = [['name' => 'English', 'code' => 'en'], ['name' => 'Hindi', 'code' => 'hi']];
         foreach ($languages as $lang) {
             if (DB::table('languages')->where('code', $lang['code'])->doesntExist()) {
                 DB::table('languages')->insert([
@@ -113,6 +74,18 @@ class DemoMasterDataSeeder extends Seeder
                     'name' => $occ['name'],
                     'category' => $occ['category'],
                     'sort_order' => $occ['sort_order'],
+                    'is_active' => true,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            }
+        }
+
+        $surnames = ['Chandrakar', 'Verma', 'Bais', 'Kashyap', 'Chandrawanshi', 'Kaushik', 'Deshmukh'];
+        foreach ($surnames as $surname) {
+            if (DB::table('surnames')->where('name', $surname)->doesntExist()) {
+                DB::table('surnames')->insert([
+                    'name' => $surname,
                     'is_active' => true,
                     'created_at' => $now,
                     'updated_at' => $now,

@@ -5,17 +5,19 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Auth\Authenticatable as UserAuthenticatable;
+use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasPermissions;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends BaseModel implements Authenticatable
+class User extends BaseModel implements Authenticatable, AuthorizableContract
 {
-    use HasApiTokens, HasPermissions, HasRoles, Notifiable, SoftDeletes, UserAuthenticatable;
+    use Authorizable, HasApiTokens, HasPermissions, HasRoles, Notifiable, SoftDeletes, UserAuthenticatable;
 
     protected $table = 'users';
 

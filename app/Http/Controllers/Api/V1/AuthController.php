@@ -14,6 +14,11 @@ use App\Http\Requests\Api\V1\UpdateProfileRequest;
 use App\Http\Resources\Api\V1\AuthLoginResource;
 use App\Http\Resources\Api\V1\TokenResource;
 use App\Http\Resources\Api\V1\UserResource;
+use App\Jobs\EndUserSessionJob;
+use App\Jobs\LogAuditJob;
+use App\Jobs\LogUserActivityJob;
+use App\Jobs\StartUserSessionJob;
+use App\Jobs\UpsertUserDeviceLogJob;
 use App\Models\User;
 use App\Services\AuthService;
 use App\Traits\ApiResponse;
@@ -57,10 +62,26 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): JsonResponse
     {
         $result = $this->authService->register($request->validated());
+        /** @var User $user */
+        $user = $result['user'];
+        $meta = $this->requestMeta($request);
+
+        LogAuditJob::dispatch(
+            $user->id,
+            'users',
+            (int) $user->id,
+            'register',
+            null,
+            ['email' => $user->email],
+            $meta['ip'],
+            $meta['ua']
+        );
+        LogUserActivityJob::dispatch($user->id, 'auth.register', 'api_v1_auth', ['email' => $user->email], $meta['ip']);
+        UpsertUserDeviceLogJob::dispatch($user->id, $meta['device_id'], 'web', $meta['device_name'], $meta['os_name']);
 
         return $this->createdResponse(
             AuthLoginResource::make([
-                'user' => UserResource::make($result['user']),
+                'user' => UserResource::make($user),
                 'token' => $result['token'],
                 'token_type' => 'Bearer',
             ]),
@@ -74,10 +95,18 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         $result = $this->authService->login($request->only('email', 'password'));
+        /** @var User $user */
+        $user = $result['user'];
+        $meta = $this->requestMeta($request);
+        $tokenHash = $this->hashAccessToken((string) $result['token']);
+
+        LogUserActivityJob::dispatch($user->id, 'auth.login', 'api_v1_auth', ['email' => $user->email], $meta['ip']);
+        UpsertUserDeviceLogJob::dispatch($user->id, $meta['device_id'], 'web', $meta['device_name'], $meta['os_name']);
+        StartUserSessionJob::dispatch($user->id, $tokenHash, null, $meta['ip'], $meta['ua'], $meta['device_id']);
 
         return $this->successResponse(
             AuthLoginResource::make([
-                'user' => UserResource::make($result['user']),
+                'user' => UserResource::make($user),
                 'token' => $result['token'],
                 'token_type' => 'Bearer',
                 'permissions' => $result['permissions'],
@@ -105,7 +134,12 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
+        $meta = $this->requestMeta($request);
+        $tokenHash = $this->hashAccessToken((string) ($request->bearerToken() ?? ''));
+        $userId = (int) $request->user()->id;
         $this->authService->logout($request->user());
+        EndUserSessionJob::dispatch($userId, $tokenHash);
+        LogUserActivityJob::dispatch($userId, 'auth.logout', 'api_v1_auth', null, $meta['ip']);
 
         return $this->successResponse(null, 'Logged out successfully');
     }
@@ -221,5 +255,36 @@ class AuthController extends Controller
         $user->tokens()->delete();
 
         return $this->successResponse(null, 'Password reset successfully');
+    }
+
+    /**
+     * @return array{ip: ?string, ua: ?string, device_id: string, device_name: string, os_name: string}
+     */
+    private function requestMeta(Request $request): array
+    {
+        $ua = (string) ($request->userAgent() ?? 'unknown');
+
+        return [
+            'ip' => $request->ip(),
+            'ua' => $ua,
+            'device_id' => hash('sha256', $ua . '|' . (string) $request->ip()),
+            'device_name' => str($ua)->limit(120, '')->toString(),
+            'os_name' => str($ua)->contains('Windows')
+                ? 'Windows'
+                : (str($ua)->contains('Macintosh')
+                    ? 'macOS'
+                    : 'Web'),
+        ];
+    }
+
+    private function hashAccessToken(string $plainTextToken): string
+    {
+        if ($plainTextToken === '') {
+            return '';
+        }
+        $parts = explode('|', $plainTextToken, 2);
+        $tokenValue = $parts[1] ?? $parts[0];
+
+        return hash('sha256', $tokenValue);
     }
 }

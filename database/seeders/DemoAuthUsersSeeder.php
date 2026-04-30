@@ -6,6 +6,7 @@ namespace Database\Seeders;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Services\PackagePermissionService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -13,6 +14,8 @@ use Illuminate\Support\Str;
 class DemoAuthUsersSeeder extends Seeder
 {
     private const PASSWORD = '123456';
+
+    public function __construct(private readonly PackagePermissionService $packagePermissionService) {}
 
     public function run(): void
     {
@@ -41,6 +44,8 @@ class DemoAuthUsersSeeder extends Seeder
             status: 'active'
         );
         $this->assignRoleIfExists($candidate, 'candidate', $guard);
+        $this->upsertSubscriptionForUser($candidate->id, 'PARICHAY_FREE');
+        $this->packagePermissionService->syncCandidatePermissions($candidate);
 
         $premiumCandidate = $this->upsertUser(
             email: 'p.candidate@example.com',
@@ -49,8 +54,8 @@ class DemoAuthUsersSeeder extends Seeder
             status: 'active'
         );
         $this->assignRoleIfExists($premiumCandidate, 'candidate', $guard);
-
-        $this->upsertPremiumMembership($premiumCandidate->id);
+        $this->upsertSubscriptionForUser($premiumCandidate->id, 'RISHTA_PRO');
+        $this->packagePermissionService->syncCandidatePermissions($premiumCandidate);
     }
 
     private function upsertUser(string $email, string $firstName, string $lastName, string $status): User
@@ -93,25 +98,12 @@ class DemoAuthUsersSeeder extends Seeder
         $user->syncRoles([$roleName]);
     }
 
-    private function upsertPremiumMembership(int $userId): void
+    private function upsertSubscriptionForUser(int $userId, string $packageCode): void
     {
         $now = now();
-        $packageId = (int) DB::table('packages')->where('code', 'PREMIUM')->value('id');
+        $packageId = (int) DB::table('packages')->where('code', $packageCode)->value('id');
         if ($packageId === 0) {
-            $packageId = (int) DB::table('packages')->insertGetId([
-                'uuid' => (string) Str::uuid(),
-                'name' => 'Premium',
-                'code' => 'PREMIUM',
-                'description' => 'Premium demo package for p.candidate@example.com',
-                'duration_days' => 365,
-                'price' => 4999.00,
-                'discounted_price' => 2999.00,
-                'currency' => 'INR',
-                'is_active' => true,
-                'sort_order' => 1,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
+            return;
         }
 
         DB::table('subscriptions')->updateOrInsert(

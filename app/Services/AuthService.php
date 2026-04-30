@@ -8,13 +8,17 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class AuthService
 {
     private const LOGIN_GUARD = 'web';
+
+    public function __construct(private readonly PackagePermissionService $packagePermissionService) {}
 
     /**
      * Register a new user.
@@ -32,6 +36,8 @@ class AuthService
         if (Role::query()->where('name', 'candidate')->where('guard_name', $guard)->exists()) {
             $user->assignRole('candidate');
         }
+        $this->attachDefaultPackageForRegistration($user->id);
+        $this->packagePermissionService->syncCandidatePermissions($user);
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
@@ -123,10 +129,7 @@ class AuthService
         $currentToken = $user->currentAccessToken();
         $currentTokenId = is_object($currentToken) && property_exists($currentToken, 'id') ? $currentToken->id : null;
         if (is_numeric($currentTokenId)) {
-            $user
-                ->tokens()
-                ->where('id', '!=', (int) $currentTokenId)
-                ->delete();
+            $user->tokens()->where('id', '!=', (int) $currentTokenId)->delete();
 
             return;
         }
@@ -152,5 +155,31 @@ class AuthService
         }
 
         return $data;
+    }
+
+    private function attachDefaultPackageForRegistration(int $userId): void
+    {
+        $defaultPackageId = (int) DB::table('packages')
+            ->where('is_active', true)
+            ->where('is_default_registration', true)
+            ->value('id');
+        if ($defaultPackageId === 0) {
+            return;
+        }
+
+        $now = now();
+        DB::table('subscriptions')->updateOrInsert(
+            ['user_id' => $userId, 'package_id' => $defaultPackageId],
+            [
+                'uuid' => (string) Str::uuid(),
+                'subscription_status' => 'active',
+                'started_at' => $now,
+                'ends_at' => $now->copy()->addYear(),
+                'auto_renew' => false,
+                'renewal_source' => 'system',
+                'updated_at' => $now,
+                'created_at' => $now,
+            ]
+        );
     }
 }

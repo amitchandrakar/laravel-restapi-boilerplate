@@ -21,9 +21,9 @@ class DemoUsersSeeder extends Seeder
     public function run(): void
     {
         $countryId = (int) DB::table('countries')->where('iso2', 'IN')->value('id');
-        $stateId = (int) DB::table('states')->where('country_id', $countryId)->where('code', 'MH')->value('id');
-        $cityMumbaiId = (int) DB::table('cities')->where('state_id', $stateId)->where('name', 'Mumbai')->value('id');
-        $cityPuneId = (int) DB::table('cities')->where('state_id', $stateId)->where('name', 'Pune')->value('id');
+        $stateId = (int) DB::table('states')->where('country_id', $countryId)->where('code', 'CG')->value('id');
+        $cityMumbaiId = (int) DB::table('cities')->where('state_id', $stateId)->where('name', 'Raipur')->value('id');
+        $cityPuneId = (int) DB::table('cities')->where('state_id', $stateId)->where('name', 'Bilaspur')->value('id');
         $langEnId = (int) DB::table('languages')->where('code', 'en')->value('id');
         $langHiId = (int) DB::table('languages')->where('code', 'hi')->value('id');
 

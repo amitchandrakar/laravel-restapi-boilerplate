@@ -12,9 +12,15 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             DemoMasterDataSeeder::class,
+            ChhattisgarhMasterGeoSeeder::class,
+            MasterDegreesOccupationsSeeder::class,
             RbacSeeder::class,
+            PackageCatalogSeeder::class,
             DemoAuthUsersSeeder::class,
+            DemoSubscriptionPaymentSeeder::class,
             DemoUsersSeeder::class,
+            DemoUserComplianceSeeder::class,
+            DemoUserLogSeeder::class,
         ]);
     }
 }

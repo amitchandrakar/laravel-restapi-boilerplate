@@ -6,8 +6,10 @@ namespace Tests\Feature;
 
 use App\Events\ForgotPasswordRequestedEvent;
 use App\Models\User;
+use Database\Seeders\PackageCatalogSeeder;
 use Database\Seeders\RbacSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
@@ -31,9 +33,7 @@ class AuthFlowTest extends TestCase
             'password' => self::REGISTER_PASSWORD,
             'password_confirmation' => self::REGISTER_PASSWORD,
         ]);
-        $register->assertStatus(201)
-            ->assertJsonPath('success', true)
-            ->assertJsonPath('data.token_type', 'Bearer');
+        $register->assertStatus(201)->assertJsonPath('success', true)->assertJsonPath('data.token_type', 'Bearer');
         $registerToken = $register->json('data.token');
         $this->assertIsString($registerToken);
         $this->assertGreaterThan(20, strlen($registerToken));
@@ -46,14 +46,14 @@ class AuthFlowTest extends TestCase
             'email' => $email,
             'password' => self::REGISTER_PASSWORD,
         ]);
-        $login->assertStatus(200)
-            ->assertJsonPath('success', true)
-            ->assertJsonPath('data.permissions', []);
+        $login->assertStatus(200)->assertJsonPath('success', true)->assertJsonPath('data.permissions', []);
         $loginToken = $login->json('data.token');
         $this->assertIsString($loginToken);
 
         $capturedResetToken = null;
-        Event::listen(ForgotPasswordRequestedEvent::class, function (ForgotPasswordRequestedEvent $e) use (&$capturedResetToken): void {
+        Event::listen(ForgotPasswordRequestedEvent::class, function (ForgotPasswordRequestedEvent $e) use (
+            &$capturedResetToken
+        ): void {
             $capturedResetToken = $e->resetHash;
         });
 
@@ -62,11 +62,14 @@ class AuthFlowTest extends TestCase
         ]);
         $forgot->assertStatus(200)->assertJsonPath('success', true);
         $this->assertIsString($capturedResetToken);
-        $this->assertGreaterThan(20, strlen($capturedResetToken));
+        $this->assertGreaterThan(20, strlen((string) $capturedResetToken));
+        $this->assertNotNull($capturedResetToken);
+        /** @var string $resetToken */
+        $resetToken = $capturedResetToken;
 
         $reset = $this->postJson('/api/v1/auth/reset-password', [
             'email' => $email,
-            'token' => $capturedResetToken,
+            'token' => $resetToken,
             'password' => self::NEW_PASSWORD_AFTER_RESET,
             'password_confirmation' => self::NEW_PASSWORD_AFTER_RESET,
         ]);
@@ -81,8 +84,7 @@ class AuthFlowTest extends TestCase
             'email' => $email,
             'password' => self::NEW_PASSWORD_AFTER_RESET,
         ]);
-        $final->assertStatus(200)
-            ->assertJsonPath('success', true);
+        $final->assertStatus(200)->assertJsonPath('success', true);
         $this->assertIsString($final->json('data.token'));
     }
 
@@ -90,7 +92,35 @@ class AuthFlowTest extends TestCase
     {
         $this->postJson('/api/v1/auth/forgot-password', [
             'email' => 'nobody-' . uniqid('', true) . '@example.com',
-        ])->assertStatus(422)->assertJsonPath('success', false);
+        ])
+            ->assertStatus(422)
+            ->assertJsonPath('success', false);
+    }
+
+    public function test_register_assigns_default_package_subscription_when_available(): void
+    {
+        $this->seed(RbacSeeder::class);
+        $this->seed(PackageCatalogSeeder::class);
+
+        $email = 'auth-default-package-' . uniqid('', true) . '@example.com';
+        $password = 'Password@default1';
+
+        $this->postJson('/api/v1/auth/register', [
+            'name' => 'Default Package User',
+            'email' => $email,
+            'password' => $password,
+            'password_confirmation' => $password,
+        ])->assertStatus(201);
+
+        $userId = (int) User::query()->where('email', $email)->value('id');
+        $defaultPackageId = (int) DB::table('packages')->where('is_default_registration', true)->value('id');
+
+        $this->assertGreaterThan(0, $defaultPackageId);
+        $this->assertDatabaseHas('subscriptions', [
+            'user_id' => $userId,
+            'package_id' => $defaultPackageId,
+            'subscription_status' => 'active',
+        ]);
     }
 
     public function test_me_refresh_and_logout_flow(): void
@@ -98,7 +128,8 @@ class AuthFlowTest extends TestCase
         $this->seed(RbacSeeder::class);
         [$email, $password, $token] = $this->registerAndLogin();
 
-        $this->withToken($token)->getJson('/api/v1/auth/me')
+        $this->withToken($token)
+            ->getJson('/api/v1/auth/me')
             ->assertStatus(200)
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.email', $email);
@@ -108,7 +139,8 @@ class AuthFlowTest extends TestCase
         $newToken = (string) $refresh->json('data.token');
         $this->assertNotSame($token, $newToken);
 
-        $this->withToken($newToken)->postJson('/api/v1/auth/logout')
+        $this->withToken($newToken)
+            ->postJson('/api/v1/auth/logout')
             ->assertStatus(200)
             ->assertJsonPath('success', true);
     }
@@ -118,22 +150,26 @@ class AuthFlowTest extends TestCase
         $this->seed(RbacSeeder::class);
         [$email, $password, $token] = $this->registerAndLogin();
 
-        $this->withToken($token)->patchJson('/api/v1/auth/profile', [
-            'firstName' => 'UpdatedFirst',
-            'lastName' => 'UpdatedLast',
-            'phone' => '9990001111',
-            'userId' => User::query()->where('email', $email)->value('id'),
-        ])->assertStatus(200)
+        $this->withToken($token)
+            ->patchJson('/api/v1/auth/profile', [
+                'firstName' => 'UpdatedFirst',
+                'lastName' => 'UpdatedLast',
+                'phone' => '9990001111',
+                'userId' => User::query()->where('email', $email)->value('id'),
+            ])
+            ->assertStatus(200)
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.firstName', 'UpdatedFirst')
             ->assertJsonPath('data.lastName', 'UpdatedLast')
             ->assertJsonPath('data.phone', '9990001111');
 
-        $this->withToken($token)->postJson('/api/v1/auth/change-password', [
-            'current_password' => $password,
-            'password' => 'Password@changed1',
-            'password_confirmation' => 'Password@changed1',
-        ])->assertStatus(200)
+        $this->withToken($token)
+            ->postJson('/api/v1/auth/change-password', [
+                'current_password' => $password,
+                'password' => 'Password@changed1',
+                'password_confirmation' => 'Password@changed1',
+            ])
+            ->assertStatus(200)
             ->assertJsonPath('success', true);
 
         $this->postJson('/api/v1/auth/login', [
@@ -144,7 +180,8 @@ class AuthFlowTest extends TestCase
         $this->postJson('/api/v1/auth/login', [
             'email' => $email,
             'password' => 'Password@changed1',
-        ])->assertStatus(200)
+        ])
+            ->assertStatus(200)
             ->assertJsonPath('success', true);
     }
 

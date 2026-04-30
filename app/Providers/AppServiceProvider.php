@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\Package;
+use App\Models\Subscription;
+use App\Models\User;
+use App\Observers\PackageObserver;
+use App\Observers\SubscriptionObserver;
+use App\Observers\UserObserver;
 use Hashids\Hashids;
 use Illuminate\Support\ServiceProvider;
 
@@ -28,6 +34,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        \App\Models\User::observe(\App\Observers\UserObserver::class);
+        User::observe(UserObserver::class);
+        Package::observe(PackageObserver::class);
+        Subscription::observe(SubscriptionObserver::class);
     }
 }

@@ -115,12 +115,24 @@ class RbacSeeder extends Seeder
             ['code' => 'admin_reports_community', 'name' => 'Admin — Reports (Community)', 'sort_order' => ++$n],
             ['code' => 'admin_reports_education', 'name' => 'Admin — Reports (Education)', 'sort_order' => ++$n],
             ['code' => 'admin_reports_active_users', 'name' => 'Admin — Reports (Active users)', 'sort_order' => ++$n],
-            ['code' => 'admin_reports_user_activities', 'name' => 'Admin — Reports (User activities)', 'sort_order' => ++$n],
-            ['code' => 'admin_reports_team_activities', 'name' => 'Admin — Reports (Team activities)', 'sort_order' => ++$n],
+            [
+                'code' => 'admin_reports_user_activities',
+                'name' => 'Admin — Reports (User activities)',
+                'sort_order' => ++$n,
+            ],
+            [
+                'code' => 'admin_reports_team_activities',
+                'name' => 'Admin — Reports (Team activities)',
+                'sort_order' => ++$n,
+            ],
             ['code' => 'admin_settings_site', 'name' => 'Admin — Settings (Site)', 'sort_order' => ++$n],
             ['code' => 'admin_settings_payments', 'name' => 'Admin — Settings (Payments)', 'sort_order' => ++$n],
             ['code' => 'admin_settings_social', 'name' => 'Admin — Settings (Social login)', 'sort_order' => ++$n],
-            ['code' => 'admin_settings_roles', 'name' => 'Admin — Settings (Roles & permissions)', 'sort_order' => ++$n],
+            [
+                'code' => 'admin_settings_roles',
+                'name' => 'Admin — Settings (Roles & permissions)',
+                'sort_order' => ++$n,
+            ],
             ['code' => 'admin_settings_seo', 'name' => 'Admin — Settings (SEO)', 'sort_order' => ++$n],
         ];
     }
@@ -130,39 +142,197 @@ class RbacSeeder extends Seeder
      */
     private function permissionDefinitions(): array
     {
-        return [
-            ['name' => 'admin.dashboard.view', 'module_code' => 'admin_dashboard', 'action' => 'view', 'title' => 'View dashboard'],
-            ['name' => 'admin.candidates.view', 'module_code' => 'admin_candidates', 'action' => 'view', 'title' => 'View candidates'],
-            ['name' => 'admin.candidates.add', 'module_code' => 'admin_candidates', 'action' => 'add', 'title' => 'Add candidates'],
-            ['name' => 'admin.candidates.edit', 'module_code' => 'admin_candidates', 'action' => 'edit', 'title' => 'Edit candidates'],
-            ['name' => 'admin.candidates.delete', 'module_code' => 'admin_candidates', 'action' => 'delete', 'title' => 'Delete candidates'],
-            ['name' => 'admin.teams.view', 'module_code' => 'admin_teams', 'action' => 'view', 'title' => 'View teams'],
-            ['name' => 'admin.teams.add', 'module_code' => 'admin_teams', 'action' => 'add', 'title' => 'Add teams'],
-            ['name' => 'admin.teams.edit', 'module_code' => 'admin_teams', 'action' => 'edit', 'title' => 'Edit teams'],
-            ['name' => 'admin.teams.delete', 'module_code' => 'admin_teams', 'action' => 'delete', 'title' => 'Delete teams'],
-            ['name' => 'admin.packages.view', 'module_code' => 'admin_packages', 'action' => 'view', 'title' => 'View packages'],
-            ['name' => 'admin.packages.add', 'module_code' => 'admin_packages', 'action' => 'add', 'title' => 'Add packages'],
-            ['name' => 'admin.packages.edit', 'module_code' => 'admin_packages', 'action' => 'edit', 'title' => 'Edit packages'],
-            ['name' => 'admin.packages.delete', 'module_code' => 'admin_packages', 'action' => 'delete', 'title' => 'Delete packages'],
-            ['name' => 'admin.payments.view', 'module_code' => 'admin_payments', 'action' => 'view', 'title' => 'View payments'],
-            ['name' => 'admin.payments.edit', 'module_code' => 'admin_payments', 'action' => 'edit', 'title' => 'Edit payments / approve'],
-            ['name' => 'admin.reports.state.view', 'module_code' => 'admin_reports_state', 'action' => 'view', 'title' => 'Reports: State'],
-            ['name' => 'admin.reports.community.view', 'module_code' => 'admin_reports_community', 'action' => 'view', 'title' => 'Reports: Community'],
-            ['name' => 'admin.reports.education.view', 'module_code' => 'admin_reports_education', 'action' => 'view', 'title' => 'Reports: Education'],
-            ['name' => 'admin.reports.active_users.view', 'module_code' => 'admin_reports_active_users', 'action' => 'view', 'title' => 'Reports: Active users'],
-            ['name' => 'admin.reports.user_activities.view', 'module_code' => 'admin_reports_user_activities', 'action' => 'view', 'title' => 'Reports: User activities'],
-            ['name' => 'admin.reports.team_activities.view', 'module_code' => 'admin_reports_team_activities', 'action' => 'view', 'title' => 'Reports: Team activities'],
-            ['name' => 'admin.settings.site.view', 'module_code' => 'admin_settings_site', 'action' => 'view', 'title' => 'View site settings'],
-            ['name' => 'admin.settings.site.edit', 'module_code' => 'admin_settings_site', 'action' => 'edit', 'title' => 'Edit site settings'],
-            ['name' => 'admin.settings.payments.view', 'module_code' => 'admin_settings_payments', 'action' => 'view', 'title' => 'View payment settings'],
-            ['name' => 'admin.settings.payments.edit', 'module_code' => 'admin_settings_payments', 'action' => 'edit', 'title' => 'Edit payment settings'],
-            ['name' => 'admin.settings.social.view', 'module_code' => 'admin_settings_social', 'action' => 'view', 'title' => 'View social login settings'],
-            ['name' => 'admin.settings.social.edit', 'module_code' => 'admin_settings_social', 'action' => 'edit', 'title' => 'Edit social login settings'],
-            ['name' => 'admin.settings.roles.view', 'module_code' => 'admin_settings_roles', 'action' => 'view', 'title' => 'View roles & permissions'],
-            ['name' => 'admin.settings.roles.edit', 'module_code' => 'admin_settings_roles', 'action' => 'edit', 'title' => 'Edit roles & permissions'],
-            ['name' => 'admin.settings.seo.view', 'module_code' => 'admin_settings_seo', 'action' => 'view', 'title' => 'View SEO settings'],
-            ['name' => 'admin.settings.seo.edit', 'module_code' => 'admin_settings_seo', 'action' => 'edit', 'title' => 'Edit SEO settings'],
-        ];
+        return array_merge(
+            [
+                [
+                    'name' => 'admin.dashboard.view',
+                    'module_code' => 'admin_dashboard',
+                    'action' => 'view',
+                    'title' => 'View dashboard',
+                ],
+                [
+                    'name' => 'admin.candidates.view',
+                    'module_code' => 'admin_candidates',
+                    'action' => 'view',
+                    'title' => 'View candidates',
+                ],
+                [
+                    'name' => 'admin.candidates.add',
+                    'module_code' => 'admin_candidates',
+                    'action' => 'add',
+                    'title' => 'Add candidates',
+                ],
+                [
+                    'name' => 'admin.candidates.edit',
+                    'module_code' => 'admin_candidates',
+                    'action' => 'edit',
+                    'title' => 'Edit candidates',
+                ],
+                [
+                    'name' => 'admin.candidates.delete',
+                    'module_code' => 'admin_candidates',
+                    'action' => 'delete',
+                    'title' => 'Delete candidates',
+                ],
+                [
+                    'name' => 'admin.teams.view',
+                    'module_code' => 'admin_teams',
+                    'action' => 'view',
+                    'title' => 'View teams',
+                ],
+                [
+                    'name' => 'admin.teams.add',
+                    'module_code' => 'admin_teams',
+                    'action' => 'add',
+                    'title' => 'Add teams',
+                ],
+                [
+                    'name' => 'admin.teams.edit',
+                    'module_code' => 'admin_teams',
+                    'action' => 'edit',
+                    'title' => 'Edit teams',
+                ],
+                [
+                    'name' => 'admin.teams.delete',
+                    'module_code' => 'admin_teams',
+                    'action' => 'delete',
+                    'title' => 'Delete teams',
+                ],
+                [
+                    'name' => 'admin.packages.view',
+                    'module_code' => 'admin_packages',
+                    'action' => 'view',
+                    'title' => 'View packages',
+                ],
+                [
+                    'name' => 'admin.packages.add',
+                    'module_code' => 'admin_packages',
+                    'action' => 'add',
+                    'title' => 'Add packages',
+                ],
+                [
+                    'name' => 'admin.packages.edit',
+                    'module_code' => 'admin_packages',
+                    'action' => 'edit',
+                    'title' => 'Edit packages',
+                ],
+                [
+                    'name' => 'admin.packages.delete',
+                    'module_code' => 'admin_packages',
+                    'action' => 'delete',
+                    'title' => 'Delete packages',
+                ],
+                [
+                    'name' => 'admin.payments.view',
+                    'module_code' => 'admin_payments',
+                    'action' => 'view',
+                    'title' => 'View payments',
+                ],
+                [
+                    'name' => 'admin.payments.edit',
+                    'module_code' => 'admin_payments',
+                    'action' => 'edit',
+                    'title' => 'Edit payments / approve',
+                ],
+                [
+                    'name' => 'admin.reports.state.view',
+                    'module_code' => 'admin_reports_state',
+                    'action' => 'view',
+                    'title' => 'Reports: State',
+                ],
+                [
+                    'name' => 'admin.reports.community.view',
+                    'module_code' => 'admin_reports_community',
+                    'action' => 'view',
+                    'title' => 'Reports: Community',
+                ],
+                [
+                    'name' => 'admin.reports.education.view',
+                    'module_code' => 'admin_reports_education',
+                    'action' => 'view',
+                    'title' => 'Reports: Education',
+                ],
+                [
+                    'name' => 'admin.reports.active_users.view',
+                    'module_code' => 'admin_reports_active_users',
+                    'action' => 'view',
+                    'title' => 'Reports: Active users',
+                ],
+                [
+                    'name' => 'admin.reports.user_activities.view',
+                    'module_code' => 'admin_reports_user_activities',
+                    'action' => 'view',
+                    'title' => 'Reports: User activities',
+                ],
+                [
+                    'name' => 'admin.reports.team_activities.view',
+                    'module_code' => 'admin_reports_team_activities',
+                    'action' => 'view',
+                    'title' => 'Reports: Team activities',
+                ],
+                [
+                    'name' => 'admin.settings.site.view',
+                    'module_code' => 'admin_settings_site',
+                    'action' => 'view',
+                    'title' => 'View site settings',
+                ],
+                [
+                    'name' => 'admin.settings.site.edit',
+                    'module_code' => 'admin_settings_site',
+                    'action' => 'edit',
+                    'title' => 'Edit site settings',
+                ],
+                [
+                    'name' => 'admin.settings.payments.view',
+                    'module_code' => 'admin_settings_payments',
+                    'action' => 'view',
+                    'title' => 'View payment settings',
+                ],
+                [
+                    'name' => 'admin.settings.payments.edit',
+                    'module_code' => 'admin_settings_payments',
+                    'action' => 'edit',
+                    'title' => 'Edit payment settings',
+                ],
+                [
+                    'name' => 'admin.settings.social.view',
+                    'module_code' => 'admin_settings_social',
+                    'action' => 'view',
+                    'title' => 'View social login settings',
+                ],
+                [
+                    'name' => 'admin.settings.social.edit',
+                    'module_code' => 'admin_settings_social',
+                    'action' => 'edit',
+                    'title' => 'Edit social login settings',
+                ],
+                [
+                    'name' => 'admin.settings.roles.view',
+                    'module_code' => 'admin_settings_roles',
+                    'action' => 'view',
+                    'title' => 'View roles & permissions',
+                ],
+                [
+                    'name' => 'admin.settings.roles.edit',
+                    'module_code' => 'admin_settings_roles',
+                    'action' => 'edit',
+                    'title' => 'Edit roles & permissions',
+                ],
+                [
+                    'name' => 'admin.settings.seo.view',
+                    'module_code' => 'admin_settings_seo',
+                    'action' => 'view',
+                    'title' => 'View SEO settings',
+                ],
+                [
+                    'name' => 'admin.settings.seo.edit',
+                    'module_code' => 'admin_settings_seo',
+                    'action' => 'edit',
+                    'title' => 'Edit SEO settings',
+                ],
+            ],
+            $this->candidateFeaturePermissionDefinitions()
+        );
     }
 
     /**
@@ -189,6 +359,99 @@ class RbacSeeder extends Seeder
             'admin.settings.payments.view',
             'admin.settings.social.view',
             'admin.settings.seo.view',
+        ];
+    }
+
+    /**
+     * @return list<array{name: string, module_code: string, action: string, title: string, description?: string}>
+     */
+    private function candidateFeaturePermissionDefinitions(): array
+    {
+        return [
+            [
+                'name' => 'candidate.browse_profiles.limited',
+                'module_code' => '',
+                'action' => 'view',
+                'title' => 'Browse profiles (limited view)',
+            ],
+            [
+                'name' => 'candidate.browse_profiles.full',
+                'module_code' => '',
+                'action' => 'view',
+                'title' => 'Browse profiles (full view)',
+            ],
+            [
+                'name' => 'candidate.view_full_profile_details',
+                'module_code' => '',
+                'action' => 'view',
+                'title' => 'View full profile details',
+            ],
+            [
+                'name' => 'candidate.view_profile_highlighting',
+                'module_code' => '',
+                'action' => 'view',
+                'title' => 'View profile highlighting',
+            ],
+            [
+                'name' => 'candidate.view_instant_contact_access',
+                'module_code' => '',
+                'action' => 'view',
+                'title' => 'View instant contact access',
+            ],
+            [
+                'name' => 'candidate.send_contact_requests',
+                'module_code' => '',
+                'action' => 'add',
+                'title' => 'Send contact requests',
+            ],
+            [
+                'name' => 'candidate.view_partner_preferences_details',
+                'module_code' => '',
+                'action' => 'view',
+                'title' => 'View partner preferences details',
+            ],
+            [
+                'name' => 'candidate.view_lifestyle_details',
+                'module_code' => '',
+                'action' => 'view',
+                'title' => 'View lifestyle details',
+            ],
+            [
+                'name' => 'candidate.view_contact_details',
+                'module_code' => '',
+                'action' => 'view',
+                'title' => 'View contact details',
+            ],
+            [
+                'name' => 'candidate.mark_profiles_favorite',
+                'module_code' => '',
+                'action' => 'add',
+                'title' => 'Mark profiles as favorite',
+            ],
+            [
+                'name' => 'candidate.view_my_matches',
+                'module_code' => '',
+                'action' => 'view',
+                'title' => 'View my matches',
+            ],
+            [
+                'name' => 'candidate.generate_kundali',
+                'module_code' => '',
+                'action' => 'add',
+                'title' => 'Generate kundali',
+            ],
+            [
+                'name' => 'candidate.view_kundali',
+                'module_code' => '',
+                'action' => 'view',
+                'title' => 'View kundali',
+            ],
+            [
+                'name' => 'candidate.view_kundali_matching_results',
+                'module_code' => '',
+                'action' => 'view',
+                'title' => 'View kundali matching results',
+            ],
         ];
     }
 }
