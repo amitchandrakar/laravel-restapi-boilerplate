@@ -103,11 +103,15 @@ class AdminPaymentCrudTest extends TestCase
         $payment = $this->createPayment($candidate, $package);
 
         $this->actingAs($candidate, 'sanctum')->getJson('/api/v1/admin/payments')->assertStatus(403);
-        $this->actingAs($candidate, 'sanctum')->getJson('/api/v1/admin/payments/' . $payment->uuid)->assertStatus(403);
+        $this->actingAs($candidate, 'sanctum')
+            ->getJson('/api/v1/admin/payments/' . $payment->uuid)
+            ->assertStatus(403);
         $this->actingAs($candidate, 'sanctum')
             ->patchJson('/api/v1/admin/payments/' . $payment->uuid, ['payment_status' => 'failed'])
             ->assertStatus(403);
-        $this->actingAs($candidate, 'sanctum')->deleteJson('/api/v1/admin/payments/' . $payment->uuid)->assertStatus(403);
+        $this->actingAs($candidate, 'sanctum')
+            ->deleteJson('/api/v1/admin/payments/' . $payment->uuid)
+            ->assertStatus(403);
     }
 
     public function test_payment_validation_applies_business_rules(): void

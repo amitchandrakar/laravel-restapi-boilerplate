@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\V1\Admin\CandidateUserController;
 use App\Http\Controllers\Api\V1\Admin\PackageController;
 use App\Http\Controllers\Api\V1\Admin\PaymentController;
+use App\Http\Controllers\Api\V1\Admin\ReportController;
 use App\Http\Controllers\Api\V1\Admin\TeamUserController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CandidateProfileController;
@@ -69,6 +70,24 @@ Route::prefix('admin')
         );
         Route::delete('payments/{payment:uuid}', [PaymentController::class, 'destroy'])->middleware(
             'permission:admin.payments.delete'
+        );
+        Route::get('reports/candidates/area', [ReportController::class, 'candidatesByArea'])->middleware(
+            'permission:admin.reports.state.view'
+        );
+        Route::get('reports/candidates/surname', [ReportController::class, 'candidatesBySurname'])->middleware(
+            'permission:admin.reports.community.view'
+        );
+        Route::get('reports/candidates/education', [ReportController::class, 'candidatesByEducation'])->middleware(
+            'permission:admin.reports.education.view'
+        );
+        Route::get('reports/active-users', [ReportController::class, 'activeUsers'])->middleware(
+            'permission:admin.reports.active_users.view'
+        );
+        Route::get('reports/user-activities', [ReportController::class, 'userActivities'])->middleware(
+            'permission:admin.reports.user_activities.view'
+        );
+        Route::get('reports/team-activities', [ReportController::class, 'teamActivities'])->middleware(
+            'permission:admin.reports.team_activities.view'
         );
 
         Route::get('team-users', [TeamUserController::class, 'index'])->middleware('permission:admin.teams.view');

@@ -24,8 +24,16 @@ class StorePaymentRequest extends ApiFormRequest
             'gateway_reference_id' => ['nullable', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'min:0'],
             'currency' => ['nullable', 'string', 'size:3'],
-            'payment_status' => ['required', 'string', Rule::in(['pending', 'success', 'failed', 'refunded', 'cancelled'])],
-            'payment_method' => ['nullable', 'string', Rule::in(['upi', 'card', 'netbanking', 'wallet', 'cash', 'manual'])],
+            'payment_status' => [
+                'required',
+                'string',
+                Rule::in(['pending', 'success', 'failed', 'refunded', 'cancelled']),
+            ],
+            'payment_method' => [
+                'nullable',
+                'string',
+                Rule::in(['upi', 'card', 'netbanking', 'wallet', 'cash', 'manual']),
+            ],
             'paid_at' => ['nullable', 'date'],
             'failed_reason' => ['nullable', 'string'],
             'raw_response_json' => ['nullable', 'array'],
