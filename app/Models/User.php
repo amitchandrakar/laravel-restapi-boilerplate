@@ -43,6 +43,8 @@ class User extends BaseModel implements Authenticatable, AuthorizableContract
             'password' => 'hashed',
             'deleted_at' => 'datetime',
             'date_of_birth' => 'date',
+            'completed_sections_json' => 'array',
+            'published_at' => 'datetime',
         ];
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Api\V1;
 
 use App\Http\Requests\Api\ApiFormRequest;
+use App\Models\User;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
@@ -12,7 +13,8 @@ class UpdateTeamUserRequest extends ApiFormRequest
 {
     public function rules(): array
     {
-        $userId = (int) $this->route('user');
+        $routeUser = $this->route('user');
+        $userId = $routeUser instanceof User ? (int) $routeUser->id : (int) $routeUser;
 
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],

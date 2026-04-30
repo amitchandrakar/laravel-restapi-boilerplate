@@ -65,12 +65,12 @@ class TeamUserController extends Controller
         return $this->createdResponse(TeamUserResource::make($user), 'Team user created successfully');
     }
 
-    public function show(Request $request, int $user): JsonResponse
+    public function show(Request $request, User $user): JsonResponse
     {
         if (!$request->user()?->can('admin.teams.view')) {
             return $this->forbiddenResponse();
         }
-        $teamUser = User::query()->teamUsers()->find($user);
+        $teamUser = User::query()->teamUsers()->where('id', $user->id)->first();
         if (!$teamUser instanceof User) {
             return $this->notFoundResponse('Team user not found');
         }
@@ -86,12 +86,12 @@ class TeamUserController extends Controller
         return $this->successResponse(TeamUserResource::make($teamUser), 'Team user fetched successfully');
     }
 
-    public function update(UpdateTeamUserRequest $request, int $user): JsonResponse
+    public function update(UpdateTeamUserRequest $request, User $user): JsonResponse
     {
         if (!$request->user()?->can('admin.teams.edit')) {
             return $this->forbiddenResponse();
         }
-        $teamUser = User::query()->teamUsers()->find($user);
+        $teamUser = User::query()->teamUsers()->where('id', $user->id)->first();
         if (!$teamUser instanceof User) {
             return $this->notFoundResponse('Team user not found');
         }
@@ -119,12 +119,12 @@ class TeamUserController extends Controller
         return $this->successResponse(TeamUserResource::make($updated), 'Team user updated successfully');
     }
 
-    public function destroy(Request $request, int $user): JsonResponse
+    public function destroy(Request $request, User $user): JsonResponse
     {
         if (!$request->user()?->can('admin.teams.delete')) {
             return $this->forbiddenResponse();
         }
-        $teamUser = User::query()->teamUsers()->find($user);
+        $teamUser = User::query()->teamUsers()->where('id', $user->id)->first();
         if (!$teamUser instanceof User) {
             return $this->notFoundResponse('Team user not found');
         }

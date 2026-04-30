@@ -42,6 +42,7 @@ class AdminTeamCandidateUserCrudTest extends TestCase
         ]);
         $create->assertStatus(201)->assertJsonPath('data.userType', 'team');
         $teamUserId = (int) $create->json('data.id');
+        $teamUserUuid = (string) User::query()->findOrFail($teamUserId)->uuid;
         $this->assertDatabaseHas('users', [
             'id' => $teamUserId,
             'role_id' => $reviewerRoleId,
@@ -51,12 +52,12 @@ class AdminTeamCandidateUserCrudTest extends TestCase
         $this->assertFalse(User::query()->findOrFail($teamUserId)->can('admin.settings.roles.edit'));
 
         $this->actingAs($admin, 'sanctum')
-            ->getJson('/api/v1/admin/team-users/' . $teamUserId)
+            ->getJson('/api/v1/admin/team-users/' . $teamUserUuid)
             ->assertStatus(200)
             ->assertJsonPath('data.department', 'Operations');
 
         $this->actingAs($admin, 'sanctum')
-            ->patchJson('/api/v1/admin/team-users/' . $teamUserId, [
+            ->patchJson('/api/v1/admin/team-users/' . $teamUserUuid, [
                 'job_title' => 'Senior Lead',
                 'department' => 'QA',
                 'role_id' => $this->roleIdByName('admin'),
@@ -67,7 +68,7 @@ class AdminTeamCandidateUserCrudTest extends TestCase
         $this->assertTrue(User::query()->findOrFail($teamUserId)->can('admin.settings.roles.edit'));
 
         $this->actingAs($admin, 'sanctum')
-            ->deleteJson('/api/v1/admin/team-users/' . $teamUserId)
+            ->deleteJson('/api/v1/admin/team-users/' . $teamUserUuid)
             ->assertStatus(200);
 
         Event::assertDispatched(UserLifecycleEvent::class);
@@ -117,9 +118,10 @@ class AdminTeamCandidateUserCrudTest extends TestCase
         ]);
         $create->assertStatus(201)->assertJsonPath('data.userType', 'candidate');
         $candidateId = (int) $create->json('data.id');
+        $candidateUuid = (string) User::query()->findOrFail($candidateId)->uuid;
 
         $this->actingAs($admin, 'sanctum')
-            ->patchJson('/api/v1/admin/candidates/' . $candidateId, [
+            ->patchJson('/api/v1/admin/candidates/' . $candidateUuid, [
                 'phone' => '9777777777',
                 'current_city' => 'Bilaspur',
             ])
@@ -128,7 +130,7 @@ class AdminTeamCandidateUserCrudTest extends TestCase
         $this->actingAs($candidate, 'sanctum')->getJson('/api/v1/admin/candidates')->assertStatus(403);
 
         $this->actingAs($admin, 'sanctum')
-            ->deleteJson('/api/v1/admin/candidates/' . $candidateId)
+            ->deleteJson('/api/v1/admin/candidates/' . $candidateUuid)
             ->assertStatus(200);
 
         Event::assertDispatched(UserLifecycleEvent::class);
