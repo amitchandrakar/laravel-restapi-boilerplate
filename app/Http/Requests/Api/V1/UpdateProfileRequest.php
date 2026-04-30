@@ -39,39 +39,4 @@ class UpdateProfileRequest extends ApiFormRequest
             'zip' => 'sometimes|nullable|string|max:20',
         ];
     }
-
-    /**
-     * Custom validation messages.
-     */
-    public function messages(): array
-    {
-        return [
-            'firstName.string' => 'The first name must be a valid string',
-            'lastName.string' => 'The last name must be a valid string',
-            'email.email' => 'Please provide a valid email address',
-            'email.unique' => 'This email is already taken',
-            'secondaryEmail.email' => 'Please provide a valid secondary email address',
-        ];
-    }
-
-    /**
-     * Custom attribute names.
-     */
-    public function attributes(): array
-    {
-        return [
-            'firstName' => 'first name',
-            'lastName' => 'last name',
-            'email' => 'email address',
-            'secondaryEmail' => 'secondary email address',
-            'phone' => 'phone',
-            'secondaryPhone' => 'secondary phone',
-            'company' => 'company',
-            'address' => 'address',
-            'address2' => 'address 2',
-            'city' => 'city',
-            'state' => 'state',
-            'zip' => 'zip',
-        ];
-    }
 }

@@ -19,18 +19,6 @@ parameters:
 			path: app/Http/Middleware/VerifyCsrfToken.php
 
 		-
-			message: '#^Call to static method getUniqueUrlByUrl\(\) on an unknown class App\\Models\\UniqueUrl\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Middleware/VerifyUniqueUrl.php
-
-		-
-			message: '#^PHPDoc tag @param references unknown parameter\: \$guard$#'
-			identifier: parameter.notFound
-			count: 1
-			path: app/Http/Middleware/VerifyUniqueUrl.php
-
-		-
 			message: '#^Trait App\\Traits\\PaytraceTrait is used zero times and is not analysed\.$#'
 			identifier: trait.unused
 			count: 1
