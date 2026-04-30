@@ -89,6 +89,9 @@ Route::prefix('admin')
         Route::get('reports/team-activities', [ReportController::class, 'teamActivities'])->middleware(
             'permission:admin.reports.team_activities.view'
         );
+        Route::get('dashboard/stats', [ReportController::class, 'dashboardStats'])->middleware(
+            'permission:admin.dashboard.view'
+        );
 
         Route::get('team-users', [TeamUserController::class, 'index'])->middleware('permission:admin.teams.view');
         Route::post('team-users', [TeamUserController::class, 'store'])->middleware('permission:admin.teams.add');

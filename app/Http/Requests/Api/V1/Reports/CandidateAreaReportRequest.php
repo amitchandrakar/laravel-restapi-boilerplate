@@ -17,4 +17,3 @@ class CandidateAreaReportRequest extends ApiFormRequest
         ];
     }
 }
-

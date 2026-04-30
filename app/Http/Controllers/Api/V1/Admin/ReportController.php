@@ -66,5 +66,11 @@ class ReportController extends Controller
 
         return $this->paginatedResponse($paginator, 'Team activities report fetched successfully');
     }
-}
 
+    public function dashboardStats(): JsonResponse
+    {
+        $data = $this->reportService->dashboardStats();
+
+        return $this->successResponse($data, 'Dashboard stats fetched successfully');
+    }
+}

@@ -15,6 +15,7 @@ This document describes the admin report endpoints.
 - `GET /api/v1/admin/reports/active-users` (permission: `admin.reports.active_users.view`)
 - `GET /api/v1/admin/reports/user-activities` (permission: `admin.reports.user_activities.view`)
 - `GET /api/v1/admin/reports/team-activities` (permission: `admin.reports.team_activities.view`)
+- `GET /api/v1/admin/dashboard/stats` (permission: `admin.dashboard.view`)
 
 ## Candidates by area
 
@@ -116,9 +117,31 @@ Default behavior is all-time when `from` and `to` are not supplied.
 - Activity reports (`active-users`, `user-activities`, `team-activities`) return paginated lists with pagination in `meta.pagination`.
 - Candidate role filtering is applied to candidate-based reports.
 
+## Dashboard stats
+
+Single payload endpoint for dashboard cards/charts:
+
+`GET /api/v1/admin/dashboard/stats`
+
+Returns:
+
+- `totals.candidates`, `newCandidates7Days`, `newCandidates30Days`
+- `totals.premiumMembers`, `freeMembers`
+- `totals.revenueDemo` (sum of successful payment amounts)
+- `totals.teams`
+- `totals.reportsGeneratedTotal`, `reportsGenerated7Days`, `reportsGenerated30Days`
+- `totals.pendingApproval`, `approvedToday`
+- `totals.activeMatchesTotal`
+- `totals.profileViews7Days`
+- `totals.contactActionsTotal`
+- `totals.successStoriesLanding`
+- `genderSplit` (counts and percentages for male/female/other)
+- `candidatesByAge` (age-wise buckets for line chart)
+- `teamsByLocation` (location/count/percent)
+- `topCommunities` (surname-based top buckets)
+
 ## Test command
 
 ```bash
 php artisan test tests/Feature/AdminReportsTest.php
 ```
-

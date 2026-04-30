@@ -22,12 +22,14 @@ class AdminReportsTest extends TestCase
         $candidate = $this->createUserWithRole('candidate', 'reports-candidate-1@example.com', 'Chandrakar');
         $reviewer = $this->createUserWithRole('reviewer', 'reports-reviewer@example.com', 'Verma');
 
-        User::query()->where('id', $candidate->id)->update([
-            'current_state' => 'Chhattisgarh',
-            'current_district' => 'Durg',
-            'current_city' => 'Bhilai',
-            'current_village' => 'Jamul',
-        ]);
+        User::query()
+            ->where('id', $candidate->id)
+            ->update([
+                'current_state' => 'Chhattisgarh',
+                'current_district' => 'Durg',
+                'current_city' => 'Bhilai',
+                'current_village' => 'Jamul',
+            ]);
 
         DB::table('user_education_details')->insert([
             'uuid' => (string) Str::uuid(),
@@ -103,6 +105,37 @@ class AdminReportsTest extends TestCase
             ->getJson('/api/v1/admin/reports/team-activities?action=update')
             ->assertStatus(200)
             ->assertJsonPath('success', true);
+
+        $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/v1/admin/dashboard/stats')
+            ->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonStructure([
+                'data' => [
+                    'totals' => [
+                        'candidates',
+                        'newCandidates7Days',
+                        'newCandidates30Days',
+                        'premiumMembers',
+                        'freeMembers',
+                        'revenueDemo',
+                        'teams',
+                        'reportsGeneratedTotal',
+                        'reportsGenerated7Days',
+                        'reportsGenerated30Days',
+                        'pendingApproval',
+                        'approvedToday',
+                        'activeMatchesTotal',
+                        'profileViews7Days',
+                        'contactActionsTotal',
+                        'successStoriesLanding',
+                    ],
+                    'genderSplit',
+                    'candidatesByAge',
+                    'teamsByLocation',
+                    'topCommunities',
+                ],
+            ]);
     }
 
     public function test_candidate_cannot_access_report_endpoints(): void
@@ -112,10 +145,13 @@ class AdminReportsTest extends TestCase
 
         $this->actingAs($candidate, 'sanctum')->getJson('/api/v1/admin/reports/candidates/area')->assertStatus(403);
         $this->actingAs($candidate, 'sanctum')->getJson('/api/v1/admin/reports/candidates/surname')->assertStatus(403);
-        $this->actingAs($candidate, 'sanctum')->getJson('/api/v1/admin/reports/candidates/education')->assertStatus(403);
+        $this->actingAs($candidate, 'sanctum')
+            ->getJson('/api/v1/admin/reports/candidates/education')
+            ->assertStatus(403);
         $this->actingAs($candidate, 'sanctum')->getJson('/api/v1/admin/reports/active-users')->assertStatus(403);
         $this->actingAs($candidate, 'sanctum')->getJson('/api/v1/admin/reports/user-activities')->assertStatus(403);
         $this->actingAs($candidate, 'sanctum')->getJson('/api/v1/admin/reports/team-activities')->assertStatus(403);
+        $this->actingAs($candidate, 'sanctum')->getJson('/api/v1/admin/dashboard/stats')->assertStatus(403);
     }
 
     public function test_area_group_by_validation_is_enforced(): void
@@ -143,4 +179,3 @@ class AdminReportsTest extends TestCase
         return $user;
     }
 }
-

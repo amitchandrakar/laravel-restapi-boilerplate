@@ -12,6 +12,148 @@ class ReportService
     /**
      * @return array<string, mixed>
      */
+    public function dashboardStats(): array
+    {
+        $candidateBaseQuery = DB::table('users')
+            ->join('roles', 'roles.id', '=', 'users.role_id')
+            ->where('roles.name', 'candidate')
+            ->whereNull('users.deleted_at');
+
+        $totalCandidates = (int) (clone $candidateBaseQuery)->count();
+        $newCandidates7Days = (int) (clone $candidateBaseQuery)->where('users.created_at', '>=', now()->subDays(7))->count();
+        $newCandidates30Days = (int) (clone $candidateBaseQuery)
+            ->where('users.created_at', '>=', now()->subDays(30))
+            ->count();
+
+        $premiumMembers = (int) DB::table('subscriptions')
+            ->where('subscription_status', 'active')
+            ->distinct('user_id')
+            ->count('user_id');
+        $freeMembers = max(0, $totalCandidates - $premiumMembers);
+
+        $revenueDemo = (float) DB::table('payments')->where('payment_status', 'success')->sum('amount');
+
+        $teamBaseQuery = DB::table('users')
+            ->join('roles', 'roles.id', '=', 'users.role_id')
+            ->whereIn('roles.name', ['admin', 'reviewer'])
+            ->whereNull('users.deleted_at');
+        $teamsCount = (int) (clone $teamBaseQuery)->count();
+
+        $reportsGenerated7Days = (int) DB::table('user_activity_logs')
+            ->where('activity_type', 'like', 'admin.reports.%')
+            ->where('created_at', '>=', now()->subDays(7))
+            ->count();
+        $reportsGenerated30Days = (int) DB::table('user_activity_logs')
+            ->where('activity_type', 'like', 'admin.reports.%')
+            ->where('created_at', '>=', now()->subDays(30))
+            ->count();
+        $reportsGeneratedTotal = (int) DB::table('user_activity_logs')
+            ->where('activity_type', 'like', 'admin.reports.%')
+            ->count();
+
+        $pendingApproval = (int) DB::table('user_verification_documents')
+            ->where('verification_status', 'pending')
+            ->count();
+        $approvedToday = (int) DB::table('user_verification_documents')
+            ->where('verification_status', 'approved')
+            ->whereDate('verified_at', now()->toDateString())
+            ->count();
+
+        $activeMatchesTotal = (int) DB::table('matches')->where('match_status', 'active')->count();
+        $profileViews7Days = (int) DB::table('profile_views')->where('viewed_at', '>=', now()->subDays(7))->count();
+        $contactActionsTotal = (int) DB::table('contact_requests')->count();
+
+        $successStories = (int) (DB::table('settings')
+            ->where('group_key', 'metrics')
+            ->whereIn('setting_key', ['success_stories_landing', 'success_stories_count'])
+            ->value('setting_value') ?? 0);
+
+        $maleCount = (int) (clone $candidateBaseQuery)->whereRaw('LOWER(users.gender) = ?', ['male'])->count();
+        $femaleCount = (int) (clone $candidateBaseQuery)->whereRaw('LOWER(users.gender) = ?', ['female'])->count();
+        $otherCount = max(0, $totalCandidates - $maleCount - $femaleCount);
+        $genderSplit = [
+            'male' => $maleCount,
+            'female' => $femaleCount,
+            'other' => $otherCount,
+            'malePercent' => $totalCandidates > 0 ? round(($maleCount / $totalCandidates) * 100, 2) : 0.0,
+            'femalePercent' => $totalCandidates > 0 ? round(($femaleCount / $totalCandidates) * 100, 2) : 0.0,
+            'otherPercent' => $totalCandidates > 0 ? round(($otherCount / $totalCandidates) * 100, 2) : 0.0,
+        ];
+
+        $ageExpression = DB::getDriverName() === 'sqlite'
+            ? "CAST((julianday('now') - julianday(users.date_of_birth)) / 365.25 AS INTEGER)"
+            : 'TIMESTAMPDIFF(YEAR, users.date_of_birth, CURDATE())';
+
+        $candidatesByAge = DB::table('users')
+            ->join('roles', 'roles.id', '=', 'users.role_id')
+            ->where('roles.name', 'candidate')
+            ->whereNull('users.deleted_at')
+            ->whereNotNull('users.date_of_birth')
+            ->selectRaw($ageExpression . ' as age, COUNT(*) as total')
+            ->groupBy('age')
+            ->orderBy('age')
+            ->get()
+            ->map(static fn ($row): array => ['age' => (int) $row->age, 'total' => (int) $row->total])
+            ->values()
+            ->all();
+
+        $teamsByLocationRaw = (clone $teamBaseQuery)
+            ->selectRaw("COALESCE(NULLIF(TRIM(users.current_city), ''), 'Other') as location, COUNT(*) as total")
+            ->groupBy('location')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
+        $teamsByLocationTotal = max(1, (int) $teamsByLocationRaw->sum('total'));
+        $teamsByLocation = $teamsByLocationRaw
+            ->map(
+                static fn ($row): array => [
+                    'location' => (string) $row->location,
+                    'total' => (int) $row->total,
+                    'percent' => round(((int) $row->total / $teamsByLocationTotal) * 100, 2),
+                ]
+            )
+            ->values()
+            ->all();
+
+        $topCommunities = (clone $candidateBaseQuery)
+            ->selectRaw("COALESCE(NULLIF(TRIM(users.last_name), ''), 'Unknown') as community, COUNT(*) as total")
+            ->groupBy('community')
+            ->orderByDesc('total')
+            ->limit(10)
+            ->get()
+            ->map(static fn ($row): array => ['community' => (string) $row->community, 'total' => (int) $row->total])
+            ->values()
+            ->all();
+
+        return [
+            'totals' => [
+                'candidates' => $totalCandidates,
+                'newCandidates7Days' => $newCandidates7Days,
+                'newCandidates30Days' => $newCandidates30Days,
+                'premiumMembers' => $premiumMembers,
+                'freeMembers' => $freeMembers,
+                'revenueDemo' => $revenueDemo,
+                'teams' => $teamsCount,
+                'reportsGeneratedTotal' => $reportsGeneratedTotal,
+                'reportsGenerated7Days' => $reportsGenerated7Days,
+                'reportsGenerated30Days' => $reportsGenerated30Days,
+                'pendingApproval' => $pendingApproval,
+                'approvedToday' => $approvedToday,
+                'activeMatchesTotal' => $activeMatchesTotal,
+                'profileViews7Days' => $profileViews7Days,
+                'contactActionsTotal' => $contactActionsTotal,
+                'successStoriesLanding' => $successStories,
+            ],
+            'genderSplit' => $genderSplit,
+            'candidatesByAge' => $candidatesByAge,
+            'teamsByLocation' => $teamsByLocation,
+            'topCommunities' => $topCommunities,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     public function candidatesByArea(string $groupBy = 'district', int $limit = 50): array
     {
         $column = match ($groupBy) {
@@ -77,7 +219,9 @@ class ReportService
             ->join('roles', 'roles.id', '=', 'users.role_id')
             ->where('roles.name', 'candidate')
             ->whereNull('users.deleted_at')
-            ->selectRaw("COALESCE(NULLIF(TRIM(ued.education_type), ''), 'unknown') as education, COUNT(DISTINCT ued.user_id) as total")
+            ->selectRaw(
+                "COALESCE(NULLIF(TRIM(ued.education_type), ''), 'unknown') as education, COUNT(DISTINCT ued.user_id) as total"
+            )
             ->groupBy('education')
             ->orderByDesc('total')
             ->limit($limit)
@@ -208,4 +352,3 @@ class ReportService
         return $query->paginate($perPage);
     }
 }
-

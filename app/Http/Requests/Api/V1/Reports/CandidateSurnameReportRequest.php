@@ -15,4 +15,3 @@ class CandidateSurnameReportRequest extends ApiFormRequest
         ];
     }
 }
-
