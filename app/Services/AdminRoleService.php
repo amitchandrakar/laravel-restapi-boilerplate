@@ -57,12 +57,12 @@ class AdminRoleService
                     'title' => $model->title,
                     'guardName' => $model->guard_name,
                     'module' => $module instanceof Module
-                        ? [
-                            'id' => (int) $module->id,
-                            'code' => $module->code,
-                            'name' => $module->name,
-                        ]
-                        : null,
+                            ? [
+                                'id' => (int) $module->id,
+                                'code' => $module->code,
+                                'name' => $module->name,
+                            ]
+                            : null,
                 ];
             })
             ->values()

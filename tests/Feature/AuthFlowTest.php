@@ -123,6 +123,29 @@ class AuthFlowTest extends TestCase
         ]);
     }
 
+    public function test_register_accepts_first_name_and_last_name_without_name_field(): void
+    {
+        $this->seed(RbacSeeder::class);
+
+        $email = 'auth-split-name-' . uniqid('', true) . '@example.com';
+        $password = 'Password@split1';
+
+        $this->postJson('/api/v1/auth/register', [
+            'first_name' => 'Split',
+            'last_name' => 'NameUser',
+            'email' => $email,
+            'password' => $password,
+            'password_confirmation' => $password,
+        ])
+            ->assertStatus(201)
+            ->assertJsonPath('success', true);
+
+        $user = User::query()->where('email', $email)->first();
+        $this->assertNotNull($user);
+        $this->assertSame('Split', $user->first_name);
+        $this->assertSame('NameUser', $user->last_name);
+    }
+
     public function test_me_refresh_and_logout_flow(): void
     {
         $this->seed(RbacSeeder::class);

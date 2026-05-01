@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\Package;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\AuthenticationException;
@@ -42,6 +43,77 @@ class AuthService
         $token = $user->createToken('auth-token')->plainTextToken;
 
         return ['user' => $user, 'token' => $token];
+    }
+
+    /**
+     * Public registration UI: active packages and active surnames.
+     *
+     * @return array{packages: list<array<string, mixed>>, surnames: list<array{id: int, name: string}>}
+     */
+    public function registrationOptions(): array
+    {
+        $packages = Package::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get()
+            ->map(fn(Package $package): array => $this->mapPublicRegistrationPackage($package))
+            ->values()
+            ->all();
+
+        $surnames = DB::table('surnames')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(
+                static fn($row): array => [
+                    'id' => (int) $row->id,
+                    'name' => (string) $row->name,
+                ]
+            )
+            ->values()
+            ->all();
+
+        return [
+            'packages' => $packages,
+            'surnames' => $surnames,
+        ];
+    }
+
+    /**
+     * Register a candidate with profile fields and an explicit package (by UUID).
+     *
+     * @param  array<string, mixed>  $data
+     * @return array{user: User, token: string}
+     */
+    public function registerCandidate(array $data): array
+    {
+        return DB::transaction(function () use ($data): array {
+            $packageUuid = (string) $data['package_uuid'];
+            unset($data['package_uuid'], $data['password_confirmation']);
+
+            $packageId = (int) Package::query()->where('uuid', $packageUuid)->where('is_active', true)->value('id');
+            if ($packageId === 0) {
+                throw ValidationException::withMessages([
+                    'package_uuid' => ['The selected package is invalid.'],
+                ]);
+            }
+
+            /** @var User $user */
+            $user = User::create($data);
+
+            $guard = (string) config('auth.defaults.guard', 'web');
+            if (Role::query()->where('name', 'candidate')->where('guard_name', $guard)->exists()) {
+                $user->assignRole('candidate');
+            }
+
+            $this->attachSubscriptionForRegistration($user->id, $packageId);
+            $this->packagePermissionService->syncCandidatePermissions($user);
+
+            $token = $user->createToken('auth-token')->plainTextToken;
+
+            return ['user' => $user, 'token' => $token];
+        });
     }
 
     /**
@@ -162,14 +234,24 @@ class AuthService
         $defaultPackageId = (int) DB::table('packages')
             ->where('is_active', true)
             ->where('is_default_registration', true)
+            ->whereNull('deleted_at')
             ->value('id');
         if ($defaultPackageId === 0) {
             return;
         }
 
+        $this->attachSubscriptionForRegistration($userId, $defaultPackageId);
+    }
+
+    private function attachSubscriptionForRegistration(int $userId, int $packageId): void
+    {
+        if ($packageId <= 0) {
+            return;
+        }
+
         $now = now();
         DB::table('subscriptions')->updateOrInsert(
-            ['user_id' => $userId, 'package_id' => $defaultPackageId],
+            ['user_id' => $userId, 'package_id' => $packageId],
             [
                 'uuid' => (string) Str::uuid(),
                 'subscription_status' => 'active',
@@ -181,5 +263,43 @@ class AuthService
                 'created_at' => $now,
             ]
         );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function mapPublicRegistrationPackage(Package $package): array
+    {
+        $durationUnit = (string) ($package->duration_unit ?? 'year');
+        $durationDays = $durationUnit === 'year' ? 365 : 30;
+        $monthlyPrice = (float) ($package->monthly_price ?? 0);
+        $yearlyPrice = (float) ($package->yearly_price ?? ($package->price ?? 0));
+        $displayPrice = $durationUnit === 'year' ? $yearlyPrice : $monthlyPrice;
+        $pricePerDay = round($displayPrice / $durationDays, 2);
+        $durationValue = (int) ($package->getAttribute('duration_value') ?? 1);
+
+        $rawPrice = $package->getRawOriginal('price');
+        $rawDiscounted = $package->getRawOriginal('discounted_price');
+
+        return [
+            'id' => $package->id,
+            'uuid' => $package->uuid,
+            'name' => $package->name,
+            'code' => $package->code,
+            'description' => $package->description,
+            'durationUnit' => $durationUnit,
+            'durationValue' => $durationValue,
+            'durationDays' => $durationDays,
+            'pricePerDay' => $pricePerDay,
+            'monthlyPrice' => $monthlyPrice,
+            'yearlyPrice' => $yearlyPrice,
+            'price' => $rawPrice === null ? null : (float) $rawPrice,
+            'discountedPrice' => $rawDiscounted === null ? null : (float) $rawDiscounted,
+            'currency' => $package->currency,
+            'isActive' => (bool) $package->is_active,
+            'isDefaultRegistration' => (bool) ($package->is_default_registration ?? false),
+            'isPopular' => (bool) ($package->is_popular ?? false),
+            'sortOrder' => (int) ($package->sort_order ?? 0),
+        ];
     }
 }

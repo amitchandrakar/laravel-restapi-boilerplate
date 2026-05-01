@@ -8,6 +8,21 @@ use App\Http\Requests\Api\ApiFormRequest;
 
 class RegisterRequest extends ApiFormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if ($this->filled('name')) {
+            return;
+        }
+
+        $first = trim((string) $this->input('first_name', ''));
+        $last = trim((string) $this->input('last_name', ''));
+        if ($first !== '' && $last !== '') {
+            $this->merge([
+                'name' => $first . ' ' . $last,
+            ]);
+        }
+    }
+
     /**
      * Get the validation rules that apply to the request.
      */
@@ -15,6 +30,8 @@ class RegisterRequest extends ApiFormRequest
     {
         return [
             'name' => 'required|string|max:255',
+            'first_name' => ['sometimes', 'string', 'max:128'],
+            'last_name' => ['sometimes', 'string', 'max:128'],
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
         ];

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Events\ForgotPasswordRequestedEvent;
+use App\Http\Requests\Api\V1\CandidateRegistrationOptionsRequest;
 use App\Http\Requests\Api\V1\ChangePasswordRequest;
 use App\Http\Requests\Api\V1\ForgotPasswordRequest;
 use App\Http\Requests\Api\V1\LoginRequest;
+use App\Http\Requests\Api\V1\RegisterCandidateRequest;
 use App\Http\Requests\Api\V1\RegisterRequest;
 use App\Http\Requests\Api\V1\ResetPasswordRequest;
 use App\Http\Requests\Api\V1\UpdateProfileRequest;
@@ -34,6 +36,59 @@ class AuthController extends Controller
     use ApiResponse;
 
     public function __construct(protected AuthService $authService) {}
+
+    /**
+     * Public data for candidate registration (packages + surnames).
+     */
+    public function registrationOptions(CandidateRegistrationOptionsRequest $request): JsonResponse
+    {
+        return $this->successResponse(
+            $this->authService->registrationOptions(),
+            'Registration options fetched successfully'
+        );
+    }
+
+    /**
+     * Register a candidate with profile fields and selected package.
+     */
+    public function registerCandidate(RegisterCandidateRequest $request): JsonResponse
+    {
+        $result = $this->authService->registerCandidate($request->validated());
+        /** @var User $user */
+        $user = $result['user'];
+        $meta = $this->requestMeta($request);
+
+        LogAuditJob::dispatch(
+            $user->id,
+            'users',
+            (int) $user->id,
+            'register_candidate',
+            null,
+            ['email' => $user->email, 'package_uuid' => $request->input('package_uuid')],
+            $meta['ip'],
+            $meta['ua']
+        );
+        LogUserActivityJob::dispatch(
+            $user->id,
+            'auth.register_candidate',
+            'api_v1_auth',
+            ['email' => $user->email],
+            $meta['ip']
+        );
+        UpsertUserDeviceLogJob::dispatch($user->id, $meta['device_id'], 'web', $meta['device_name'], $meta['os_name']);
+
+        $user->refresh();
+
+        return $this->createdResponse(
+            AuthLoginResource::make([
+                'user' => UserResource::make($user),
+                'token' => $result['token'],
+                'token_type' => 'Bearer',
+                'permissions' => $user->getAllPermissions()->pluck('name')->values()->all(),
+            ]),
+            'Candidate registered successfully'
+        );
+    }
 
     /**
      * If the request includes user_id or userId, ensure it matches the authenticated user.
