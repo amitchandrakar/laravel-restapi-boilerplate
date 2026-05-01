@@ -46,7 +46,6 @@ class CandidateProfileSectionService
         return DB::transaction(function () use ($user, $section, $payload): User {
             match ($section) {
                 self::SECTION_BASICS => $this->saveUsersData($user, [
-                    'profile_slug' => $payload['profile_slug'] ?? null,
                     'email' => $payload['email'] ?? null,
                     'phone' => $payload['phone'] ?? null,
                     'profile_photo_url' => $payload['photo_url'] ?? null,

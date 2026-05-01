@@ -95,7 +95,6 @@ class CandidateUserResource extends JsonResource
             'featuredAt' => optional($user->featured_at)->toDateTimeString(),
             'sections' => [
                 'basics' => [
-                    'profileSlug' => data_get($user, 'profile_slug'),
                     'age' => $user->date_of_birth !== null ? now()->diffInYears($user->date_of_birth) : null,
                     'email' => $user->email,
                     'phone' => $user->phone,

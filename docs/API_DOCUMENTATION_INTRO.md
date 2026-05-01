@@ -85,6 +85,55 @@ Typical admin surfaces exposed over the API include (non-exhaustive): **candidat
 
 ---
 
+## Laravel building blocks used in this project
+
+- **Migrations**: Versioned schema changes live in `database/migrations` (core tables, profile extensions, compliance/KYC, featured flags, and more).
+- **Seeders**: Repeatable data bootstrapping in `database/seeders` (RBAC roles/permissions, package catalog, demo/master data).
+- **Models**: Eloquent models in `app/Models` define casts, relations, scopes, and UUID-centric lookup patterns.
+- **Controllers**: Versioned HTTP entrypoints in `app/Http/Controllers/Api/V1` keep request/response orchestration thin.
+- **Form Requests**: Validation and request authorization contracts in `app/Http/Requests/Api/V1`.
+- **Services**: Domain/business logic in `app/Services` (registration, candidate profile sections, KYC review, featured candidates, payments, reports).
+- **Observers**: Model lifecycle hooks in `app/Observers` for cross-cutting synchronization and side effects.
+- **Events / Listeners**: Event-driven decoupling for lifecycle actions and follow-up processing.
+- **Notifications**: Domain notifications for important system/user events.
+- **Queues / Jobs**: Asynchronous processing in `app/Jobs` for audit/activity logging and heavier background tasks.
+- **API Resources**: Stable, client-safe transformation layer in `app/Http/Resources/Api/V1`.
+
+---
+
+## Error handling and API contract strategy
+
+- **Unified envelope**: Responses are standardized via `ApiResponseBuilder` + `ApiResponse` trait.
+- **Validation errors**: Form Requests return consistent `422` payloads with field-level errors.
+- **Auth / permission errors**: Consistent `401`/`403` responses for token and RBAC failures.
+- **Not found / fallback**: Unknown routes and missing resources return normalized error shapes (`404`).
+- **Operational metadata**: Response `meta` includes request identifiers and timestamps to help traceability.
+
+---
+
+## Tooling, quality gates, and developer workflow
+
+- **Project setup script**: `scripts/setup-project.sh` automates local bootstrap steps.
+- **Git hooks**: Pre-commit hooks are installed to run checks before code is committed.
+- **Code style**: Laravel Pint is used for formatting and coding standards enforcement.
+- **Static analysis**: Larastan/PHPStan (`phpstan.neon`) enforces type-safe architecture.
+- **Tests**: PHPUnit feature tests validate real HTTP behaviour, permissions, and regressions.
+- **Documentation-first practice**: `docs/` includes module-level API docs, RBAC design, and database references.
+
+---
+
+## Security, compliance, and scalability strategies
+
+- **Security-by-default middleware**: Sanctum token auth, permission middleware, and API-focused middleware stack.
+- **Least privilege access model**: Fine-grained role/permission keys for admin operations and separate member entitlements via packages.
+- **Versioned APIs**: `/api/v1` boundary enables non-breaking evolution as the product grows.
+- **Service-layer domain boundaries**: Business rules centralized in services reduce controller complexity and improve maintainability.
+- **Asynchronous workloads**: Queued jobs keep request latency predictable and improve horizontal scalability.
+- **Compliance-oriented data model**: Verification/compliance tables support auditable KYC and account lifecycle workflows.
+- **Observability and traceability**: Audit/activity logging and consistent response metadata improve incident analysis and operations.
+
+---
+
 ## Using this documentation (and Postman)
 
 1. **Environment** — Set **base URL** (e.g. `https://your-host.example` or `http://localhost:8000`) and **Bearer token** variables for authenticated folders.
@@ -92,4 +141,4 @@ Typical admin surfaces exposed over the API include (non-exhaustive): **candidat
 3. **Errors** — Interpret **HTTP status** (`401`, `403`, `404`, `422`, `429`, `5xx`) together with the JSON **`error.code`** and optional **`errors`** / **`fields`** payload for validation.
 4. **Deep dives** — Use the linked markdown files in `docs/` for payloads, edge cases, and permission names per module.
 
-This introduction is meant to sit at the top of the API reference or Postman collection description so readers understand **what Alonti API is**, **how auth and authorisation work**, and **which engineering conventions** to expect before opening individual endpoint chapters.
+This introduction is meant to sit at the top of the API reference or Postman collection description so readers understand **what Alonti API is**, **which Laravel capabilities and packages are used**, **how auth/permissions/error handling work**, and **which scalability/security/compliance strategies** shape the implementation.

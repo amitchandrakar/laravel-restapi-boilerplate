@@ -12,25 +12,19 @@ class SaveCandidateBasicsRequest extends ApiFormRequest
 {
     public function rules(): array
     {
-        $routeUser = $this->route('user');
-        $ignoreId = null;
-        if ($routeUser instanceof User) {
-            $ignoreId = (int) $routeUser->id;
-        } elseif (is_numeric($routeUser)) {
-            $ignoreId = (int) $routeUser;
-        } elseif (is_string($routeUser) && $routeUser !== '') {
-            $ignoreId = (int) User::query()->where('uuid', $routeUser)->value('id');
+        $targetUser = $this->resolveTargetUser();
+        $ignoreId = $targetUser !== null ? $targetUser->id : $this->user()?->id;
+
+        $emailRules = ['sometimes', 'required', 'email', 'max:255'];
+
+        $incomingEmail = mb_strtolower(trim((string) $this->input('email', '')));
+        $currentEmail = mb_strtolower(trim((string) ($targetUser !== null ? $targetUser->email : '')));
+        if ($incomingEmail !== '' && $incomingEmail !== $currentEmail) {
+            $emailRules[] = Rule::unique('users', 'email')->ignore($ignoreId, 'id')->whereNull('deleted_at');
         }
 
         return [
-            'profile_slug' => ['nullable', 'string', 'max:255'],
-            'email' => [
-                'sometimes',
-                'required',
-                'email',
-                'max:255',
-                Rule::unique('users', 'email')->ignore($ignoreId, 'id')->whereNull('deleted_at'),
-            ],
+            'email' => $emailRules,
             'phone' => ['nullable', 'string', 'max:32'],
             'photo_url' => ['nullable', 'url', 'max:2048'],
             'religion' => ['nullable', 'string', 'max:128'],
@@ -38,5 +32,23 @@ class SaveCandidateBasicsRequest extends ApiFormRequest
             'sub_caste' => ['nullable', 'string', 'max:128'],
             'community' => ['nullable', 'string', 'max:128'],
         ];
+    }
+
+    private function resolveTargetUser(): ?User
+    {
+        $routeUser = $this->route('user');
+        if ($routeUser instanceof User) {
+            return $routeUser;
+        }
+        if (is_numeric($routeUser)) {
+            return User::query()->find((int) $routeUser);
+        }
+        if (is_string($routeUser) && $routeUser !== '') {
+            return User::query()->where('uuid', $routeUser)->first();
+        }
+
+        $authUser = $this->user();
+
+        return $authUser instanceof User ? $authUser : null;
     }
 }

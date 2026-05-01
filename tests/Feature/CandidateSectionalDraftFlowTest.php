@@ -23,7 +23,6 @@ class CandidateSectionalDraftFlowTest extends TestCase
 
         $this->actingAs($admin, 'sanctum')
             ->patchJson('/api/v1/admin/candidates/' . $candidateUuid . '/sections/basics', [
-                'profile_slug' => 'candidate-sections',
                 'email' => 'candidate-sections@example.com',
             ])
             ->assertStatus(200);
@@ -63,7 +62,8 @@ class CandidateSectionalDraftFlowTest extends TestCase
 
         $this->actingAs($candidate, 'sanctum')
             ->patchJson('/api/v1/auth/candidate/profile/basics', [
-                'profile_slug' => 'candidate-self-sections',
+                'email' => 'candidate-self-sections@example.com',
+                'phone' => '9999900000',
             ])
             ->assertStatus(200);
 

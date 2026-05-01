@@ -14,7 +14,6 @@ class SaveAdminCandidateFullProfileRequest extends ApiFormRequest
             'candidate_uuid' => ['sometimes', 'nullable', 'uuid'],
             'password' => ['sometimes', 'nullable', 'string', 'min:6', 'max:255'],
             'basics' => ['sometimes', 'array'],
-            'basics.profile_slug' => ['sometimes', 'nullable', 'string', 'max:255'],
             'photos' => ['sometimes', 'array'],
             'photos.photos' => ['sometimes', 'array', 'max:5'],
             'photos.photos.*' => ['required_with:photos.photos', 'url', 'max:2048'],

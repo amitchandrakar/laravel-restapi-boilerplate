@@ -38,7 +38,6 @@ class PublicFeaturedCandidateResource extends JsonResource
 
         return [
             'uuid' => $user->uuid,
-            'profileSlug' => data_get($user, 'profile_slug'),
             'firstName' => $user->first_name,
             'lastName' => $user->last_name,
             'photoUrl' => $photoUrl,

@@ -85,12 +85,12 @@ class CandidateUserController extends Controller
         return $this->createdResponse(CandidateUserResource::make($user), 'Candidate created successfully');
     }
 
-    public function show(Request $request, User $user): JsonResponse
+    public function show(Request $request, string $user): JsonResponse
     {
         if (!$request->user()?->can('admin.candidates.view')) {
             return $this->forbiddenResponse();
         }
-        $candidate = User::query()->candidates()->where('id', $user->id)->first();
+        $candidate = $this->findCandidateByUuid($user);
         if (!$candidate instanceof User) {
             return $this->notFoundResponse('Candidate not found');
         }
@@ -105,12 +105,12 @@ class CandidateUserController extends Controller
         return $this->successResponse(CandidateUserResource::make($candidate), 'Candidate fetched successfully');
     }
 
-    public function update(UpdateCandidateUserRequest $request, User $user): JsonResponse
+    public function update(UpdateCandidateUserRequest $request, string $user): JsonResponse
     {
         if (!$request->user()?->can('admin.candidates.edit')) {
             return $this->forbiddenResponse();
         }
-        $candidate = User::query()->candidates()->where('id', $user->id)->first();
+        $candidate = $this->findCandidateByUuid($user);
         if (!$candidate instanceof User) {
             return $this->notFoundResponse('Candidate not found');
         }
@@ -137,12 +137,12 @@ class CandidateUserController extends Controller
         return $this->successResponse(CandidateUserResource::make($updated), 'Candidate updated successfully');
     }
 
-    public function destroy(Request $request, User $user): JsonResponse
+    public function destroy(Request $request, string $user): JsonResponse
     {
         if (!$request->user()?->can('admin.candidates.delete')) {
             return $this->forbiddenResponse();
         }
-        $candidate = User::query()->candidates()->where('id', $user->id)->first();
+        $candidate = $this->findCandidateByUuid($user);
         if (!$candidate instanceof User) {
             return $this->notFoundResponse('Candidate not found');
         }
@@ -170,7 +170,7 @@ class CandidateUserController extends Controller
     }
 
     public function saveBasics(
-        User $user,
+        string $user,
         SaveCandidateBasicsRequest $request,
         CandidateProfileSectionService $sectionService
     ): JsonResponse {
@@ -178,7 +178,7 @@ class CandidateUserController extends Controller
     }
 
     public function savePhotos(
-        User $user,
+        string $user,
         SaveCandidatePhotosRequest $request,
         CandidateProfileSectionService $sectionService
     ): JsonResponse {
@@ -186,7 +186,7 @@ class CandidateUserController extends Controller
     }
 
     public function savePersonalDetails(
-        User $user,
+        string $user,
         SaveCandidatePersonalDetailsRequest $request,
         CandidateProfileSectionService $sectionService
     ): JsonResponse {
@@ -199,7 +199,7 @@ class CandidateUserController extends Controller
     }
 
     public function saveHoroscope(
-        User $user,
+        string $user,
         SaveCandidateHoroscopeRequest $request,
         CandidateProfileSectionService $sectionService
     ): JsonResponse {
@@ -207,7 +207,7 @@ class CandidateUserController extends Controller
     }
 
     public function saveLocationFamilyRoots(
-        User $user,
+        string $user,
         SaveCandidateLocationFamilyRootsRequest $request,
         CandidateProfileSectionService $sectionService
     ): JsonResponse {
@@ -220,7 +220,7 @@ class CandidateUserController extends Controller
     }
 
     public function saveCareerEducation(
-        User $user,
+        string $user,
         SaveCandidateCareerEducationRequest $request,
         CandidateProfileSectionService $sectionService
     ): JsonResponse {
@@ -233,7 +233,7 @@ class CandidateUserController extends Controller
     }
 
     public function saveFamilyBackground(
-        User $user,
+        string $user,
         SaveCandidateFamilyBackgroundRequest $request,
         CandidateProfileSectionService $sectionService
     ): JsonResponse {
@@ -246,7 +246,7 @@ class CandidateUserController extends Controller
     }
 
     public function saveLifestyle(
-        User $user,
+        string $user,
         SaveCandidateLifestyleRequest $request,
         CandidateProfileSectionService $sectionService
     ): JsonResponse {
@@ -254,7 +254,7 @@ class CandidateUserController extends Controller
     }
 
     public function savePartnerPreferences(
-        User $user,
+        string $user,
         SaveCandidatePartnerPreferencesRequest $request,
         CandidateProfileSectionService $sectionService
     ): JsonResponse {
@@ -268,13 +268,13 @@ class CandidateUserController extends Controller
 
     public function sectionProgress(
         Request $request,
-        User $user,
+        string $user,
         CandidateProfileSectionService $sectionService
     ): JsonResponse {
         if (!$request->user()?->can('admin.candidates.view')) {
             return $this->forbiddenResponse();
         }
-        $candidate = User::query()->candidates()->where('id', $user->id)->first();
+        $candidate = $this->findCandidateByUuid($user);
         if (!$candidate instanceof User) {
             return $this->notFoundResponse('Candidate not found');
         }
@@ -287,13 +287,13 @@ class CandidateUserController extends Controller
 
     public function publishProfile(
         Request $request,
-        User $user,
+        string $user,
         CandidateProfileSectionService $sectionService
     ): JsonResponse {
         if (!$request->user()?->can('admin.candidates.edit')) {
             return $this->forbiddenResponse();
         }
-        $candidate = User::query()->candidates()->where('id', $user->id)->first();
+        $candidate = $this->findCandidateByUuid($user);
         if (!$candidate instanceof User) {
             return $this->notFoundResponse('Candidate not found');
         }
@@ -310,12 +310,12 @@ class CandidateUserController extends Controller
         return $this->successResponse($result, 'Candidate profile published successfully');
     }
 
-    public function setFeatured(UpdateCandidateFeaturedRequest $request, User $user): JsonResponse
+    public function setFeatured(UpdateCandidateFeaturedRequest $request, string $user): JsonResponse
     {
         if (!$request->user()?->can('admin.candidates.feature')) {
             return $this->forbiddenResponse();
         }
-        $candidate = User::query()->candidates()->where('id', $user->id)->first();
+        $candidate = $this->findCandidateByUuid($user);
         if (!$candidate instanceof User) {
             return $this->notFoundResponse('Candidate not found');
         }
@@ -350,13 +350,13 @@ class CandidateUserController extends Controller
 
     public function saveFullProfile(
         SaveAdminCandidateFullProfileRequest $request,
-        User $user,
+        string $user,
         CandidateProfileSectionService $sectionService
     ): JsonResponse {
         if (!$request->user()?->can('admin.candidates.edit')) {
             return $this->forbiddenResponse();
         }
-        $candidate = User::query()->candidates()->where('id', $user->id)->first();
+        $candidate = $this->findCandidateByUuid($user);
         if (!$candidate instanceof User) {
             return $this->notFoundResponse('Candidate not found');
         }
@@ -444,14 +444,14 @@ class CandidateUserController extends Controller
 
     private function saveSection(
         FormRequest $request,
-        User $user,
+        string $user,
         string $section,
         CandidateProfileSectionService $sectionService
     ): JsonResponse {
         if (!$request->user()?->can('admin.candidates.edit')) {
             return $this->forbiddenResponse();
         }
-        $candidate = User::query()->candidates()->where('id', $user->id)->first();
+        $candidate = $this->findCandidateByUuid($user);
         if (!$candidate instanceof User) {
             return $this->notFoundResponse('Candidate not found');
         }
@@ -478,5 +478,10 @@ class CandidateUserController extends Controller
             ['section' => $section, 'completedSections' => $updated->completed_sections_json],
             'Candidate section saved successfully'
         );
+    }
+
+    private function findCandidateByUuid(string $uuid): ?User
+    {
+        return User::query()->candidates()->where('uuid', $uuid)->first();
     }
 }
