@@ -176,6 +176,12 @@ class RbacSeeder extends Seeder
                     'title' => 'Delete candidates',
                 ],
                 [
+                    'name' => 'admin.candidates.feature',
+                    'module_code' => 'admin_candidates',
+                    'action' => 'edit',
+                    'title' => 'Mark candidates as featured',
+                ],
+                [
                     'name' => 'admin.teams.view',
                     'module_code' => 'admin_teams',
                     'action' => 'view',

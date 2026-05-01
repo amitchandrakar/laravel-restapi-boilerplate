@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Api\V1\Controller;
+use App\Http\Requests\Api\V1\Admin\UpdateCandidateFeaturedRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveAdminCandidateFullProfileRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidateBasicsRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidateCareerEducationRequest;
@@ -23,13 +24,18 @@ use App\Jobs\LogUserActivityJob;
 use App\Models\User;
 use App\Services\CandidateProfileSectionService;
 use App\Services\CandidateUserService;
+use App\Services\FeaturedCandidateService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class CandidateUserController extends Controller
 {
-    public function __construct(private readonly CandidateUserService $service) {}
+    public function __construct(
+        private readonly CandidateUserService $service,
+        private readonly FeaturedCandidateService $featuredCandidateService
+    ) {}
 
     public function index(Request $request): JsonResponse
     {
@@ -302,6 +308,44 @@ class CandidateUserController extends Controller
         }
 
         return $this->successResponse($result, 'Candidate profile published successfully');
+    }
+
+    public function setFeatured(UpdateCandidateFeaturedRequest $request, User $user): JsonResponse
+    {
+        if (!$request->user()?->can('admin.candidates.feature')) {
+            return $this->forbiddenResponse();
+        }
+        $candidate = User::query()->candidates()->where('id', $user->id)->first();
+        if (!$candidate instanceof User) {
+            return $this->notFoundResponse('Candidate not found');
+        }
+
+        $isFeatured = (bool) $request->validated('isFeatured');
+        try {
+            $updated = $this->featuredCandidateService->setFeatured(
+                $candidate,
+                $isFeatured,
+                (int) $request->user()->id
+            );
+        } catch (ValidationException $e) {
+            return $this->validationErrorResponse($e->errors(), 'Validation failed');
+        }
+
+        LogAuditJob::dispatch(
+            (int) $request->user()->id,
+            'users',
+            (int) $updated->id,
+            'candidate.featured',
+            null,
+            ['is_featured' => $isFeatured],
+            $request->ip(),
+            $request->userAgent()
+        );
+
+        return $this->successResponse(
+            CandidateUserResource::make($updated),
+            $isFeatured ? 'Candidate marked as featured' : 'Candidate unmarked as featured'
+        );
     }
 
     public function saveFullProfile(

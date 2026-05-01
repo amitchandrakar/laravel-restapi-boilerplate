@@ -91,6 +91,8 @@ class CandidateUserResource extends JsonResource
             'profileStatus' => data_get($user, 'profile_status', 'draft'),
             'completedSections' => data_get($user, 'completed_sections_json', []),
             'publishedAt' => optional($user->published_at)->toDateTimeString(),
+            'isFeatured' => (bool) ($user->is_featured ?? false),
+            'featuredAt' => optional($user->featured_at)->toDateTimeString(),
             'sections' => [
                 'basics' => [
                     'profileSlug' => data_get($user, 'profile_slug'),

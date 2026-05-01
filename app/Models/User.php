@@ -9,6 +9,7 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
@@ -45,6 +46,9 @@ class User extends BaseModel implements Authenticatable, AuthorizableContract
             'date_of_birth' => 'date',
             'completed_sections_json' => 'array',
             'published_at' => 'datetime',
+            'is_featured' => 'boolean',
+            'featured_at' => 'datetime',
+            'featured_by' => 'integer',
         ];
     }
 
@@ -65,6 +69,11 @@ class User extends BaseModel implements Authenticatable, AuthorizableContract
     public function primaryRole(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    public function verificationDocuments(): HasMany
+    {
+        return $this->hasMany(UserVerificationDocument::class, 'user_id');
     }
 
     /**

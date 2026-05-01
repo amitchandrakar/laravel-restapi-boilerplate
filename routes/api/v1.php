@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\Admin\AdminRoleController;
 use App\Http\Controllers\Api\V1\Admin\CandidateUserController;
+use App\Http\Controllers\Api\V1\Admin\KycDocumentController;
 use App\Http\Controllers\Api\V1\Admin\PackageController;
 use App\Http\Controllers\Api\V1\Admin\PaymentController;
 use App\Http\Controllers\Api\V1\Admin\ReportController;
@@ -12,9 +13,17 @@ use App\Http\Controllers\Api\V1\Admin\SiteSettingsController;
 use App\Http\Controllers\Api\V1\Admin\SocialLoginSettingsController;
 use App\Http\Controllers\Api\V1\Admin\TeamUserController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CandidateKycController;
 use App\Http\Controllers\Api\V1\CandidateProfileController;
+use App\Http\Controllers\Api\V1\PublicFeaturedCandidateController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
+
+Route::prefix('public')
+    ->middleware('throttle:120,1')
+    ->group(function () {
+        Route::get('featured-candidates', [PublicFeaturedCandidateController::class, 'index']);
+    });
 
 Route::prefix('auth')->group(function () {
     Route::get('registration', [AuthController::class, 'registrationOptions']);
@@ -43,6 +52,11 @@ Route::prefix('auth')->group(function () {
             Route::patch('partner-preferences', [CandidateProfileController::class, 'savePartnerPreferences']);
             Route::get('progress', [CandidateProfileController::class, 'progress']);
             Route::post('publish', [CandidateProfileController::class, 'publish']);
+        });
+
+        Route::prefix('candidate/kyc')->group(function () {
+            Route::get('documents', [CandidateKycController::class, 'index']);
+            Route::put('documents', [CandidateKycController::class, 'upsert']);
         });
     });
 });
@@ -161,6 +175,12 @@ Route::prefix('admin')
         Route::put('candidates/profile', [CandidateUserController::class, 'saveCompleteProfile'])->middleware(
             'permission:admin.candidates.edit'
         );
+        Route::get('candidates/kyc/pending', [KycDocumentController::class, 'pending'])->middleware(
+            'permission:admin.candidates.view'
+        );
+        Route::patch('candidates/kyc/documents/{document:uuid}', [KycDocumentController::class, 'review'])->middleware(
+            'permission:admin.candidates.edit'
+        );
         Route::get('candidates/{user:uuid}', [CandidateUserController::class, 'show'])->middleware(
             'permission:admin.candidates.view'
         );
@@ -213,6 +233,9 @@ Route::prefix('admin')
         ])->middleware('permission:admin.candidates.view');
         Route::post('candidates/{user:uuid}/publish', [CandidateUserController::class, 'publishProfile'])->middleware(
             'permission:admin.candidates.edit'
+        );
+        Route::patch('candidates/{user:uuid}/featured', [CandidateUserController::class, 'setFeatured'])->middleware(
+            'permission:admin.candidates.feature'
         );
         Route::put('candidates/{user:uuid}/profile', [CandidateUserController::class, 'saveFullProfile'])->middleware(
             'permission:admin.candidates.edit'
