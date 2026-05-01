@@ -109,6 +109,7 @@ class RbacSeeder extends Seeder
             ['code' => 'admin_dashboard', 'name' => 'Admin — Dashboard', 'sort_order' => ++$n],
             ['code' => 'admin_candidates', 'name' => 'Admin — Candidates', 'sort_order' => ++$n],
             ['code' => 'admin_teams', 'name' => 'Admin — Teams', 'sort_order' => ++$n],
+            ['code' => 'admin_users', 'name' => 'Admin — Users (API)', 'sort_order' => ++$n],
             ['code' => 'admin_packages', 'name' => 'Admin — Packages', 'sort_order' => ++$n],
             ['code' => 'admin_payments', 'name' => 'Admin — Payments', 'sort_order' => ++$n],
             ['code' => 'admin_reports_state', 'name' => 'Admin — Reports (State)', 'sort_order' => ++$n],
@@ -197,6 +198,30 @@ class RbacSeeder extends Seeder
                     'module_code' => 'admin_teams',
                     'action' => 'delete',
                     'title' => 'Delete teams',
+                ],
+                [
+                    'name' => 'admin.users.view',
+                    'module_code' => 'admin_users',
+                    'action' => 'view',
+                    'title' => 'View users (API)',
+                ],
+                [
+                    'name' => 'admin.users.add',
+                    'module_code' => 'admin_users',
+                    'action' => 'add',
+                    'title' => 'Create users (API)',
+                ],
+                [
+                    'name' => 'admin.users.edit',
+                    'module_code' => 'admin_users',
+                    'action' => 'edit',
+                    'title' => 'Edit users (API)',
+                ],
+                [
+                    'name' => 'admin.users.delete',
+                    'module_code' => 'admin_users',
+                    'action' => 'delete',
+                    'title' => 'Delete users (API)',
                 ],
                 [
                     'name' => 'admin.packages.view',

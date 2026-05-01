@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Exceptions\Handler as AppExceptionHandler;
 use App\Models\Package;
 use App\Models\Subscription;
 use App\Models\User;
@@ -11,6 +12,7 @@ use App\Observers\PackageObserver;
 use App\Observers\SubscriptionObserver;
 use App\Observers\UserObserver;
 use Hashids\Hashids;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -21,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->singleton(ExceptionHandler::class, AppExceptionHandler::class);
+
         $this->app->singleton('hashid', function () {
             $salt = config('hashids.salt', config('app.key', ''));
             $minHashLength = (int) config('hashids.min_length', 0);

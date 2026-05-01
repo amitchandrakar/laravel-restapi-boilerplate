@@ -20,7 +20,9 @@ class ReportService
             ->whereNull('users.deleted_at');
 
         $totalCandidates = (int) (clone $candidateBaseQuery)->count();
-        $newCandidates7Days = (int) (clone $candidateBaseQuery)->where('users.created_at', '>=', now()->subDays(7))->count();
+        $newCandidates7Days = (int) (clone $candidateBaseQuery)
+            ->where('users.created_at', '>=', now()->subDays(7))
+            ->count();
         $newCandidates30Days = (int) (clone $candidateBaseQuery)
             ->where('users.created_at', '>=', now()->subDays(30))
             ->count();
@@ -60,13 +62,16 @@ class ReportService
             ->count();
 
         $activeMatchesTotal = (int) DB::table('matches')->where('match_status', 'active')->count();
-        $profileViews7Days = (int) DB::table('profile_views')->where('viewed_at', '>=', now()->subDays(7))->count();
+        $profileViews7Days = (int) DB::table('profile_views')
+            ->where('viewed_at', '>=', now()->subDays(7))
+            ->count();
         $contactActionsTotal = (int) DB::table('contact_requests')->count();
 
-        $successStories = (int) (DB::table('settings')
-            ->where('group_key', 'metrics')
-            ->whereIn('setting_key', ['success_stories_landing', 'success_stories_count'])
-            ->value('setting_value') ?? 0);
+        $successStories =
+            (int) (DB::table('settings')
+                ->where('group_key', 'metrics')
+                ->whereIn('setting_key', ['success_stories_landing', 'success_stories_count'])
+                ->value('setting_value') ?? 0);
 
         $maleCount = (int) (clone $candidateBaseQuery)->whereRaw('LOWER(users.gender) = ?', ['male'])->count();
         $femaleCount = (int) (clone $candidateBaseQuery)->whereRaw('LOWER(users.gender) = ?', ['female'])->count();
@@ -80,9 +85,10 @@ class ReportService
             'otherPercent' => $totalCandidates > 0 ? round(($otherCount / $totalCandidates) * 100, 2) : 0.0,
         ];
 
-        $ageExpression = DB::getDriverName() === 'sqlite'
-            ? "CAST((julianday('now') - julianday(users.date_of_birth)) / 365.25 AS INTEGER)"
-            : 'TIMESTAMPDIFF(YEAR, users.date_of_birth, CURDATE())';
+        $ageExpression =
+            DB::getDriverName() === 'sqlite'
+                ? "CAST((julianday('now') - julianday(users.date_of_birth)) / 365.25 AS INTEGER)"
+                : 'TIMESTAMPDIFF(YEAR, users.date_of_birth, CURDATE())';
 
         $candidatesByAge = DB::table('users')
             ->join('roles', 'roles.id', '=', 'users.role_id')
@@ -93,7 +99,7 @@ class ReportService
             ->groupBy('age')
             ->orderBy('age')
             ->get()
-            ->map(static fn ($row): array => ['age' => (int) $row->age, 'total' => (int) $row->total])
+            ->map(static fn($row): array => ['age' => (int) $row->age, 'total' => (int) $row->total])
             ->values()
             ->all();
 
@@ -106,7 +112,7 @@ class ReportService
         $teamsByLocationTotal = max(1, (int) $teamsByLocationRaw->sum('total'));
         $teamsByLocation = $teamsByLocationRaw
             ->map(
-                static fn ($row): array => [
+                static fn($row): array => [
                     'location' => (string) $row->location,
                     'total' => (int) $row->total,
                     'percent' => round(((int) $row->total / $teamsByLocationTotal) * 100, 2),
@@ -121,7 +127,7 @@ class ReportService
             ->orderByDesc('total')
             ->limit(10)
             ->get()
-            ->map(static fn ($row): array => ['community' => (string) $row->community, 'total' => (int) $row->total])
+            ->map(static fn($row): array => ['community' => (string) $row->community, 'total' => (int) $row->total])
             ->values()
             ->all();
 

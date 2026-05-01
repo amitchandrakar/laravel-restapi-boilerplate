@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Helpers\HttpStatusCode;
+use App\Models\Package;
+use App\Models\Payment;
+use App\Models\Role;
+use App\Models\User;
 use App\Support\ApiResponseBuilder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
@@ -90,17 +94,20 @@ class Handler extends ExceptionHandler
             return $this->convertValidationExceptionToResponse($exception, $request);
         }
 
-        if ($exception instanceof ModelNotFoundException) {
-            return ApiResponseBuilder::error(
-                'Resource not found',
-                HttpStatusCode::NOT_FOUND,
-                ApiResponseBuilder::ERROR_NOT_FOUND,
-                'Resource not found',
-                null
-            );
-        }
-
         if ($exception instanceof NotFoundHttpException) {
+            $previous = $exception->getPrevious();
+            if ($previous instanceof ModelNotFoundException) {
+                $message = $this->modelNotFoundMessage($previous);
+
+                return ApiResponseBuilder::error(
+                    $message,
+                    HttpStatusCode::NOT_FOUND,
+                    ApiResponseBuilder::ERROR_NOT_FOUND,
+                    $message,
+                    null
+                );
+            }
+
             return ApiResponseBuilder::error(
                 'Endpoint not found',
                 HttpStatusCode::NOT_FOUND,
@@ -141,11 +148,13 @@ class Handler extends ExceptionHandler
         }
 
         if ($exception instanceof SpatieUnauthorizedException) {
+            $message = $exception->getMessage() ?: 'User does not have required permission.';
+
             return ApiResponseBuilder::error(
-                'Forbidden',
+                $message,
                 HttpStatusCode::FORBIDDEN,
                 ApiResponseBuilder::ERROR_FORBIDDEN,
-                'User does not have required permission.',
+                $message,
                 null
             );
         }
@@ -272,5 +281,16 @@ class Handler extends ExceptionHandler
             $exception->getMessage() ?: 'Unauthenticated',
             null
         );
+    }
+
+    private function modelNotFoundMessage(ModelNotFoundException $exception): string
+    {
+        return match ($exception->getModel()) {
+            Role::class => 'Role not found',
+            Payment::class => 'Payment not found',
+            Package::class => 'Package not found',
+            User::class => 'User not found',
+            default => 'Resource not found',
+        };
     }
 }

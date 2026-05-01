@@ -102,7 +102,7 @@ trait ApiResponse
     /**
      * Return a forbidden response (403).
      */
-    protected function forbiddenResponse(string $message = 'Forbidden'): JsonResponse
+    protected function forbiddenResponse(string $message = 'User does not have required permission.'): JsonResponse
     {
         return $this->errorResponse($message, 403, ApiResponseBuilder::ERROR_FORBIDDEN, $message, null);
     }

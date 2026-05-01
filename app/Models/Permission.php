@@ -8,6 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Spatie\Permission\Models\Permission as SpatiePermission;
 
+/**
+ * Extended Spatie permission (see migrations extending `permissions`).
+ *
+ * @property string|null $uuid
+ * @property int|null $module_id
+ * @property string|null $title
+ */
 class Permission extends SpatiePermission
 {
     public function module(): BelongsTo

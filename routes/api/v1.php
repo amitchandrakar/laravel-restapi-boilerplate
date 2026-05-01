@@ -2,10 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\V1\Admin\AdminRoleController;
 use App\Http\Controllers\Api\V1\Admin\CandidateUserController;
 use App\Http\Controllers\Api\V1\Admin\PackageController;
 use App\Http\Controllers\Api\V1\Admin\PaymentController;
 use App\Http\Controllers\Api\V1\Admin\ReportController;
+use App\Http\Controllers\Api\V1\Admin\SeoSettingsController;
+use App\Http\Controllers\Api\V1\Admin\SiteSettingsController;
+use App\Http\Controllers\Api\V1\Admin\SocialLoginSettingsController;
 use App\Http\Controllers\Api\V1\Admin\TeamUserController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CandidateProfileController;
@@ -41,7 +45,15 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-Route::middleware('auth:sanctum')->apiResource('users', UserController::class);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('users', [UserController::class, 'index'])->middleware('permission:admin.users.view');
+    Route::post('users', [UserController::class, 'store'])->middleware('permission:admin.users.add');
+    Route::get('users/{user}', [UserController::class, 'show'])->middleware('permission:admin.users.view');
+    Route::match(['put', 'patch'], 'users/{user}', [UserController::class, 'update'])->middleware(
+        'permission:admin.users.edit'
+    );
+    Route::delete('users/{user}', [UserController::class, 'destroy'])->middleware('permission:admin.users.delete');
+});
 
 Route::prefix('admin')
     ->middleware(['auth:sanctum'])
@@ -91,6 +103,39 @@ Route::prefix('admin')
         );
         Route::get('dashboard/stats', [ReportController::class, 'dashboardStats'])->middleware(
             'permission:admin.dashboard.view'
+        );
+        Route::get('settings/seo', [SeoSettingsController::class, 'show'])->middleware(
+            'permission:admin.settings.seo.view'
+        );
+        Route::get('settings/site', [SiteSettingsController::class, 'show'])->middleware(
+            'permission:admin.settings.site.view'
+        );
+        Route::put('settings/seo', [SeoSettingsController::class, 'update'])->middleware(
+            'permission:admin.settings.seo.edit'
+        );
+        Route::put('settings/site', [SiteSettingsController::class, 'update'])->middleware(
+            'permission:admin.settings.site.edit'
+        );
+        Route::get('settings/social-login', [SocialLoginSettingsController::class, 'show'])->middleware(
+            'permission:admin.settings.social.view'
+        );
+        Route::put('settings/social-login', [SocialLoginSettingsController::class, 'update'])->middleware(
+            'permission:admin.settings.social.edit'
+        );
+        Route::get('settings/roles', [AdminRoleController::class, 'index'])->middleware(
+            'permission:admin.settings.roles.view'
+        );
+        Route::post('settings/roles', [AdminRoleController::class, 'store'])->middleware(
+            'permission:admin.settings.roles.edit'
+        );
+        Route::get('settings/roles/{role:uuid}/permissions', [AdminRoleController::class, 'permissions'])->middleware(
+            'permission:admin.settings.roles.view'
+        );
+        Route::put('settings/roles/{role:uuid}', [AdminRoleController::class, 'update'])->middleware(
+            'permission:admin.settings.roles.edit'
+        );
+        Route::delete('settings/roles/{role:uuid}', [AdminRoleController::class, 'destroy'])->middleware(
+            'permission:admin.settings.roles.edit'
         );
 
         Route::get('team-users', [TeamUserController::class, 'index'])->middleware('permission:admin.teams.view');
