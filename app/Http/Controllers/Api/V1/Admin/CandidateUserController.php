@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Http\Controllers\Api\V1\Controller;
 use App\Http\Requests\Api\V1\Admin\UpdateCandidateFeaturedRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveAdminCandidateFullProfileRequest;
-use App\Http\Requests\Api\V1\Candidate\SaveCandidateBasicsRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidateCareerEducationRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidateFamilyBackgroundRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidateHoroscopeRequest;
@@ -18,6 +17,7 @@ use App\Http\Requests\Api\V1\Candidate\SaveCandidatePersonalDetailsRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidatePhotosRequest;
 use App\Http\Requests\Api\V1\StoreCandidateUserRequest;
 use App\Http\Requests\Api\V1\UpdateCandidateUserRequest;
+use App\Http\Resources\Api\V1\AdminCandidateProfileDetailsResource;
 use App\Http\Resources\Api\V1\CandidateUserResource;
 use App\Jobs\LogAuditJob;
 use App\Jobs\LogUserActivityJob;
@@ -87,9 +87,9 @@ class CandidateUserController extends Controller
 
     public function show(Request $request, string $user): JsonResponse
     {
-        if (!$request->user()?->can('admin.candidates.view')) {
-            return $this->forbiddenResponse();
-        }
+        // if (!$request->user()?->can('admin.candidates.view')) {
+        //     return $this->forbiddenResponse();
+        // }
         $candidate = $this->findCandidateByUuid($user);
         if (!$candidate instanceof User) {
             return $this->notFoundResponse('Candidate not found');
@@ -103,6 +103,29 @@ class CandidateUserController extends Controller
         );
 
         return $this->successResponse(CandidateUserResource::make($candidate), 'Candidate fetched successfully');
+    }
+
+    public function profileDetails(Request $request, string $user): JsonResponse
+    {
+        $candidate = $this->findCandidateByUuid($user);
+        if (!$candidate instanceof User) {
+            return $this->notFoundResponse('Candidate not found');
+        }
+        if (!$this->actorMayViewCandidateProfileDetails($request, $candidate)) {
+            return $this->forbiddenResponse();
+        }
+        LogUserActivityJob::dispatch(
+            (int) $request->user()->id,
+            'admin.candidates.profile_details',
+            'api_v1_admin',
+            ['user_id' => $candidate->id],
+            $request->ip()
+        );
+
+        return $this->successResponse(
+            AdminCandidateProfileDetailsResource::make($candidate),
+            'Candidate profile details fetched successfully'
+        );
     }
 
     public function update(UpdateCandidateUserRequest $request, string $user): JsonResponse
@@ -167,14 +190,6 @@ class CandidateUserController extends Controller
         );
 
         return $this->successResponse(null, 'Candidate deleted successfully');
-    }
-
-    public function saveBasics(
-        string $user,
-        SaveCandidateBasicsRequest $request,
-        CandidateProfileSectionService $sectionService
-    ): JsonResponse {
-        return $this->saveSection($request, $user, CandidateProfileSectionService::SECTION_BASICS, $sectionService);
     }
 
     public function savePhotos(
@@ -455,6 +470,9 @@ class CandidateUserController extends Controller
         if (!$candidate instanceof User) {
             return $this->notFoundResponse('Candidate not found');
         }
+        if (!$this->actorMayEditThisCandidateProfile($request, $candidate)) {
+            return $this->forbiddenResponse('You can only edit your own candidate profile.');
+        }
         $updated = $sectionService->saveSection($candidate, $section, $request->validated());
         LogAuditJob::dispatch(
             (int) $request->user()->id,
@@ -483,5 +501,38 @@ class CandidateUserController extends Controller
     private function findCandidateByUuid(string $uuid): ?User
     {
         return User::query()->candidates()->where('uuid', $uuid)->first();
+    }
+
+    /**
+     * Staff with `admin.candidates.view` may read any candidate; any user with the `candidate` role may read
+     * any candidate's profile details (read-only payload for in-app profile viewing).
+     */
+    private function actorMayViewCandidateProfileDetails(Request $request, User $candidate): bool
+    {
+        $actor = $request->user();
+        if (!$actor instanceof User) {
+            return false;
+        }
+        if ($actor->can('admin.candidates.view')) {
+            return true;
+        }
+
+        return $actor->hasRole('candidate');
+    }
+
+    /**
+     * Candidates may only save sections for their own user record; staff (admin/reviewer) may edit any candidate.
+     */
+    private function actorMayEditThisCandidateProfile(Request $request, User $candidate): bool
+    {
+        $actor = $request->user();
+        if (!$actor instanceof User) {
+            return false;
+        }
+        if ((int) $actor->id === (int) $candidate->id) {
+            return true;
+        }
+
+        return $actor->hasAnyRole(['admin', 'reviewer']);
     }
 }

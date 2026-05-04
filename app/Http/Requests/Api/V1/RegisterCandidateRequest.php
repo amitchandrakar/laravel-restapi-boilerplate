@@ -10,6 +10,14 @@ use Illuminate\Validation\Rules\Password;
 
 class RegisterCandidateRequest extends ApiFormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $email = $this->input('email');
+        if ($email === null || (is_string($email) && trim($email) === '')) {
+            $this->merge(['email' => null]);
+        }
+    }
+
     /**
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<int, mixed>|string>
      */
@@ -24,7 +32,7 @@ class RegisterCandidateRequest extends ApiFormRequest
                 Rule::exists('surnames', 'name')->where('is_active', true),
             ],
             'email' => [
-                'required',
+                'nullable',
                 'string',
                 'email',
                 'max:255',

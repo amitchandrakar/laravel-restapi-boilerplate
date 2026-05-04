@@ -14,10 +14,6 @@ class SaveCandidateLifestyleRequest extends ApiFormRequest
             'diet' => ['nullable', 'string', 'max:64'],
             'smoking' => ['nullable', 'string', 'max:64'],
             'drinking' => ['nullable', 'string', 'max:64'],
-            'hobbies' => ['nullable', 'string', 'max:500'],
-            'interests' => ['nullable', 'string', 'max:500'],
-            'likes' => ['nullable', 'string', 'max:500'],
-            'dislikes' => ['nullable', 'string', 'max:500'],
         ];
     }
 }

@@ -18,6 +18,7 @@ class PublicFeaturedCandidateResource extends JsonResource
     {
         /** @var User $user */
         $user = $this->resource;
+        $defaultPhotoUrl = (string) config('custom.image.profile_default', '/images/Coming-Soon.png');
 
         $photoUrl = DB::table('user_images')
             ->where('user_id', $user->id)
@@ -33,8 +34,11 @@ class PublicFeaturedCandidateResource extends JsonResource
                 ->orderBy('sort_order')
                 ->value('image_url');
         }
+        if (!is_string($photoUrl) || $photoUrl === '') {
+            $photoUrl = $defaultPhotoUrl;
+        }
 
-        $age = $user->date_of_birth !== null ? now()->diffInYears($user->date_of_birth) : null;
+        $age = $user->date_of_birth !== null ? $user->date_of_birth->age : null;
 
         return [
             'uuid' => $user->uuid,

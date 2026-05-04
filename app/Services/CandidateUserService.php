@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class CandidateUserService
 {
@@ -25,6 +26,12 @@ class CandidateUserService
             $data['last_name'] = $parts[1] ?? '';
             unset($data['name']);
         }
+
+        $password = $data['password'] ?? null;
+        if ($password === null || $password === '') {
+            $data['password'] = Str::password(24);
+        }
+
         $data['role_id'] = $this->candidateRoleId();
 
         return DB::transaction(fn(): User => User::query()->create($data));
@@ -33,6 +40,9 @@ class CandidateUserService
     public function update(User $user, array $data): User
     {
         unset($data['password_confirmation']);
+        if (array_key_exists('password', $data) && ($data['password'] === null || $data['password'] === '')) {
+            unset($data['password']);
+        }
         if (isset($data['name'])) {
             $parts = preg_split('/\s+/', trim((string) $data['name']), 2, PREG_SPLIT_NO_EMPTY);
             $data['first_name'] = $parts[0] ?? '';

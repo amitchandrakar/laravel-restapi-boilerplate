@@ -12,8 +12,9 @@ class DemoSubscriptionPaymentSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->seedForUserAndPackage('candidate@example.com', 'PARICHAY_FREE', 0.0);
-        $this->seedForUserAndPackage('p.candidate@example.com', 'RISHTA_PRO', 730.0);
+        $this->seedForUserAndPackage('candidate.parichay@example.com', 'PARICHAY_FREE', 0.0);
+        $this->seedForUserAndPackage('candidate.rishta@example.com', 'RISHTA_PRO', 730.0);
+        $this->seedForUserAndPackage('candidate.talash@example.com', 'TALASH_BASIC', 365.0);
     }
 
     private function seedForUserAndPackage(string $email, string $packageCode, float $amount): void

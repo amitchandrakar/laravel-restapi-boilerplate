@@ -2,7 +2,9 @@
 
 use App\Http\Middleware\AttachRequestId;
 use App\Http\Middleware\EnsureSanctumToken;
+use App\Http\Middleware\FlushSanctumGuardState;
 use App\Http\Middleware\ForceJsonResponse;
+use App\Http\Middleware\LogApiCalls;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -27,8 +29,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // API middleware: request ID first, then force JSON
         $middleware->api(
             append: [
+                FlushSanctumGuardState::class,
                 AttachRequestId::class,
                 ForceJsonResponse::class,
+                LogApiCalls::class,
                 // EnsureSanctumToken::class,
             ]
         );

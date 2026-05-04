@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Events\ForgotPasswordRequestedEvent;
+use App\Models\Role;
 use App\Models\User;
 use Database\Seeders\PackageCatalogSeeder;
 use Database\Seeders\RbacSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Laravel\Sanctum\PersonalAccessToken;
 use Tests\TestCase;
 
 class AuthFlowTest extends TestCase
@@ -41,12 +43,15 @@ class AuthFlowTest extends TestCase
         $registeredUser = User::query()->where('email', $email)->first();
         $this->assertNotNull($registeredUser);
         $this->assertTrue($registeredUser->hasRole('candidate'));
+        $candidateRoleId = (int) Role::query()->where('name', 'candidate')->where('guard_name', 'web')->value('id');
+        $this->assertSame($candidateRoleId, (int) $registeredUser->role_id);
 
         $login = $this->postJson('/api/v1/auth/login', [
-            'email' => $email,
+            'username' => $email,
             'password' => self::REGISTER_PASSWORD,
         ]);
-        $login->assertStatus(200)->assertJsonPath('success', true)->assertJsonPath('data.permissions', []);
+        $login->assertStatus(200)->assertJsonPath('success', true);
+        $this->assertContains('admin.candidates.edit', (array) $login->json('data.permissions'));
         $loginToken = $login->json('data.token');
         $this->assertIsString($loginToken);
 
@@ -76,12 +81,12 @@ class AuthFlowTest extends TestCase
         $reset->assertStatus(200)->assertJsonPath('success', true);
 
         $this->postJson('/api/v1/auth/login', [
-            'email' => $email,
+            'username' => $email,
             'password' => self::REGISTER_PASSWORD,
         ])->assertStatus(401);
 
         $final = $this->postJson('/api/v1/auth/login', [
-            'email' => $email,
+            'username' => $email,
             'password' => self::NEW_PASSWORD_AFTER_RESET,
         ]);
         $final->assertStatus(200)->assertJsonPath('success', true);
@@ -166,6 +171,44 @@ class AuthFlowTest extends TestCase
             ->postJson('/api/v1/auth/logout')
             ->assertStatus(200)
             ->assertJsonPath('success', true);
+
+        $this->assertNull(
+            PersonalAccessToken::findToken($newToken),
+            'Sanctum token should be removed from storage after logout'
+        );
+
+        $this->withToken($newToken)->getJson('/api/v1/auth/me')->assertStatus(401);
+    }
+
+    public function test_login_accepts_phone_number(): void
+    {
+        $this->seed(RbacSeeder::class);
+
+        /** @var User $user */
+        $user = User::query()->create([
+            'first_name' => 'Phone',
+            'last_name' => 'Login',
+            'email' => 'phone-login-' . uniqid('', true) . '@example.com',
+            'phone' => '9876500011',
+            'password' => 'Password@phone1',
+            'status' => 'active',
+        ]);
+        $user->assignRole('candidate');
+
+        $this->postJson('/api/v1/auth/login', [
+            'username' => '9876500011',
+            'password' => 'Password@phone1',
+        ])
+            ->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.user.id', $user->id);
+
+        $this->postJson('/api/v1/auth/login', [
+            'username' => $user->email,
+            'password' => 'Password@phone1',
+        ])
+            ->assertStatus(200)
+            ->assertJsonPath('data.user.id', $user->id);
     }
 
     public function test_update_profile_and_change_password_flow(): void
@@ -196,12 +239,12 @@ class AuthFlowTest extends TestCase
             ->assertJsonPath('success', true);
 
         $this->postJson('/api/v1/auth/login', [
-            'email' => $email,
+            'username' => $email,
             'password' => $password,
         ])->assertStatus(401);
 
         $this->postJson('/api/v1/auth/login', [
-            'email' => $email,
+            'username' => $email,
             'password' => 'Password@changed1',
         ])
             ->assertStatus(200)
@@ -224,7 +267,7 @@ class AuthFlowTest extends TestCase
         ])->assertStatus(201);
 
         $login = $this->postJson('/api/v1/auth/login', [
-            'email' => $email,
+            'username' => $email,
             'password' => $password,
         ]);
         $login->assertStatus(200)->assertJsonPath('success', true);

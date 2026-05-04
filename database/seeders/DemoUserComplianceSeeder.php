@@ -31,9 +31,12 @@ class DemoUserComplianceSeeder extends Seeder
         foreach ($users as $user) {
             $userId = (int) $user->id;
 
-            $subscriptionId = $this->ensureSubscription($userId, $defaultPackageId, $now);
-            if ($subscriptionId > 0) {
-                $this->ensureMembershipHistory($userId, $defaultPackageId, $subscriptionId, $now);
+            $hasSubscription = DB::table('subscriptions')->where('user_id', $userId)->exists();
+            if (!$hasSubscription) {
+                $subscriptionId = $this->ensureSubscription($userId, $defaultPackageId, $now);
+                if ($subscriptionId > 0) {
+                    $this->ensureMembershipHistory($userId, $defaultPackageId, $subscriptionId, $now);
+                }
             }
 
             $this->ensureVerificationDocument($userId, $now);

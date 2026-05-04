@@ -53,17 +53,8 @@
 - `diet`
 - `smoking`
 - `drinking`
-- `hobbies`
-- `interests`
-- `likes`
-- `dislikes`
 - `preferred_age_range`
 - `preferred_height_range`
-- `preferred_hobbies`
-- `preferred_interests`
-- `preferred_likes`
-- `preferred_dislikes`
-- `preferred_other_criteria`
 - `preferred_education`
 - `preferred_community`
 - `status`
@@ -150,7 +141,6 @@
 - `preferred_city_id`
 - `preferred_community`
 - `preferred_language_id`
-- `preferred_other_criteria`
 - `created_at`
 - `updated_at`
 

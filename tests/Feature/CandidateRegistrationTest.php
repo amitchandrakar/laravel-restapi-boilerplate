@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\Package;
+use App\Models\Role;
 use App\Models\User;
 use Database\Seeders\DemoMasterDataSeeder;
 use Database\Seeders\PackageCatalogSeeder;
@@ -68,6 +69,8 @@ class CandidateRegistrationTest extends TestCase
         $user = User::query()->where('email', $email)->first();
         $this->assertNotNull($user);
         $this->assertTrue($user->hasRole('candidate'));
+        $candidateRoleId = (int) Role::query()->where('name', 'candidate')->where('guard_name', 'web')->value('id');
+        $this->assertSame($candidateRoleId, (int) $user->role_id);
         $this->assertSame('Test', $user->first_name);
         $this->assertSame('Chandrakar', $user->last_name);
         $this->assertTrue($user->getAllPermissions()->pluck('name')->contains('candidate.browse_profiles.full'));
@@ -114,6 +117,36 @@ class CandidateRegistrationTest extends TestCase
         ]);
 
         $response->assertStatus(422);
+    }
+
+    public function test_register_candidate_without_email_succeeds_and_can_login_with_phone(): void
+    {
+        $packageUuid = (string) Package::query()->where('code', 'TALASH_BASIC')->value('uuid');
+        $phone = '98765' . substr((string) time(), -5);
+
+        $response = $this->postJson('/api/v1/auth/register-candidate', [
+            'first_name' => 'No',
+            'last_name' => 'Chandrakar',
+            'gender' => 'female',
+            'date_of_birth' => '1995-06-15',
+            'phone' => $phone,
+            'password' => self::PASSWORD,
+            'password_confirmation' => self::PASSWORD,
+            'package_uuid' => $packageUuid,
+        ]);
+
+        $response->assertStatus(201)->assertJsonPath('success', true);
+
+        $user = User::query()->where('phone', $phone)->first();
+        $this->assertNotNull($user);
+        $this->assertNull($user->email);
+
+        $this->postJson('/api/v1/auth/login', [
+            'username' => $phone,
+            'password' => self::PASSWORD,
+        ])
+            ->assertStatus(200)
+            ->assertJsonPath('success', true);
     }
 
     public function test_register_candidate_rejects_duplicate_email(): void

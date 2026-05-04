@@ -13,8 +13,10 @@ use App\Http\Controllers\Api\V1\Admin\SiteSettingsController;
 use App\Http\Controllers\Api\V1\Admin\SocialLoginSettingsController;
 use App\Http\Controllers\Api\V1\Admin\TeamUserController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CandidateDiscoveryController;
 use App\Http\Controllers\Api\V1\CandidateKycController;
 use App\Http\Controllers\Api\V1\CandidateProfileController;
+use App\Http\Controllers\Api\V1\PublicCandidateProfileOptionsController;
 use App\Http\Controllers\Api\V1\PublicFeaturedCandidateController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +25,7 @@ Route::prefix('public')
     ->middleware('throttle:120,1')
     ->group(function () {
         Route::get('featured-candidates', [PublicFeaturedCandidateController::class, 'index']);
+        Route::get('candidate-profile-options', PublicCandidateProfileOptionsController::class);
     });
 
 Route::prefix('auth')->group(function () {
@@ -58,6 +61,11 @@ Route::prefix('auth')->group(function () {
             Route::get('documents', [CandidateKycController::class, 'index']);
             Route::put('documents', [CandidateKycController::class, 'upsert']);
         });
+
+        Route::get('candidate/search', [CandidateDiscoveryController::class, 'browse']);
+        Route::get('candidate/favorites', [CandidateDiscoveryController::class, 'favorites']);
+        Route::patch('candidate/favorites/{user:uuid}', [CandidateDiscoveryController::class, 'toggleFavorite']);
+        Route::get('candidate/matches', [CandidateDiscoveryController::class, 'matches']);
     });
 });
 
@@ -181,9 +189,11 @@ Route::prefix('admin')
         Route::patch('candidates/kyc/documents/{document:uuid}', [KycDocumentController::class, 'review'])->middleware(
             'permission:admin.candidates.edit'
         );
-        Route::get('candidates/{user:uuid}', [CandidateUserController::class, 'show'])->middleware(
-            'permission:admin.candidates.view'
-        );
+        Route::get('candidates/{user:uuid}/profile-details', [CandidateUserController::class, 'profileDetails']);
+        Route::get('candidates/{user:uuid}', [CandidateUserController::class, 'show']);
+        // Route::get('candidates/{user:uuid}', [CandidateUserController::class, 'show'])->middleware(
+        //     'permission:admin.candidates.view'
+        // );
         Route::match(['put', 'patch'], 'candidates/{user:uuid}', [
             CandidateUserController::class,
             'update',
@@ -191,10 +201,6 @@ Route::prefix('admin')
         Route::delete('candidates/{user:uuid}', [CandidateUserController::class, 'destroy'])->middleware(
             'permission:admin.candidates.delete'
         );
-        Route::match(['put', 'patch'], 'candidates/{user:uuid}/sections/basics', [
-            CandidateUserController::class,
-            'saveBasics',
-        ])->middleware('permission:admin.candidates.edit');
         Route::match(['put', 'patch'], 'candidates/{user:uuid}/sections/photos', [
             CandidateUserController::class,
             'savePhotos',

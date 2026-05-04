@@ -18,8 +18,8 @@ class DatabaseSeeder extends Seeder
             PackageCatalogSeeder::class,
             DemoAuthUsersSeeder::class,
             DemoTeamUsersSeeder::class,
-            DemoSubscriptionPaymentSeeder::class,
             DemoUsersSeeder::class,
+            DemoSubscriptionPaymentSeeder::class,
             DemoUserComplianceSeeder::class,
             DemoUserLogSeeder::class,
         ]);

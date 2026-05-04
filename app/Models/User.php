@@ -13,11 +13,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasPermissions;
 use Spatie\Permission\Traits\HasRoles;
 
+/**
+ * @property Carbon|null $date_of_birth
+ */
 class User extends BaseModel implements Authenticatable, AuthorizableContract
 {
     use Authorizable, HasApiTokens, HasPermissions, HasRoles, Notifiable, SoftDeletes, UserAuthenticatable;
@@ -49,6 +53,16 @@ class User extends BaseModel implements Authenticatable, AuthorizableContract
             'is_featured' => 'boolean',
             'featured_at' => 'datetime',
             'featured_by' => 'integer',
+            'birth_country_id' => 'integer',
+            'birth_state_id' => 'integer',
+            'birth_city_id' => 'integer',
+            'birth_district_id' => 'integer',
+            'birth_village_id' => 'integer',
+            'maternal_country_id' => 'integer',
+            'maternal_state_id' => 'integer',
+            'maternal_city_id' => 'integer',
+            'maternal_district_id' => 'integer',
+            'maternal_village_id' => 'integer',
         ];
     }
 

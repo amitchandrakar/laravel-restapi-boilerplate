@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class AuthService
@@ -29,12 +30,15 @@ class AuthService
     public function register(array $data): array
     {
         $data = $this->mapRegisterPayload($data);
+        $candidateRoleId = $this->candidateRoleId();
+        if ($candidateRoleId !== null) {
+            $data['role_id'] = $candidateRoleId;
+        }
 
         /** @var User $user */
         $user = User::create($data);
 
-        $guard = (string) config('auth.defaults.guard', 'web');
-        if (Role::query()->where('name', 'candidate')->where('guard_name', $guard)->exists()) {
+        if ($candidateRoleId !== null) {
             $user->assignRole('candidate');
         }
         $this->attachDefaultPackageForRegistration($user->id);
@@ -91,6 +95,7 @@ class AuthService
         return DB::transaction(function () use ($data): array {
             $packageUuid = (string) $data['package_uuid'];
             unset($data['package_uuid'], $data['password_confirmation']);
+            $candidateRoleId = $this->candidateRoleId();
 
             $packageId = (int) Package::query()->where('uuid', $packageUuid)->where('is_active', true)->value('id');
             if ($packageId === 0) {
@@ -98,12 +103,14 @@ class AuthService
                     'package_uuid' => ['The selected package is invalid.'],
                 ]);
             }
+            if ($candidateRoleId !== null) {
+                $data['role_id'] = $candidateRoleId;
+            }
 
             /** @var User $user */
             $user = User::create($data);
 
-            $guard = (string) config('auth.defaults.guard', 'web');
-            if (Role::query()->where('name', 'candidate')->where('guard_name', $guard)->exists()) {
+            if ($candidateRoleId !== null) {
                 $user->assignRole('candidate');
             }
 
@@ -119,18 +126,28 @@ class AuthService
     /**
      * Login user.
      *
-     * @return array{user: User, token: string, permissions: array<int, string>}
+     * `username` may be the user's email or phone as stored on their record.
      *
-     * @throws ValidationException
+     * @return array{user: User, token: string, permissions: array<int, string>}
      */
     public function login(array $credentials): array
     {
-        if (!Auth::guard(self::LOGIN_GUARD)->attempt($credentials)) {
+        $username = trim((string) ($credentials['username'] ?? ''));
+        $password = (string) ($credentials['password'] ?? '');
+
+        $user = User::query()
+            ->where(static function ($query) use ($username): void {
+                $query->where('email', $username)->orWhere('phone', $username);
+            })
+            ->first();
+
+        if ($user === null || !Hash::check($password, $user->getAuthPassword())) {
             throw new AuthenticationException('Invalid credentials');
         }
 
-        /** @var User $user */
-        $user = Auth::guard(self::LOGIN_GUARD)->user();
+        // API auth uses Sanctum personal access tokens only. Avoid web-guard session login here:
+        // Sanctum checks the web guard first; a session user + TransientToken would bypass PAT
+        // validation and keep the user "logged in" after the PAT is revoked on logout.
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
@@ -142,15 +159,33 @@ class AuthService
     }
 
     /**
-     * Logout user.
+     * Log the user out: revoke the current Sanctum access token (this device), then clear the web guard session.
+     *
+     * When both a session and a Bearer token are present, Sanctum resolves the session first and sets a
+     * {@see \Laravel\Sanctum\TransientToken} on the user, so we revoke using the raw Bearer value when provided.
+     *
+     * @param  string|null  $plainTextBearerToken  Raw `Authorization: Bearer` value (e.g. `{id}|{secret}`).
      */
-    public function logout(User $user): void
+    public function logout(User $user, ?string $plainTextBearerToken = null): void
     {
-        /** @var mixed $currentToken */
-        $currentToken = $user->currentAccessToken();
-        if (is_object($currentToken) && method_exists($currentToken, 'delete')) {
-            $currentToken->delete();
+        if ($plainTextBearerToken !== null && $plainTextBearerToken !== '') {
+            $accessToken = PersonalAccessToken::findToken($plainTextBearerToken);
+            if (
+                $accessToken !== null &&
+                (int) $accessToken->tokenable_id === (int) $user->id &&
+                $accessToken->tokenable_type === $user->getMorphClass()
+            ) {
+                $accessToken->delete();
+            }
+        } else {
+            /** @var mixed $current */
+            $current = $user->currentAccessToken();
+            if (is_object($current) && method_exists($current, 'delete')) {
+                $current->delete();
+            }
         }
+
+        Auth::guard(self::LOGIN_GUARD)->logout();
     }
 
     /**
@@ -169,6 +204,14 @@ class AuthService
         $token = $user->createToken('auth-token')->plainTextToken;
 
         return ['user' => $user, 'token' => $token];
+    }
+
+    private function candidateRoleId(): ?int
+    {
+        $guard = (string) config('auth.defaults.guard', 'web');
+        $roleId = Role::query()->where('name', 'candidate')->where('guard_name', $guard)->value('id');
+
+        return $roleId !== null ? (int) $roleId : null;
     }
 
     /**

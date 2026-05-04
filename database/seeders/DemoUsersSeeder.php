@@ -6,17 +6,21 @@ namespace Database\Seeders;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Services\CandidateProfileSectionService;
+use App\Services\PackagePermissionService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
- * Ten demo accounts with profile images, education, siblings (where noted), and partner preferences.
- * Password for every demo user: Password@demo1
+ * Eight demo candidate accounts (five generic + Parichay / Rishta / Talash) with full sectional completion
+ * and published profiles. Password for every demo candidate: {@see DemoUsersSeeder::DEMO_PASSWORD}.
  */
 class DemoUsersSeeder extends Seeder
 {
-    public const DEMO_PASSWORD = 'Password@demo1';
+    public const DEMO_PASSWORD = '1234567890';
+
+    public function __construct(private readonly PackagePermissionService $packagePermissionService) {}
 
     public function run(): void
     {
@@ -27,34 +31,86 @@ class DemoUsersSeeder extends Seeder
         $langEnId = (int) DB::table('languages')->where('code', 'en')->value('id');
         $langHiId = (int) DB::table('languages')->where('code', 'hi')->value('id');
 
+        $districtId =
+            $stateId > 0 ? (int) DB::table('districts')->where('state_id', $stateId)->orderBy('id')->value('id') : 0;
+        $villageId =
+            $districtId > 0
+                ? (int) DB::table('villages')->where('district_id', $districtId)->orderBy('id')->value('id')
+                : 0;
+
+        $maternalFullRaipur =
+            $countryId > 0 && $stateId > 0 && $cityMumbaiId > 0 && $districtId > 0 && $villageId > 0
+                ? [
+                    'maternal_country_id' => $countryId,
+                    'maternal_state_id' => $stateId,
+                    'maternal_city_id' => $cityMumbaiId,
+                    'maternal_district_id' => $districtId,
+                    'maternal_village_id' => $villageId,
+                ]
+                : [];
+        $maternalStateOnly =
+            $countryId > 0 && $stateId > 0
+                ? [
+                    'maternal_country_id' => $countryId,
+                    'maternal_state_id' => $stateId,
+                ]
+                : [];
+        $maternalFullBilaspur =
+            $countryId > 0 && $stateId > 0 && $cityPuneId > 0 && $districtId > 0 && $villageId > 0
+                ? [
+                    'maternal_country_id' => $countryId,
+                    'maternal_state_id' => $stateId,
+                    'maternal_city_id' => $cityPuneId,
+                    'maternal_district_id' => $districtId,
+                    'maternal_village_id' => $villageId,
+                ]
+                : [];
+
         $degreeId = static fn(string $name): int => (int) DB::table('degrees')->where('name', $name)->value('id');
+        /** @var list<int> */
+        $surnameIds = DB::table('surnames')
+            ->where('is_active', true)
+            ->orderBy('id')
+            ->pluck('id')
+            ->map(static fn($id): int => (int) $id)
+            ->all();
+        $encodeIdJson = static function (?array $ids): ?string {
+            if ($ids === null) {
+                return null;
+            }
+            $filtered = array_values(array_filter($ids, static fn(int $id): bool => $id > 0));
+
+            return $filtered === [] ? null : json_encode($filtered);
+        };
 
         $profiles = [
             [
-                'user' => [
-                    'first_name' => 'Arjun',
-                    'last_name' => 'Mehta',
-                    'email' => 'arjun.mehta@demo.alonti.local',
-                    'gender' => 'male',
-                    'phone' => '9876500101',
-                    'date_of_birth' => '1995-03-15',
-                    'current_city' => 'Mumbai',
-                    'current_state' => 'Maharashtra',
-                    'current_country' => 'India',
-                    'hometown_city' => 'Pune',
-                    'occupation' => 'Software Engineer',
-                    'employer' => 'TechNova Pvt Ltd',
-                    'income' => 1850000.0,
-                    'height' => '5ft 11in',
-                    'diet' => 'vegetarian',
-                    'smoking' => 'never',
-                    'drinking' => 'socially',
-                    'hobbies' => 'Cricket, trekking, classical music',
-                    'brothers_count' => 0,
-                    'sisters_count' => 1,
-                    'family_type' => 'nuclear',
-                    'status' => 'active',
-                ],
+                'user' => array_merge(
+                    [
+                        'first_name' => 'Arjun',
+                        'last_name' => 'Mehta',
+                        'email' => 'arjun.mehta@demo.alonti.local',
+                        'gender' => 'male',
+                        'phone' => '9876500101',
+                        'date_of_birth' => '1995-03-15',
+                        'current_city' => 'Mumbai',
+                        'current_state' => 'Maharashtra',
+                        'current_country' => 'India',
+                        'hometown_city' => 'Pune',
+                        'occupation' => 'Software Engineer',
+                        'employer' => 'TechNova Pvt Ltd',
+                        'income' => 1850000.0,
+                        'height' => '5ft 11in',
+                        'diet' => 'vegetarian',
+                        'smoking' => 'never',
+                        'drinking' => 'socially',
+                        'brothers_count' => 0,
+                        'sisters_count' => 1,
+                        'family_type' => 'nuclear',
+                        'status' => 'active',
+                    ],
+                    $maternalFullRaipur
+                ),
                 'education' => [
                     [
                         'degree' => 'Bachelor of Engineering',
@@ -89,38 +145,43 @@ class DemoUsersSeeder extends Seeder
                     'preferred_diet' => 'vegetarian',
                     'preferred_smoking' => 'never',
                     'preferred_drinking' => 'socially',
-                    'preferred_education' => 'Graduate or higher',
+                    'preferred_degree_ids' => array_values(
+                        array_filter([$degreeId('Bachelor of Engineering')], static fn(int $id): bool => $id > 0)
+                    ),
+                    'preferred_location_ids' => $cityMumbaiId > 0 ? [$cityMumbaiId] : [],
+                    'preferred_community_ids' => array_slice($surnameIds, 0, 2),
                     'preferred_occupation' => 'Any professional',
                     'preferred_income_min' => 800000.0,
                     'preferred_city_id' => $cityMumbaiId,
-                    'preferred_community' => 'Open to all',
-                    'preferred_other_criteria' => 'Family-oriented, enjoys travel.',
                 ],
                 'avatar_img' => 12,
+                'package_code' => 'PARICHAY_FREE',
             ],
             [
-                'user' => [
-                    'first_name' => 'Priya',
-                    'last_name' => 'Shah',
-                    'email' => 'priya.shah@demo.alonti.local',
-                    'gender' => 'female',
-                    'phone' => '9876500102',
-                    'date_of_birth' => '1997-08-22',
-                    'current_city' => 'Pune',
-                    'current_state' => 'Maharashtra',
-                    'current_country' => 'India',
-                    'occupation' => 'Physician',
-                    'employer' => 'City General Hospital',
-                    'income' => 2200000.0,
-                    'height' => '5ft 4in',
-                    'diet' => 'vegetarian',
-                    'smoking' => 'never',
-                    'drinking' => 'never',
-                    'hobbies' => 'Reading, yoga, volunteering',
-                    'brothers_count' => 1,
-                    'sisters_count' => 0,
-                    'status' => 'active',
-                ],
+                'user' => array_merge(
+                    [
+                        'first_name' => 'Priya',
+                        'last_name' => 'Shah',
+                        'email' => 'priya.shah@demo.alonti.local',
+                        'gender' => 'female',
+                        'phone' => '9876500102',
+                        'date_of_birth' => '1997-08-22',
+                        'current_city' => 'Pune',
+                        'current_state' => 'Maharashtra',
+                        'current_country' => 'India',
+                        'occupation' => 'Physician',
+                        'employer' => 'City General Hospital',
+                        'income' => 2200000.0,
+                        'height' => '5ft 4in',
+                        'diet' => 'vegetarian',
+                        'smoking' => 'never',
+                        'drinking' => 'never',
+                        'brothers_count' => 1,
+                        'sisters_count' => 0,
+                        'status' => 'active',
+                    ],
+                    $maternalStateOnly
+                ),
                 'education' => [
                     [
                         'degree' => 'MBBS',
@@ -148,33 +209,38 @@ class DemoUsersSeeder extends Seeder
                     'preferred_max_age' => 36,
                     'preferred_diet' => 'vegetarian',
                     'preferred_smoking' => 'never',
-                    'preferred_education' => 'Graduate or higher',
+                    'preferred_degree_ids' => array_values(
+                        array_filter([$degreeId('Master of Science')], static fn(int $id): bool => $id > 0)
+                    ),
+                    'preferred_location_ids' => $cityPuneId > 0 ? [$cityPuneId] : [],
                     'preferred_city_id' => $cityPuneId,
                     'preferred_language_id' => $langEnId,
-                    'preferred_other_criteria' => 'Supportive of career; values health and fitness.',
                 ],
                 'avatar_img' => 45,
+                'package_code' => 'TALASH_BASIC',
             ],
             [
-                'user' => [
-                    'first_name' => 'Rohan',
-                    'last_name' => 'Kulkarni',
-                    'email' => 'rohan.kulkarni@demo.alonti.local',
-                    'gender' => 'male',
-                    'phone' => '9876500103',
-                    'date_of_birth' => '1993-11-02',
-                    'current_city' => 'Mumbai',
-                    'current_country' => 'India',
-                    'occupation' => 'Chartered Accountant',
-                    'employer' => 'Kulkarni & Associates',
-                    'income' => 2400000.0,
-                    'height' => '5ft 9in',
-                    'diet' => 'non_vegetarian',
-                    'smoking' => 'never',
-                    'drinking' => 'socially',
-                    'interests' => 'Stock markets, marathon running',
-                    'status' => 'active',
-                ],
+                'user' => array_merge(
+                    [
+                        'first_name' => 'Rohan',
+                        'last_name' => 'Kulkarni',
+                        'email' => 'rohan.kulkarni@demo.alonti.local',
+                        'gender' => 'male',
+                        'phone' => '9876500103',
+                        'date_of_birth' => '1993-11-02',
+                        'current_city' => 'Mumbai',
+                        'current_country' => 'India',
+                        'occupation' => 'Chartered Accountant',
+                        'employer' => 'Kulkarni & Associates',
+                        'income' => 2400000.0,
+                        'height' => '5ft 9in',
+                        'diet' => 'non_vegetarian',
+                        'smoking' => 'never',
+                        'drinking' => 'socially',
+                        'status' => 'active',
+                    ],
+                    $maternalFullBilaspur
+                ),
                 'education' => [
                     [
                         'degree' => 'Bachelor of Engineering',
@@ -213,29 +279,32 @@ class DemoUsersSeeder extends Seeder
                     'preferred_max_age' => 33,
                     'preferred_country_id' => $countryId,
                     'preferred_state_id' => $stateId,
-                    'preferred_community' => 'Prefer similar values around family and finance.',
+                    'preferred_community_ids' => $surnameIds !== [] ? [reset($surnameIds)] : [],
                 ],
                 'avatar_img' => 33,
+                'package_code' => 'RISHTA_PRO',
             ],
             [
-                'user' => [
-                    'first_name' => 'Ananya',
-                    'last_name' => 'Desai',
-                    'email' => 'ananya.desai@demo.alonti.local',
-                    'gender' => 'female',
-                    'phone' => '9876500104',
-                    'date_of_birth' => '1996-01-30',
-                    'current_city' => 'Mumbai',
-                    'occupation' => 'Architect',
-                    'employer' => 'Studio Desai Architects',
-                    'income' => 1650000.0,
-                    'height' => '5ft 5in',
-                    'diet' => 'vegetarian',
-                    'smoking' => 'never',
-                    'drinking' => 'socially',
-                    'hobbies' => 'Sketching, heritage walks',
-                    'status' => 'active',
-                ],
+                'user' => array_merge(
+                    [
+                        'first_name' => 'Ananya',
+                        'last_name' => 'Desai',
+                        'email' => 'ananya.desai@demo.alonti.local',
+                        'gender' => 'female',
+                        'phone' => '9876500104',
+                        'date_of_birth' => '1996-01-30',
+                        'current_city' => 'Mumbai',
+                        'occupation' => 'Architect',
+                        'employer' => 'Studio Desai Architects',
+                        'income' => 1650000.0,
+                        'height' => '5ft 5in',
+                        'diet' => 'vegetarian',
+                        'smoking' => 'never',
+                        'drinking' => 'socially',
+                        'status' => 'active',
+                    ],
+                    $maternalFullRaipur
+                ),
                 'education' => [
                     [
                         'degree' => 'Bachelor of Engineering',
@@ -252,10 +321,12 @@ class DemoUsersSeeder extends Seeder
                     'preferred_gender' => 'male',
                     'preferred_min_age' => 27,
                     'preferred_max_age' => 35,
+                    'preferred_location_ids' => $cityMumbaiId > 0 ? [$cityMumbaiId] : [],
                     'preferred_city_id' => $cityMumbaiId,
                     'preferred_language_id' => $langHiId,
                 ],
                 'avatar_img' => 47,
+                'package_code' => 'PARICHAY_FREE',
             ],
             [
                 'user' => [
@@ -292,234 +363,153 @@ class DemoUsersSeeder extends Seeder
                     'preferred_min_age' => 26,
                     'preferred_max_age' => 34,
                     'preferred_occupation' => 'Education or creative fields welcome',
+                    'preferred_location_ids' => $cityPuneId > 0 ? [$cityPuneId] : [],
                     'preferred_city_id' => $cityPuneId,
                 ],
                 'avatar_img' => 15,
+                'package_code' => 'TALASH_BASIC',
             ],
             [
-                'user' => [
-                    'first_name' => 'Sneha',
-                    'last_name' => 'Joshi',
-                    'email' => 'sneha.joshi@demo.alonti.local',
-                    'gender' => 'female',
-                    'phone' => '9876500106',
-                    'date_of_birth' => '1998-04-12',
-                    'current_city' => 'Mumbai',
-                    'occupation' => 'Software Engineer',
-                    'employer' => 'CloudScale India',
-                    'income' => 1420000.0,
-                    'height' => '5ft 3in',
-                    'diet' => 'vegetarian',
-                    'smoking' => 'never',
-                    'drinking' => 'socially',
-                    'status' => 'pending_verification',
-                ],
+                'user' => array_merge(
+                    [
+                        'first_name' => 'Riya',
+                        'last_name' => 'Chandrakar',
+                        'email' => 'candidate.parichay@example.com',
+                        'gender' => 'female',
+                        'phone' => '9876500111',
+                        'date_of_birth' => '1997-05-14',
+                        'current_city' => 'Raipur',
+                        'current_state' => 'Chhattisgarh',
+                        'current_country' => 'India',
+                        'occupation' => 'Graphic designer',
+                        'employer' => 'Studio Nine',
+                        'income' => 780000.0,
+                        'height' => '5ft 4in',
+                        'diet' => 'vegetarian',
+                        'smoking' => 'never',
+                        'drinking' => 'never',
+                        'brothers_count' => 0,
+                        'sisters_count' => 1,
+                        'status' => 'active',
+                    ],
+                    $maternalStateOnly
+                ),
                 'education' => [
                     [
                         'degree' => 'Bachelor of Engineering',
-                        'field' => 'Information Technology',
-                        'institution' => 'VJTI Mumbai',
+                        'field' => 'Design',
+                        'institution' => 'NIT Raipur',
                         'education_type' => 'graduation',
-                        'start_year' => 2016,
+                        'start_year' => 2015,
+                        'end_year' => 2019,
+                        'is_highest' => true,
+                    ],
+                ],
+                'siblings' => [],
+                'partner' => [
+                    'preferred_gender' => 'male',
+                    'preferred_min_age' => 26,
+                    'preferred_max_age' => 34,
+                    'preferred_location_ids' => $cityMumbaiId > 0 ? [$cityMumbaiId] : [],
+                    'preferred_city_id' => $cityMumbaiId,
+                    'preferred_language_id' => $langHiId,
+                ],
+                'avatar_img' => 61,
+                'package_code' => 'PARICHAY_FREE',
+            ],
+            [
+                'user' => array_merge(
+                    [
+                        'first_name' => 'Kunal',
+                        'last_name' => 'Verma',
+                        'email' => 'candidate.rishta@example.com',
+                        'gender' => 'male',
+                        'phone' => '9876500112',
+                        'date_of_birth' => '1994-10-01',
+                        'current_city' => 'Bilaspur',
+                        'current_state' => 'Chhattisgarh',
+                        'current_country' => 'India',
+                        'occupation' => 'Civil engineer',
+                        'employer' => 'CG Infra Ltd',
+                        'income' => 1350000.0,
+                        'height' => '5ft 10in',
+                        'diet' => 'non_vegetarian',
+                        'smoking' => 'never',
+                        'drinking' => 'socially',
+                        'brothers_count' => 1,
+                        'sisters_count' => 0,
+                        'status' => 'active',
+                    ],
+                    $maternalFullBilaspur
+                ),
+                'education' => [
+                    [
+                        'degree' => 'Bachelor of Engineering',
+                        'field' => 'Civil',
+                        'institution' => 'BIT Durg',
+                        'education_type' => 'graduation',
+                        'start_year' => 2012,
+                        'end_year' => 2016,
+                        'is_highest' => true,
+                    ],
+                ],
+                'siblings' => [],
+                'partner' => [
+                    'preferred_gender' => 'female',
+                    'preferred_min_age' => 25,
+                    'preferred_max_age' => 32,
+                    'preferred_location_ids' => $cityPuneId > 0 ? [$cityPuneId] : [],
+                    'preferred_city_id' => $cityPuneId,
+                ],
+                'avatar_img' => 62,
+                'package_code' => 'RISHTA_PRO',
+            ],
+            [
+                'user' => array_merge(
+                    [
+                        'first_name' => 'Sneha',
+                        'last_name' => 'Bais',
+                        'email' => 'candidate.talash@example.com',
+                        'gender' => 'female',
+                        'phone' => '9876500113',
+                        'date_of_birth' => '1996-03-22',
+                        'current_city' => 'Raipur',
+                        'current_state' => 'Chhattisgarh',
+                        'current_country' => 'India',
+                        'occupation' => 'School teacher',
+                        'employer' => 'DPS Raipur',
+                        'income' => 620000.0,
+                        'height' => '5ft 3in',
+                        'diet' => 'vegetarian',
+                        'smoking' => 'never',
+                        'drinking' => 'never',
+                        'brothers_count' => 0,
+                        'sisters_count' => 0,
+                        'status' => 'active',
+                    ],
+                    $maternalFullRaipur
+                ),
+                'education' => [
+                    [
+                        'degree' => 'Master of Science',
+                        'field' => 'Education',
+                        'institution' => 'HPU Shimla',
+                        'education_type' => 'post_graduation',
+                        'start_year' => 2018,
                         'end_year' => 2020,
                         'is_highest' => true,
                     ],
                 ],
-                'siblings' => [
-                    [
-                        'name' => 'Rahul Joshi',
-                        'gender' => 'male',
-                        'relation_type' => 'brother',
-                        'marital_status' => 'single',
-                        'occupation' => 'Student',
-                        'age' => 22,
-                        'is_elder' => false,
-                        'sort_order' => 0,
-                    ],
-                ],
-                'partner' => [
-                    'preferred_gender' => 'male',
-                    'preferred_min_age' => 25,
-                    'preferred_max_age' => 32,
-                    'preferred_city_id' => $cityMumbaiId,
-                ],
-                'avatar_img' => 44,
-            ],
-            [
-                'user' => [
-                    'first_name' => 'Karan',
-                    'last_name' => 'Rao',
-                    'email' => 'karan.rao@demo.alonti.local',
-                    'gender' => 'male',
-                    'phone' => '9876500107',
-                    'date_of_birth' => '1991-12-20',
-                    'current_city' => 'Mumbai',
-                    'occupation' => 'Physician',
-                    'employer' => 'Lilavati Hospital',
-                    'income' => 3100000.0,
-                    'height' => '6ft 0in',
-                    'diet' => 'non_vegetarian',
-                    'smoking' => 'never',
-                    'drinking' => 'socially',
-                    'status' => 'active',
-                ],
-                'education' => [
-                    [
-                        'degree' => 'MBBS',
-                        'field' => 'Medicine',
-                        'institution' => 'KEM Hospital',
-                        'education_type' => 'graduation',
-                        'start_year' => 2009,
-                        'end_year' => 2015,
-                        'is_highest' => false,
-                    ],
-                    [
-                        'degree' => 'Master of Science',
-                        'field' => 'Cardiology fellowship',
-                        'institution' => 'AIIMS Delhi',
-                        'education_type' => 'post_graduation',
-                        'start_year' => 2018,
-                        'end_year' => 2021,
-                        'is_highest' => true,
-                    ],
-                ],
                 'siblings' => [],
                 'partner' => [
-                    'preferred_gender' => 'female',
-                    'preferred_min_age' => 28,
-                    'preferred_max_age' => 36,
-                    'preferred_education' => 'Graduate or higher',
+                    'preferred_gender' => 'male',
+                    'preferred_min_age' => 27,
+                    'preferred_max_age' => 35,
                     'preferred_country_id' => $countryId,
-                ],
-                'avatar_img' => 52,
-            ],
-            [
-                'user' => [
-                    'first_name' => 'Meera',
-                    'last_name' => 'Iyer',
-                    'email' => 'meera.iyer@demo.alonti.local',
-                    'gender' => 'female',
-                    'phone' => '9876500108',
-                    'date_of_birth' => '1994-09-05',
-                    'current_city' => 'Pune',
-                    'occupation' => 'Chartered Accountant',
-                    'employer' => 'Deloitte India',
-                    'income' => 1950000.0,
-                    'height' => '5ft 6in',
-                    'diet' => 'vegetarian',
-                    'smoking' => 'never',
-                    'drinking' => 'socially',
-                    'status' => 'active',
-                ],
-                'education' => [
-                    [
-                        'degree' => 'MBA',
-                        'field' => 'Finance',
-                        'institution' => 'NMIMS Mumbai',
-                        'education_type' => 'post_graduation',
-                        'start_year' => 2016,
-                        'end_year' => 2018,
-                        'is_highest' => true,
-                    ],
-                ],
-                'siblings' => [],
-                'partner' => [
-                    'preferred_gender' => 'male',
-                    'preferred_min_age' => 28,
-                    'preferred_max_age' => 36,
-                    'preferred_income_min' => 1200000.0,
                     'preferred_state_id' => $stateId,
                 ],
-                'avatar_img' => 48,
-            ],
-            [
-                'user' => [
-                    'first_name' => 'Aditya',
-                    'last_name' => 'Nair',
-                    'email' => 'aditya.nair@demo.alonti.local',
-                    'gender' => 'male',
-                    'phone' => '9876500109',
-                    'date_of_birth' => '1996-06-18',
-                    'current_city' => 'Mumbai',
-                    'occupation' => 'Software Engineer',
-                    'employer' => 'FinTech Labs',
-                    'income' => 2100000.0,
-                    'height' => '5ft 8in',
-                    'diet' => 'non_vegetarian',
-                    'smoking' => 'never',
-                    'drinking' => 'socially',
-                    'status' => 'active',
-                ],
-                'education' => [
-                    [
-                        'degree' => 'Bachelor of Engineering',
-                        'field' => 'Electronics',
-                        'institution' => 'BITS Pilani',
-                        'education_type' => 'graduation',
-                        'start_year' => 2014,
-                        'end_year' => 2018,
-                        'is_highest' => true,
-                    ],
-                ],
-                'siblings' => [],
-                'partner' => [
-                    'preferred_gender' => 'female',
-                    'preferred_min_age' => 24,
-                    'preferred_max_age' => 31,
-                    'preferred_city_id' => $cityMumbaiId,
-                    'preferred_language_id' => $langEnId,
-                ],
-                'avatar_img' => 27,
-            ],
-            [
-                'user' => [
-                    'first_name' => 'Kavita',
-                    'last_name' => 'Reddy',
-                    'email' => 'kavita.reddy@demo.alonti.local',
-                    'gender' => 'female',
-                    'phone' => '9876500110',
-                    'date_of_birth' => '1995-02-28',
-                    'current_city' => 'Pune',
-                    'occupation' => 'Teacher',
-                    'employer' => 'KV Pune',
-                    'income' => 920000.0,
-                    'height' => '5ft 2in',
-                    'diet' => 'vegetarian',
-                    'smoking' => 'never',
-                    'drinking' => 'never',
-                    'status' => 'active',
-                ],
-                'education' => [
-                    [
-                        'degree' => 'Master of Science',
-                        'field' => 'Physics',
-                        'institution' => 'Fergusson College',
-                        'education_type' => 'post_graduation',
-                        'start_year' => 2016,
-                        'end_year' => 2018,
-                        'is_highest' => true,
-                    ],
-                ],
-                'siblings' => [
-                    [
-                        'name' => 'Suresh Reddy',
-                        'gender' => 'male',
-                        'relation_type' => 'brother',
-                        'marital_status' => 'married',
-                        'occupation' => 'Bank officer',
-                        'age' => 35,
-                        'is_elder' => true,
-                        'sort_order' => 0,
-                    ],
-                ],
-                'partner' => [
-                    'preferred_gender' => 'male',
-                    'preferred_min_age' => 28,
-                    'preferred_max_age' => 38,
-                    'preferred_city_id' => $cityPuneId,
-                    'preferred_diet' => 'vegetarian',
-                ],
-                'avatar_img' => 42,
+                'avatar_img' => 63,
+                'package_code' => 'TALASH_BASIC',
             ],
         ];
 
@@ -532,6 +522,8 @@ class DemoUsersSeeder extends Seeder
             if (User::withTrashed()->where('email', $email)->exists()) {
                 continue;
             }
+
+            $packageCode = (string) ($row['package_code'] ?? 'PARICHAY_FREE');
 
             $user = User::create(
                 array_merge($row['user'], [
@@ -610,18 +602,35 @@ class DemoUsersSeeder extends Seeder
                 'preferred_diet' => $p['preferred_diet'] ?? null,
                 'preferred_smoking' => $p['preferred_smoking'] ?? null,
                 'preferred_drinking' => $p['preferred_drinking'] ?? null,
-                'preferred_education' => $p['preferred_education'] ?? null,
+                'preferred_degree_ids' => $encodeIdJson($p['preferred_degree_ids'] ?? null),
+                'preferred_location_ids' => $encodeIdJson($p['preferred_location_ids'] ?? null),
+                'preferred_community_ids' => $encodeIdJson($p['preferred_community_ids'] ?? null),
+                'preferred_caste' => $p['preferred_caste'] ?? null,
                 'preferred_occupation' => $p['preferred_occupation'] ?? null,
                 'preferred_income_min' => $p['preferred_income_min'] ?? null,
                 'preferred_country_id' => $p['preferred_country_id'] ?? null,
                 'preferred_state_id' => $p['preferred_state_id'] ?? null,
                 'preferred_city_id' => $p['preferred_city_id'] ?? null,
-                'preferred_community' => $p['preferred_community'] ?? null,
                 'preferred_language_id' => $p['preferred_language_id'] ?? null,
-                'preferred_other_criteria' => $p['preferred_other_criteria'] ?? null,
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);
+
+            $this->attachSubscription($userId, $packageCode);
+
+            $published = $user->fresh();
+            if ($published instanceof User) {
+                $this->finalizePublishedCandidate(
+                    $published,
+                    $index,
+                    $countryId,
+                    $stateId,
+                    $cityMumbaiId,
+                    $districtId,
+                    $villageId
+                );
+                $this->packagePermissionService->syncCandidatePermissions($published->fresh());
+            }
 
             // Second gallery image for variety (first five users)
             if ($index < 5) {
@@ -639,5 +648,160 @@ class DemoUsersSeeder extends Seeder
                 ]);
             }
         }
+
+        $this->seedParichayDemoMatches();
+    }
+
+    /**
+     * Demo matches for candidate.parichay@example.com → rishta & talash demo accounts.
+     * Runs after profile loop so it still applies when those users already existed (skipped in loop).
+     */
+    private function seedParichayDemoMatches(): void
+    {
+        $parichayId = (int) User::query()->where('email', 'candidate.parichay@example.com')->value('id');
+        $rishtaId = (int) User::query()->where('email', 'candidate.rishta@example.com')->value('id');
+        $talashId = (int) User::query()->where('email', 'candidate.talash@example.com')->value('id');
+
+        if ($parichayId === 0 || $rishtaId === 0 || $talashId === 0) {
+            return;
+        }
+
+        $now = now();
+        $pairs = [
+            [
+                'matched_user_id' => $rishtaId,
+                'match_score' => 88,
+                'match_reason_json' => json_encode(
+                    [
+                        'summary' => 'Demo match: complementary preferences (Rishta package profile).',
+                    ],
+                    JSON_THROW_ON_ERROR
+                ),
+            ],
+            [
+                'matched_user_id' => $talashId,
+                'match_score' => 84,
+                'match_reason_json' => json_encode(
+                    [
+                        'summary' => 'Demo match: shared region and lifestyle signals (Talash package profile).',
+                    ],
+                    JSON_THROW_ON_ERROR
+                ),
+            ],
+        ];
+
+        foreach ($pairs as $row) {
+            $existing = DB::table('matches')
+                ->where('user_id', $parichayId)
+                ->where('matched_user_id', $row['matched_user_id'])
+                ->first();
+
+            if ($existing !== null) {
+                DB::table('matches')
+                    ->where('id', $existing->id)
+                    ->update([
+                        'match_score' => $row['match_score'],
+                        'match_reason_json' => $row['match_reason_json'],
+                        'match_status' => 'active',
+                        'generated_by' => 'system',
+                        'generated_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+
+                continue;
+            }
+
+            DB::table('matches')->insert([
+                'uuid' => (string) Str::uuid(),
+                'user_id' => $parichayId,
+                'matched_user_id' => $row['matched_user_id'],
+                'match_score' => $row['match_score'],
+                'match_reason_json' => $row['match_reason_json'],
+                'match_status' => 'active',
+                'generated_by' => 'system',
+                'generated_at' => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
+    }
+
+    private function attachSubscription(int $userId, string $packageCode): void
+    {
+        $now = now();
+        $packageId = (int) DB::table('packages')->where('code', $packageCode)->value('id');
+        if ($packageId === 0) {
+            return;
+        }
+
+        DB::table('subscriptions')->updateOrInsert(
+            ['user_id' => $userId, 'package_id' => $packageId],
+            [
+                'uuid' => (string) Str::uuid(),
+                'subscription_status' => 'active',
+                'started_at' => $now,
+                'ends_at' => $now->copy()->addDays(365),
+                'auto_renew' => true,
+                'renewal_source' => 'manual',
+                'updated_at' => $now,
+                'created_at' => $now,
+            ]
+        );
+    }
+
+    private function finalizePublishedCandidate(
+        User $user,
+        int $index,
+        int $countryId,
+        int $stateId,
+        int $birthCityId,
+        int $districtId,
+        int $villageId
+    ): void {
+        $now = now();
+        $birthColumns = [];
+        if ($countryId > 0) {
+            $birthColumns['birth_country_id'] = $countryId;
+        }
+        if ($stateId > 0) {
+            $birthColumns['birth_state_id'] = $stateId;
+        }
+        if ($birthCityId > 0) {
+            $birthColumns['birth_city_id'] = $birthCityId;
+        }
+        if ($districtId > 0) {
+            $birthColumns['birth_district_id'] = $districtId;
+        }
+        if ($villageId > 0) {
+            $birthColumns['birth_village_id'] = $villageId;
+        }
+
+        $user
+            ->forceFill(
+                array_merge(
+                    [
+                        'marital_status' => 'single',
+                        'body_type' => 'average',
+                        'complexion' => 'fair',
+                        'blood_group' => 'O+',
+                        'manglik_status' => 'no',
+                        'about_me' => 'Demo profile seeded for development and QA.',
+                        'time_of_birth' => '10:30:00',
+                        'zodiac_sign' => 'aries',
+                        'place_of_birth_line' => 'Raipur, Chhattisgarh',
+                        'father_name' => 'Father ' . $user->last_name,
+                        'father_occupation' => 'Business',
+                        'mother_name' => 'Mother ' . $user->last_name,
+                        'mother_occupation' => 'Homemaker',
+                        'completed_sections_json' => CandidateProfileSectionService::sections(),
+                        'profile_status' => 'published',
+                        'published_at' => $now,
+                        'is_featured' => $index < 5,
+                        'featured_at' => $index < 5 ? $now : null,
+                    ],
+                    $birthColumns
+                )
+            )
+            ->save();
     }
 }

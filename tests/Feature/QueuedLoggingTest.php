@@ -36,7 +36,7 @@ class QueuedLoggingTest extends TestCase
         ])->assertStatus(201);
 
         $login = $this->postJson('/api/v1/auth/login', [
-            'email' => $email,
+            'username' => $email,
             'password' => $password,
         ])->assertStatus(200);
 

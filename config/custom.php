@@ -25,6 +25,7 @@ return [
     'image' => [
         'product' => '/images/Coming-Soon.png',
         'selection' => '/images/Coming-Soon.png',
+        'profile_default' => '/images/Coming-Soon.png',
     ],
     'payment' => [
         'tip' => [

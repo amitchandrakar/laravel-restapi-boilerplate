@@ -14,7 +14,7 @@ class LoginRequest extends ApiFormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|string|email',
+            'username' => 'required|string|max:255',
             'password' => 'required|string',
         ];
     }
@@ -25,8 +25,7 @@ class LoginRequest extends ApiFormRequest
     public function messages(): array
     {
         return [
-            'email.required' => 'The email field is required',
-            'email.email' => 'Please provide a valid email address',
+            'username.required' => 'The username field is required',
             'password.required' => 'The password field is required',
         ];
     }
@@ -37,7 +36,7 @@ class LoginRequest extends ApiFormRequest
     public function attributes(): array
     {
         return [
-            'email' => 'email address',
+            'username' => 'username',
             'password' => 'password',
         ];
     }

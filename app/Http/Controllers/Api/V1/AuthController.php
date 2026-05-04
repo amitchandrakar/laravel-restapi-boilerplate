@@ -149,13 +149,19 @@ class AuthController extends Controller
      */
     public function login(LoginRequest $request): JsonResponse
     {
-        $result = $this->authService->login($request->only('email', 'password'));
+        $result = $this->authService->login($request->only('username', 'password'));
         /** @var User $user */
         $user = $result['user'];
         $meta = $this->requestMeta($request);
         $tokenHash = $this->hashAccessToken((string) $result['token']);
 
-        LogUserActivityJob::dispatch($user->id, 'auth.login', 'api_v1_auth', ['email' => $user->email], $meta['ip']);
+        LogUserActivityJob::dispatch(
+            $user->id,
+            'auth.login',
+            'api_v1_auth',
+            ['email' => $user->email, 'phone' => $user->phone],
+            $meta['ip']
+        );
         UpsertUserDeviceLogJob::dispatch($user->id, $meta['device_id'], 'web', $meta['device_name'], $meta['os_name']);
         StartUserSessionJob::dispatch($user->id, $tokenHash, null, $meta['ip'], $meta['ua'], $meta['device_id']);
 
@@ -190,9 +196,15 @@ class AuthController extends Controller
     public function logout(Request $request): JsonResponse
     {
         $meta = $this->requestMeta($request);
-        $tokenHash = $this->hashAccessToken((string) ($request->bearerToken() ?? ''));
-        $userId = (int) $request->user()->id;
-        $this->authService->logout($request->user());
+        /** @var User $authenticated */
+        $authenticated = $request->user();
+        $userId = (int) $authenticated->id;
+        $bearer = $request->bearerToken();
+        $tokenHash = $this->hashAccessToken((string) ($bearer ?? ''));
+
+        $this->authService->logout($authenticated, $bearer);
+
+        LogAuditJob::dispatch($userId, 'users', $userId, 'logout', null, null, $meta['ip'], $meta['ua']);
         EndUserSessionJob::dispatch($userId, $tokenHash);
         LogUserActivityJob::dispatch($userId, 'auth.logout', 'api_v1_auth', null, $meta['ip']);
 

@@ -67,6 +67,23 @@ class FeaturedCandidatesTest extends TestCase
             ->assertStatus(403);
     }
 
+    public function test_public_featured_uses_default_image_when_user_has_no_photos(): void
+    {
+        $this->seed(RbacSeeder::class);
+        $admin = $this->createUserWithRole('admin', 'featured-admin-image@example.com');
+        $candidate = $this->createPublishedCandidate('featured-no-photo@example.com');
+
+        $this->actingAs($admin, 'sanctum')
+            ->patchJson('/api/v1/admin/candidates/' . $candidate->uuid . '/featured', [
+                'isFeatured' => true,
+            ])
+            ->assertStatus(200);
+
+        $this->getJson('/api/v1/public/featured-candidates')
+            ->assertStatus(200)
+            ->assertJsonPath('data.0.photoUrl', '/images/Coming-Soon.png');
+    }
+
     private function createUserWithRole(string $role, string $email): User
     {
         /** @var User $user */

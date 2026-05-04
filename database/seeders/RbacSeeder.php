@@ -83,7 +83,7 @@ class RbacSeeder extends Seeder
         $candidate->fill([
             'uuid' => $candidate->uuid ?? (string) Str::uuid(),
             'title' => 'Candidate',
-            'description' => 'Default member role; no admin module permissions.',
+            'description' => 'Default member role; includes editing own profile via admin section APIs.',
             'is_system' => true,
             'is_default_registration' => true,
         ]);
@@ -93,7 +93,7 @@ class RbacSeeder extends Seeder
 
         $reviewer->syncPermissions($this->reviewerPermissionNames());
 
-        $candidate->syncPermissions([]);
+        $candidate->syncPermissions(['admin.candidates.edit']);
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
