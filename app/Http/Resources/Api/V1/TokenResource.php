@@ -18,9 +18,15 @@ class TokenResource extends JsonResource
     {
         $data = is_array($this->resource) ? $this->resource : [];
 
-        return [
+        $out = [
             'token' => $data['token'] ?? null,
             'token_type' => $data['token_type'] ?? 'Bearer',
         ];
+
+        if (array_key_exists('session_token_hash', $data)) {
+            $out['session_token_hash'] = $data['session_token_hash'];
+        }
+
+        return $out;
     }
 }

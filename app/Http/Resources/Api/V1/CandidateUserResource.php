@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api\V1;
 
 use App\Models\User;
+use App\Support\UserProfilePhotos;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
@@ -18,23 +19,7 @@ class CandidateUserResource extends JsonResource
     {
         /** @var User $user */
         $user = $this->resource;
-        $photos = DB::table('user_images')
-            ->where('user_id', $user->id)
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->get(['id', 'image_type', 'image_url', 'thumbnail_url', 'is_profile_photo', 'sort_order'])
-            ->map(static function (object $row): array {
-                return [
-                    'id' => (int) data_get($row, 'id'),
-                    'type' => (string) data_get($row, 'image_type', ''),
-                    'url' => (string) data_get($row, 'image_url', ''),
-                    'thumbnailUrl' => data_get($row, 'thumbnail_url'),
-                    'isProfilePhoto' => (bool) data_get($row, 'is_profile_photo', false),
-                    'sortOrder' => (int) data_get($row, 'sort_order', 0),
-                ];
-            })
-            ->values()
-            ->all();
+        $photos = UserProfilePhotos::listForUser($user);
         $defaultPhotoUrl = (string) config('custom.image.profile_default', '/images/Coming-Soon.png');
         $profilePhotoFromGallery = collect($photos)->first(
             static fn(array $photo): bool => (bool) data_get($photo, 'isProfilePhoto', false)
@@ -50,6 +35,11 @@ class CandidateUserResource extends JsonResource
         }
         if ($photoUrl === '') {
             $photoUrl = $defaultPhotoUrl;
+        }
+
+        $profileIconUrl = is_array($profilePhotoFromGallery) ? data_get($profilePhotoFromGallery, 'iconUrl') : null;
+        if (!is_string($profileIconUrl) || $profileIconUrl === '') {
+            $profileIconUrl = null;
         }
 
         $education = DB::table('user_education_details')
@@ -132,6 +122,7 @@ class CandidateUserResource extends JsonResource
         return [
             'id' => $user->id,
             'uuid' => $user->uuid,
+            'profileIconUrl' => $profileIconUrl,
             'userType' => 'candidate',
             'roleId' => $user->role_id,
             'role' => data_get($user, 'primaryRole.name'),

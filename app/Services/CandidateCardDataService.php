@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\User;
+use App\Support\UserImageStorageUrl;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -67,6 +68,7 @@ class CandidateCardDataService
             ->select(['user_id', 'image_url', 'is_profile_photo', 'sort_order'])
             ->whereIn('user_id', $userIds)
             ->where('is_active', true)
+            ->whereNull('deleted_at')
             ->orderBy('user_id')
             ->orderByDesc('is_profile_photo')
             ->orderBy('sort_order')
@@ -76,8 +78,11 @@ class CandidateCardDataService
         foreach ($rows as $row) {
             $uid = (int) $row->user_id;
             if (!isset($byUser[$uid])) {
-                $url = (string) $row->image_url;
-                $byUser[$uid] = $url !== '' ? $url : $default;
+                $stored = (string) $row->image_url;
+                $resolved =
+                    UserImageStorageUrl::toAbsoluteHttpUrl(UserImageStorageUrl::publicUrl($stored) ?? $stored) ??
+                    $stored;
+                $byUser[$uid] = $resolved !== '' ? $resolved : $default;
             }
         }
 

@@ -1,10 +1,14 @@
 <?php
 
+use App\Models\EmailSentLog;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Str;
+
 if (!function_exists('api_response')) {
     /**
      * Return a standardized API response
      */
-    function api_response(mixed $data = null, string $message = '', int $code = 200): \Illuminate\Http\JsonResponse
+    function api_response(mixed $data = null, string $message = '', int $code = 200): JsonResponse
     {
         return response()->json(
             [
@@ -21,7 +25,7 @@ if (!function_exists('api_error')) {
     /**
      * Return a standardized API error response
      */
-    function api_error(string $message, int $code = 400, mixed $errors = null): \Illuminate\Http\JsonResponse
+    function api_error(string $message, int $code = 400, mixed $errors = null): JsonResponse
     {
         $response = [
             'success' => false,
@@ -44,7 +48,7 @@ if (!function_exists('api_success')) {
         mixed $data = null,
         string $message = 'Success',
         int $code = 200
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         return api_response($data, $message, $code);
     }
 }
@@ -55,7 +59,7 @@ if (!function_exists('correlation_id')) {
      */
     function correlation_id(): string
     {
-        return request()->header('X-Correlation-ID') ?? \Illuminate\Support\Str::uuid()->toString();
+        return request()->header('X-Correlation-ID') ?? Str::uuid()->toString();
     }
 }
 
@@ -173,7 +177,7 @@ if (!function_exists('array_to_snake_case')) {
         $result = [];
 
         foreach ($array as $key => $value) {
-            $snakeKey = \Illuminate\Support\Str::snake($key);
+            $snakeKey = Str::snake($key);
 
             if (is_array($value)) {
                 $result[$snakeKey] = array_to_snake_case($value);
@@ -195,7 +199,7 @@ if (!function_exists('array_to_camel_case')) {
         $result = [];
 
         foreach ($array as $key => $value) {
-            $camelKey = \Illuminate\Support\Str::camel($key);
+            $camelKey = Str::camel($key);
 
             if (is_array($value)) {
                 $result[$camelKey] = array_to_camel_case($value);
@@ -218,7 +222,7 @@ if (!function_exists('route_exists')) {
             route($name);
 
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return false;
         }
     }
@@ -235,7 +239,7 @@ if (!function_exists('sentenceCase')) {
             return '';
         }
 
-        return \Illuminate\Support\Str::title(\Illuminate\Support\Str::lower($value));
+        return Str::title(Str::lower($value));
     }
 }
 
@@ -254,7 +258,7 @@ if (!function_exists('storeEmailSentLogs')) {
         try {
             $toStr = is_array($to) ? implode(', ', $to) : (string) $to;
             $ccStr = is_array($cc) ? implode(', ', $cc) : (string) $cc;
-            \App\Models\EmailSentLog::create([
+            EmailSentLog::create([
                 'email_from' => $from,
                 'email_to' => $toStr,
                 'email_cc' => $ccStr !== '' ? $ccStr : null,
@@ -262,7 +266,7 @@ if (!function_exists('storeEmailSentLogs')) {
                 'email_message' => $message,
                 'created_at' => now(),
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             report($e);
         }
     }

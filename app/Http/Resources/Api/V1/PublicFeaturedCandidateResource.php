@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api\V1;
 
 use App\Models\User;
+use App\Support\UserImageStorageUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,7 @@ class PublicFeaturedCandidateResource extends JsonResource
         $photoUrl = DB::table('user_images')
             ->where('user_id', $user->id)
             ->where('is_active', true)
+            ->whereNull('deleted_at')
             ->where('is_profile_photo', true)
             ->orderBy('sort_order')
             ->value('image_url');
@@ -31,11 +33,16 @@ class PublicFeaturedCandidateResource extends JsonResource
             $photoUrl = DB::table('user_images')
                 ->where('user_id', $user->id)
                 ->where('is_active', true)
+                ->whereNull('deleted_at')
                 ->orderBy('sort_order')
                 ->value('image_url');
         }
         if (!is_string($photoUrl) || $photoUrl === '') {
             $photoUrl = $defaultPhotoUrl;
+        } else {
+            $photoUrl =
+                UserImageStorageUrl::toAbsoluteHttpUrl(UserImageStorageUrl::publicUrl($photoUrl) ?? $photoUrl) ??
+                $photoUrl;
         }
 
         $age = $user->date_of_birth !== null ? $user->date_of_birth->age : null;

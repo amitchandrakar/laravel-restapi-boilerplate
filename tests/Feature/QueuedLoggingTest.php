@@ -41,6 +41,18 @@ class QueuedLoggingTest extends TestCase
         ])->assertStatus(200);
 
         $token = (string) $login->json('data.token');
+        $sessionHash = (string) $login->json('data.session_token_hash');
+        /** @var User $loggedInUser */
+        $loggedInUser = User::query()->where('email', $email)->firstOrFail();
+        (new StartUserSessionJob(
+            (int) $loggedInUser->id,
+            $sessionHash,
+            null,
+            '127.0.0.1',
+            'tester',
+            'test-device'
+        ))->handle(app(UserActionLogService::class));
+
         $this->withToken($token)->postJson('/api/v1/auth/logout')->assertStatus(200);
 
         Queue::assertPushed(LogAuditJob::class);

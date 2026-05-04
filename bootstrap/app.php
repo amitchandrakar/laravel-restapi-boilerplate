@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AttachRequestId;
+use App\Http\Middleware\EnsureActiveTrackedSession;
 use App\Http\Middleware\EnsureSanctumToken;
 use App\Http\Middleware\FlushSanctumGuardState;
 use App\Http\Middleware\ForceJsonResponse;
@@ -24,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
+            'tracked.session' => EnsureActiveTrackedSession::class,
         ]);
 
         // API middleware: request ID first, then force JSON

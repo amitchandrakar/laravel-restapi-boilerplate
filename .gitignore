@@ -4,6 +4,8 @@
 /public/build
 /public/hot
 /public/storage
+/public/images/uploads/*
+!/public/images/uploads/.gitkeep
 /storage/*.key
 /storage/pail
 /vendor

@@ -11,6 +11,7 @@ use Database\Seeders\PackageCatalogSeeder;
 use Database\Seeders\RbacSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class CandidatePackagePermissionSyncTest extends TestCase
@@ -112,7 +113,7 @@ class CandidatePackagePermissionSyncTest extends TestCase
         DB::table('subscriptions')->updateOrInsert(
             ['user_id' => $userId, 'package_id' => $this->packageIdByCode($packageCode)],
             [
-                'uuid' => (string) \Illuminate\Support\Str::uuid(),
+                'uuid' => (string) Str::uuid(),
                 'subscription_status' => 'active',
                 'started_at' => $now,
                 'ends_at' => $now->copy()->addYear(),
@@ -128,7 +129,7 @@ class CandidatePackagePermissionSyncTest extends TestCase
     {
         /** @var Subscription $subscription */
         $subscription = Subscription::query()->create([
-            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+            'uuid' => (string) Str::uuid(),
             'user_id' => $userId,
             'package_id' => $this->packageIdByCode($packageCode),
             'subscription_status' => 'active',

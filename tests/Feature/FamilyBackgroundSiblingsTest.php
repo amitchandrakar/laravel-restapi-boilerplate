@@ -9,6 +9,7 @@ use App\Models\User;
 use Database\Seeders\RbacSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class FamilyBackgroundSiblingsTest extends TestCase
@@ -74,7 +75,7 @@ class FamilyBackgroundSiblingsTest extends TestCase
         $candidate = $this->createUserWithRole('candidate', 'candidate-fam-clear@example.com');
 
         DB::table('user_siblings_details')->insert([
-            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+            'uuid' => (string) Str::uuid(),
             'user_id' => $candidate->id,
             'name' => 'Temp',
             'relation_type' => 'sister',

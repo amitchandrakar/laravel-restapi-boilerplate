@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Jobs\StartUserSessionJob;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\PackagePermissionService;
+use App\Services\UserActionLogService;
+use App\Support\SanctumPlainTokenHasher;
 use Database\Seeders\DemoMasterDataSeeder;
 use Database\Seeders\PackageCatalogSeeder;
 use Database\Seeders\RbacSeeder;
@@ -402,7 +405,13 @@ class CandidateDiscoveryApiTest extends TestCase
 
     private function tokenFor(User $user): string
     {
-        return $user->createToken('discovery-test')->plainTextToken;
+        $token = $user->createToken('discovery-test')->plainTextToken;
+        $hash = SanctumPlainTokenHasher::hashPlainTextToken($token);
+        (new StartUserSessionJob($user->id, $hash, null, '127.0.0.1', 'discovery-test', 'test-device'))->handle(
+            app(UserActionLogService::class)
+        );
+
+        return $token;
     }
 
     private function makeCandidate(string $email): User

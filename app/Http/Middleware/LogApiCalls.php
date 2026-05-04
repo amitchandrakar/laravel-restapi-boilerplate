@@ -6,6 +6,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -96,6 +97,12 @@ class LogApiCalls
             $keyName = is_string($key) ? $key : (string) $key;
             if (in_array(strtolower($keyName), self::SENSITIVE_KEYS, true)) {
                 $data[$key] = '***';
+
+                continue;
+            }
+
+            if ($value instanceof UploadedFile) {
+                $data[$key] = '[uploaded file: ' . $value->getClientOriginalName() . ']';
 
                 continue;
             }

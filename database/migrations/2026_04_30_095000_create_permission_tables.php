@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
  * Spatie Laravel Permission tables (published from package stub).
- * Required because {@see \App\Models\User} uses HasRoles / HasPermissions.
+ * Required because {@see User} uses HasRoles / HasPermissions.
  * Doc RBAC tables (roles/permissions/user_roles) are intentionally not duplicated here.
  */
 return new class extends Migration {
@@ -21,10 +22,10 @@ return new class extends Migration {
         $pivotPermission = $columnNames['permission_pivot_key'] ?? 'permission_id';
 
         if (empty($tableNames)) {
-            throw new \RuntimeException('Error: config/permission.php not loaded.');
+            throw new RuntimeException('Error: config/permission.php not loaded.');
         }
         if ($teams && empty($columnNames['team_foreign_key'] ?? null)) {
-            throw new \RuntimeException('Error: team_foreign_key on config/permission.php not loaded.');
+            throw new RuntimeException('Error: team_foreign_key on config/permission.php not loaded.');
         }
 
         Schema::create($tableNames['permissions'], static function (Blueprint $table) {

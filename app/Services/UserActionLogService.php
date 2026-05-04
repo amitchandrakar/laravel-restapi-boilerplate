@@ -124,4 +124,19 @@ class UserActionLogService
             'updated_at' => now(),
         ]);
     }
+
+    public function hasActiveUserSession(int $userId, string $sessionTokenHash): bool
+    {
+        $sessionTokenHash = trim($sessionTokenHash);
+        if ($sessionTokenHash === '') {
+            return false;
+        }
+
+        return DB::table('user_sessions')
+            ->where('user_id', $userId)
+            ->where('session_token_hash', $sessionTokenHash)
+            ->where('is_active', true)
+            ->where('expires_at', '>', now())
+            ->exists();
+    }
 }

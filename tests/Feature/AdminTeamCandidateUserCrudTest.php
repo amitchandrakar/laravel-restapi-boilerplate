@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Events\UserLifecycleEvent;
 use App\Jobs\LogAuditJob;
 use App\Jobs\LogUserActivityJob;
+use App\Models\Role;
 use App\Models\User;
 use Database\Seeders\RbacSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -156,6 +157,6 @@ class AdminTeamCandidateUserCrudTest extends TestCase
 
     private function roleIdByName(string $roleName): int
     {
-        return (int) \App\Models\Role::query()->where('name', $roleName)->value('id');
+        return (int) Role::query()->where('name', $roleName)->value('id');
     }
 }

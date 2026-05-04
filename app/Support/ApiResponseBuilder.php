@@ -7,6 +7,7 @@ namespace App\Support;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Str;
 
 class ApiResponseBuilder
 {
@@ -35,6 +36,8 @@ class ApiResponseBuilder
 
     public const ERROR_GENERIC = 'ERROR';
 
+    public const ERROR_SESSION_INVALID = 'SESSION_INVALID';
+
     /**
      * Build the base meta block (timestamp, requestId, version).
      */
@@ -42,7 +45,7 @@ class ApiResponseBuilder
     {
         $requestId = request()->attributes->get('request_id');
         if ($requestId === null) {
-            $requestId = 'req_' . \Illuminate\Support\Str::ulid();
+            $requestId = 'req_' . Str::ulid();
         }
 
         $meta = [

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\User;
+use App\Support\UserImageStorageUrl;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -288,12 +289,24 @@ class CandidateProfileSectionService
     {
         DB::table('user_images')->where('user_id', $user->id)->where('image_type', 'profile')->delete();
         foreach (array_slice($photos, 0, 5) as $index => $url) {
+            $storagePath = !str_contains($url, '://') ? $url : null;
+            $imageUrl =
+                $storagePath !== null
+                    ? UserImageStorageUrl::toAbsoluteHttpUrl(UserImageStorageUrl::publicUrl($storagePath) ?? $url)
+                    : $url;
+            $thumbUrl =
+                $storagePath !== null
+                    ? UserImageStorageUrl::toAbsoluteHttpUrl(UserImageStorageUrl::publicUrl($storagePath) ?? $url)
+                    : $url;
+
             DB::table('user_images')->insert([
-                'uuid' => (string) \Illuminate\Support\Str::uuid(),
+                'uuid' => (string) Str::uuid(),
                 'user_id' => $user->id,
                 'image_type' => 'profile',
-                'image_url' => $url,
-                'thumbnail_url' => $url,
+                'image_storage_path' => $storagePath,
+                'image_url' => $imageUrl,
+                'thumbnail_url' => $thumbUrl,
+                'icon_url' => null,
                 'is_profile_photo' => $index === 0,
                 'sort_order' => $index,
                 'is_active' => true,
@@ -367,7 +380,7 @@ class CandidateProfileSectionService
             $degreeId = $degreeId !== null && $degreeId !== '' ? (int) $degreeId : null;
 
             DB::table('user_education_details')->insert([
-                'uuid' => (string) \Illuminate\Support\Str::uuid(),
+                'uuid' => (string) Str::uuid(),
                 'user_id' => $user->id,
                 'degree_id' => $degreeId,
                 'field_of_study' => data_get($qualification, 'field_of_study'),

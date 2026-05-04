@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\PersonalAccessToken;
+use Laravel\Sanctum\TransientToken;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class AuthService
@@ -162,7 +163,7 @@ class AuthService
      * Log the user out: revoke the current Sanctum access token (this device), then clear the web guard session.
      *
      * When both a session and a Bearer token are present, Sanctum resolves the session first and sets a
-     * {@see \Laravel\Sanctum\TransientToken} on the user, so we revoke using the raw Bearer value when provided.
+     * {@see TransientToken} on the user, so we revoke using the raw Bearer value when provided.
      *
      * @param  string|null  $plainTextBearerToken  Raw `Authorization: Bearer` value (e.g. `{id}|{secret}`).
      */

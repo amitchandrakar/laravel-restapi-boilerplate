@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use Carbon\CarbonInterface;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -43,7 +44,7 @@ class DemoUserComplianceSeeder extends Seeder
         }
     }
 
-    private function ensureSubscription(int $userId, int $packageId, \Carbon\CarbonInterface $now): int
+    private function ensureSubscription(int $userId, int $packageId, CarbonInterface $now): int
     {
         DB::table('subscriptions')->updateOrInsert(
             ['user_id' => $userId, 'package_id' => $packageId],
@@ -69,7 +70,7 @@ class DemoUserComplianceSeeder extends Seeder
         int $userId,
         int $packageId,
         int $subscriptionId,
-        \Carbon\CarbonInterface $now
+        CarbonInterface $now
     ): void {
         $exists = DB::table('user_membership_history')
             ->where('user_id', $userId)
@@ -96,7 +97,7 @@ class DemoUserComplianceSeeder extends Seeder
         ]);
     }
 
-    private function ensureVerificationDocument(int $userId, \Carbon\CarbonInterface $now): void
+    private function ensureVerificationDocument(int $userId, CarbonInterface $now): void
     {
         $exists = DB::table('user_verification_documents')
             ->where('user_id', $userId)

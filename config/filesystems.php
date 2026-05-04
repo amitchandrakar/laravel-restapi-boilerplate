@@ -57,6 +57,19 @@ return [
             'throw' => false,
             'report' => false,
         ],
+
+        /*
+         * Candidate profile uploads: {user_id}/SM|MD|ORIGINAL/{uuid}.webp
+         * Switch driver to s3 later; keep the same relative keys in user_images.
+         */
+        'user_profile_images' => [
+            'driver' => 'local',
+            'root' => public_path('images/uploads'),
+            'url' => rtrim((string) env('USER_IMAGES_URL', env('APP_URL', 'http://localhost')), '/') . '/images/uploads',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
     ],
 
     /*

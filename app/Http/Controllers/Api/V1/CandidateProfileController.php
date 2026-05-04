@@ -13,16 +13,25 @@ use App\Http\Requests\Api\V1\Candidate\SaveCandidateLocationFamilyRootsRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidatePartnerPreferencesRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidatePersonalDetailsRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidatePhotosRequest;
+use App\Http\Requests\Api\V1\Candidate\UploadCandidateProfileImageRequest;
 use App\Jobs\LogAuditJob;
 use App\Jobs\LogUserActivityJob;
+use App\Models\User;
 use App\Services\CandidateProfileSectionService;
+use App\Services\UserImageManageService;
+use App\Services\UserImageUploadService;
+use App\Support\UserProfilePhotos;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CandidateProfileController extends Controller
 {
-    public function __construct(private readonly CandidateProfileSectionService $service) {}
+    public function __construct(
+        private readonly CandidateProfileSectionService $service,
+        private readonly UserImageUploadService $userImageUploads,
+        private readonly UserImageManageService $userImageManage
+    ) {}
 
     public function saveBasics(SaveCandidateBasicsRequest $request): JsonResponse
     {
@@ -32,6 +41,116 @@ class CandidateProfileController extends Controller
     public function savePhotos(SaveCandidatePhotosRequest $request): JsonResponse
     {
         return $this->saveSection($request, CandidateProfileSectionService::SECTION_PHOTOS);
+    }
+
+    public function listPhotos(Request $request, User $candidate): JsonResponse
+    {
+        if (
+            $deny = $this->guardOwnCandidateProfile($request, $candidate, 'You can only view your own profile photos.')
+        ) {
+            return $deny;
+        }
+
+        return $this->successResponse(
+            UserProfilePhotos::listForUser($candidate),
+            'Candidate profile photos fetched successfully'
+        );
+    }
+
+    public function setProfilePhoto(Request $request, User $candidate, string $imageUuid): JsonResponse
+    {
+        if ($deny = $this->guardOwnCandidateProfile($request, $candidate)) {
+            return $deny;
+        }
+
+        $data = $this->userImageManage->setProfilePhoto($candidate, $imageUuid);
+        if ($data === null) {
+            return $this->notFoundResponse('Photo not found');
+        }
+
+        $user = $request->user();
+        LogAuditJob::dispatch(
+            (int) $user->id,
+            'users',
+            (int) $user->id,
+            'candidate.profile.image.set_profile',
+            null,
+            ['image_id' => $data['id'] ?? null, 'image_uuid' => $data['uuid'] ?? null],
+            $request->ip(),
+            $request->userAgent()
+        );
+        LogUserActivityJob::dispatch(
+            (int) $user->id,
+            'candidate.profile.image.set_profile',
+            'api_v1_candidate',
+            ['image_id' => $data['id'] ?? null, 'image_uuid' => $data['uuid'] ?? null],
+            $request->ip()
+        );
+
+        return $this->successResponse($data, 'Profile photo updated successfully');
+    }
+
+    public function deletePhoto(Request $request, User $candidate, string $imageUuid): JsonResponse
+    {
+        if ($deny = $this->guardOwnCandidateProfile($request, $candidate)) {
+            return $deny;
+        }
+
+        $data = $this->userImageManage->softDeletePhoto($candidate, $imageUuid);
+        if ($data === null) {
+            return $this->notFoundResponse('Photo not found');
+        }
+
+        $user = $request->user();
+        LogAuditJob::dispatch(
+            (int) $user->id,
+            'users',
+            (int) $user->id,
+            'candidate.profile.image.soft_delete',
+            null,
+            ['image_id' => $data['id'], 'image_uuid' => $data['uuid']],
+            $request->ip(),
+            $request->userAgent()
+        );
+        LogUserActivityJob::dispatch(
+            (int) $user->id,
+            'candidate.profile.image.soft_delete',
+            'api_v1_candidate',
+            ['image_id' => $data['id'], 'image_uuid' => $data['uuid']],
+            $request->ip()
+        );
+
+        return $this->successResponse($data, 'Photo removed successfully');
+    }
+
+    public function uploadPhoto(UploadCandidateProfileImageRequest $request): JsonResponse
+    {
+        $user = $request->user();
+        if (!$user?->hasRole('candidate')) {
+            return $this->forbiddenResponse();
+        }
+
+        $data = $this->userImageUploads->upload($user, $request->file('image'));
+
+        LogAuditJob::dispatch(
+            (int) $user->id,
+            'users',
+            (int) $user->id,
+            'candidate.profile.image.upload',
+            null,
+            ['image_id' => $data['id'] ?? null],
+            $request->ip(),
+            $request->userAgent()
+        );
+        LogUserActivityJob::dispatch(
+            (int) $user->id,
+            'candidate.profile.image.upload',
+            'api_v1_candidate',
+            ['image_id' => $data['id'] ?? null],
+            $request->ip()
+        );
+
+        return $this->successResponse($data, 'Profile image uploaded successfully');
     }
 
     public function savePersonalDetails(SaveCandidatePersonalDetailsRequest $request): JsonResponse
@@ -138,5 +257,24 @@ class CandidateProfileController extends Controller
             ['section' => $section, 'completedSections' => $updated->completed_sections_json],
             'Candidate section saved successfully'
         );
+    }
+
+    private function guardOwnCandidateProfile(
+        Request $request,
+        User $candidate,
+        string $selfOnlyMessage = 'You can only manage your own profile photos.'
+    ): ?JsonResponse {
+        $auth = $request->user();
+        if (!$auth?->hasRole('candidate')) {
+            return $this->forbiddenResponse();
+        }
+        if (!$candidate->hasRole('candidate')) {
+            return $this->notFoundResponse('Candidate not found');
+        }
+        if ((string) $auth->uuid !== (string) $candidate->uuid) {
+            return $this->forbiddenResponse($selfOnlyMessage);
+        }
+
+        return null;
     }
 }

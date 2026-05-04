@@ -21,6 +21,7 @@ use App\Http\Resources\Api\V1\AdminCandidateProfileDetailsResource;
 use App\Http\Resources\Api\V1\CandidateUserResource;
 use App\Jobs\LogAuditJob;
 use App\Jobs\LogUserActivityJob;
+use App\Models\Role;
 use App\Models\User;
 use App\Services\CandidateProfileSectionService;
 use App\Services\CandidateUserService;
@@ -418,7 +419,7 @@ class CandidateUserController extends Controller
             $lastName = (string) data_get($payload, 'personal_details.last_name', 'User');
             $email = (string) data_get($payload, 'basics.email');
             $password = (string) ($payload['password'] ?? 'Password@123');
-            $candidateRoleId = (int) \App\Models\Role::query()->where('name', 'candidate')->value('id');
+            $candidateRoleId = (int) Role::query()->where('name', 'candidate')->value('id');
 
             /** @var User $candidate */
             $candidate = User::query()->create([

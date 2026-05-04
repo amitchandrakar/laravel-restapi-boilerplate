@@ -23,6 +23,7 @@ use App\Jobs\StartUserSessionJob;
 use App\Jobs\UpsertUserDeviceLogJob;
 use App\Models\User;
 use App\Services\AuthService;
+use App\Support\SanctumPlainTokenHasher;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -79,12 +80,16 @@ class AuthController extends Controller
 
         $user->refresh();
 
+        $tokenHash = SanctumPlainTokenHasher::hashPlainTextToken((string) $result['token']);
+        StartUserSessionJob::dispatchSync($user->id, $tokenHash, null, $meta['ip'], $meta['ua'], $meta['device_id']);
+
         return $this->createdResponse(
             AuthLoginResource::make([
                 'user' => UserResource::make($user),
                 'token' => $result['token'],
                 'token_type' => 'Bearer',
                 'permissions' => $user->getAllPermissions()->pluck('name')->values()->all(),
+                'session_token_hash' => $tokenHash,
             ]),
             'Candidate registered successfully'
         );
@@ -134,11 +139,15 @@ class AuthController extends Controller
         LogUserActivityJob::dispatch($user->id, 'auth.register', 'api_v1_auth', ['email' => $user->email], $meta['ip']);
         UpsertUserDeviceLogJob::dispatch($user->id, $meta['device_id'], 'web', $meta['device_name'], $meta['os_name']);
 
+        $tokenHash = SanctumPlainTokenHasher::hashPlainTextToken((string) $result['token']);
+        StartUserSessionJob::dispatchSync($user->id, $tokenHash, null, $meta['ip'], $meta['ua'], $meta['device_id']);
+
         return $this->createdResponse(
             AuthLoginResource::make([
                 'user' => UserResource::make($user),
                 'token' => $result['token'],
                 'token_type' => 'Bearer',
+                'session_token_hash' => $tokenHash,
             ]),
             'User registered successfully'
         );
@@ -153,7 +162,7 @@ class AuthController extends Controller
         /** @var User $user */
         $user = $result['user'];
         $meta = $this->requestMeta($request);
-        $tokenHash = $this->hashAccessToken((string) $result['token']);
+        $tokenHash = SanctumPlainTokenHasher::hashPlainTextToken((string) $result['token']);
 
         LogUserActivityJob::dispatch(
             $user->id,
@@ -163,7 +172,7 @@ class AuthController extends Controller
             $meta['ip']
         );
         UpsertUserDeviceLogJob::dispatch($user->id, $meta['device_id'], 'web', $meta['device_name'], $meta['os_name']);
-        StartUserSessionJob::dispatch($user->id, $tokenHash, null, $meta['ip'], $meta['ua'], $meta['device_id']);
+        StartUserSessionJob::dispatchSync($user->id, $tokenHash, null, $meta['ip'], $meta['ua'], $meta['device_id']);
 
         return $this->successResponse(
             AuthLoginResource::make([
@@ -171,6 +180,7 @@ class AuthController extends Controller
                 'token' => $result['token'],
                 'token_type' => 'Bearer',
                 'permissions' => $result['permissions'],
+                'session_token_hash' => $tokenHash,
             ]),
             'Login successful'
         );
@@ -200,12 +210,12 @@ class AuthController extends Controller
         $authenticated = $request->user();
         $userId = (int) $authenticated->id;
         $bearer = $request->bearerToken();
-        $tokenHash = $this->hashAccessToken((string) ($bearer ?? ''));
+        $tokenHash = SanctumPlainTokenHasher::hashPlainTextToken((string) ($bearer ?? ''));
 
         $this->authService->logout($authenticated, $bearer);
 
         LogAuditJob::dispatch($userId, 'users', $userId, 'logout', null, null, $meta['ip'], $meta['ua']);
-        EndUserSessionJob::dispatch($userId, $tokenHash);
+        EndUserSessionJob::dispatchSync($userId, $tokenHash);
         LogUserActivityJob::dispatch($userId, 'auth.logout', 'api_v1_auth', null, $meta['ip']);
 
         return $this->successResponse(null, 'Logged out successfully');
@@ -216,12 +226,25 @@ class AuthController extends Controller
      */
     public function refresh(Request $request): JsonResponse
     {
-        $result = $this->authService->refresh($request->user());
+        $meta = $this->requestMeta($request);
+        /** @var User $user */
+        $user = $request->user();
+        $userId = (int) $user->id;
+        $bearer = $request->bearerToken();
+        $oldHash = SanctumPlainTokenHasher::hashPlainTextToken((string) ($bearer ?? ''));
+        if ($oldHash !== '') {
+            EndUserSessionJob::dispatchSync($userId, $oldHash);
+        }
+
+        $result = $this->authService->refresh($user);
+        $newHash = SanctumPlainTokenHasher::hashPlainTextToken((string) $result['token']);
+        StartUserSessionJob::dispatchSync($userId, $newHash, null, $meta['ip'], $meta['ua'], $meta['device_id']);
 
         return $this->successResponse(
             TokenResource::make([
                 'token' => $result['token'],
                 'token_type' => 'Bearer',
+                'session_token_hash' => $newHash,
             ]),
             'Token refreshed successfully'
         );
@@ -342,16 +365,5 @@ class AuthController extends Controller
                     ? 'macOS'
                     : 'Web'),
         ];
-    }
-
-    private function hashAccessToken(string $plainTextToken): string
-    {
-        if ($plainTextToken === '') {
-            return '';
-        }
-        $parts = explode('|', $plainTextToken, 2);
-        $tokenValue = $parts[1] ?? $parts[0];
-
-        return hash('sha256', $tokenValue);
     }
 }

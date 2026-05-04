@@ -54,6 +54,7 @@ class AuthFlowTest extends TestCase
         $this->assertContains('admin.candidates.edit', (array) $login->json('data.permissions'));
         $loginToken = $login->json('data.token');
         $this->assertIsString($loginToken);
+        $this->assertSessionTokenHashMatchesPlainToken($loginToken, $login->json('data.session_token_hash'));
 
         $capturedResetToken = null;
         Event::listen(ForgotPasswordRequestedEvent::class, function (ForgotPasswordRequestedEvent $e) use (
@@ -90,7 +91,9 @@ class AuthFlowTest extends TestCase
             'password' => self::NEW_PASSWORD_AFTER_RESET,
         ]);
         $final->assertStatus(200)->assertJsonPath('success', true);
-        $this->assertIsString($final->json('data.token'));
+        $finalToken = $final->json('data.token');
+        $this->assertIsString($finalToken);
+        $this->assertSessionTokenHashMatchesPlainToken($finalToken, $final->json('data.session_token_hash'));
     }
 
     public function test_forgot_password_validates_unknown_email(): void
@@ -249,6 +252,16 @@ class AuthFlowTest extends TestCase
         ])
             ->assertStatus(200)
             ->assertJsonPath('success', true);
+    }
+
+    private function assertSessionTokenHashMatchesPlainToken(string $plainToken, mixed $sessionTokenHash): void
+    {
+        $this->assertIsString($sessionTokenHash);
+        $this->assertSame(64, strlen($sessionTokenHash));
+        $parts = explode('|', $plainToken, 2);
+        $tokenValue = $parts[1] ?? $parts[0];
+
+        $this->assertSame(hash('sha256', $tokenValue), $sessionTokenHash);
     }
 
     /**

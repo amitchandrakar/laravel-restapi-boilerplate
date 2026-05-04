@@ -22,11 +22,17 @@ class AuthLoginResource extends JsonResource
             $user = $user->resolve();
         }
 
-        return [
+        $out = [
             'user' => $user,
             'token' => $data['token'] ?? null,
             'token_type' => $data['token_type'] ?? 'Bearer',
             'permissions' => $data['permissions'] ?? [],
         ];
+
+        if (array_key_exists('session_token_hash', $data)) {
+            $out['session_token_hash'] = $data['session_token_hash'];
+        }
+
+        return $out;
     }
 }

@@ -5,10 +5,12 @@ declare(strict_types=1);
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 /**
- * Admin module catalog + metadata on Spatie {@see \Spatie\Permission\Models\Permission}
- * and {@see \Spatie\Permission\Models\Role} per docs/module_role_permission.md.
+ * Admin module catalog + metadata on Spatie {@see Permission}
+ * and {@see Role} per docs/module_role_permission.md.
  */
 return new class extends Migration {
     public function up(): void

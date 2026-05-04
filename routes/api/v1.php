@@ -21,6 +21,8 @@ use App\Http\Controllers\Api\V1\PublicFeaturedCandidateController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
 
+$sanctumWithTrackedSession = ['auth:sanctum', 'tracked.session'];
+
 Route::prefix('public')
     ->middleware('throttle:120,1')
     ->group(function () {
@@ -28,7 +30,7 @@ Route::prefix('public')
         Route::get('candidate-profile-options', PublicCandidateProfileOptionsController::class);
     });
 
-Route::prefix('auth')->group(function () {
+Route::prefix('auth')->group(function () use ($sanctumWithTrackedSession) {
     Route::get('registration', [AuthController::class, 'registrationOptions']);
     Route::post('register-candidate', [AuthController::class, 'registerCandidate']);
     Route::post('register', [AuthController::class, 'register']);
@@ -36,7 +38,7 @@ Route::prefix('auth')->group(function () {
     Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('reset-password', [AuthController::class, 'resetPassword']);
 
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware($sanctumWithTrackedSession)->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::post('refresh', [AuthController::class, 'refresh']);
         Route::get('me', [AuthController::class, 'me']);
@@ -46,6 +48,7 @@ Route::prefix('auth')->group(function () {
         Route::prefix('candidate/profile')->group(function () {
             Route::patch('basics', [CandidateProfileController::class, 'saveBasics']);
             Route::patch('photos', [CandidateProfileController::class, 'savePhotos']);
+            Route::post('photos/upload', [CandidateProfileController::class, 'uploadPhoto']);
             Route::patch('personal-details', [CandidateProfileController::class, 'savePersonalDetails']);
             Route::patch('horoscope', [CandidateProfileController::class, 'saveHoroscope']);
             Route::patch('location-family-roots', [CandidateProfileController::class, 'saveLocationFamilyRoots']);
@@ -62,6 +65,15 @@ Route::prefix('auth')->group(function () {
             Route::put('documents', [CandidateKycController::class, 'upsert']);
         });
 
+        Route::get('candidate/{candidate:uuid}/photos', [CandidateProfileController::class, 'listPhotos']);
+        Route::patch('candidate/{candidate:uuid}/photos/{imageUuid}', [
+            CandidateProfileController::class,
+            'setProfilePhoto',
+        ])->whereUuid('imageUuid');
+        Route::delete('candidate/{candidate:uuid}/photos/{imageUuid}', [
+            CandidateProfileController::class,
+            'deletePhoto',
+        ])->whereUuid('imageUuid');
         Route::get('candidate/search', [CandidateDiscoveryController::class, 'browse']);
         Route::get('candidate/favorites', [CandidateDiscoveryController::class, 'favorites']);
         Route::patch('candidate/favorites/{user:uuid}', [CandidateDiscoveryController::class, 'toggleFavorite']);
@@ -69,7 +81,7 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware($sanctumWithTrackedSession)->group(function () {
     Route::get('users', [UserController::class, 'index'])->middleware('permission:admin.users.view');
     Route::post('users', [UserController::class, 'store'])->middleware('permission:admin.users.add');
     Route::get('users/{user}', [UserController::class, 'show'])->middleware('permission:admin.users.view');
@@ -80,7 +92,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::prefix('admin')
-    ->middleware(['auth:sanctum'])
+    ->middleware($sanctumWithTrackedSession)
     ->group(function () {
         Route::get('packages/permission-options', [PackageController::class, 'permissionOptions'])->middleware(
             'permission:admin.packages.view'

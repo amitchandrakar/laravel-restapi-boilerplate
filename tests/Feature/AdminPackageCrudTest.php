@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\Package;
+use App\Models\Permission;
 use App\Models\User;
 use Database\Seeders\RbacSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class AdminPackageCrudTest extends TestCase
@@ -229,7 +231,7 @@ class AdminPackageCrudTest extends TestCase
         $package = $this->createPackage('SYNC_PLAN');
 
         DB::table('subscriptions')->insert([
-            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+            'uuid' => (string) Str::uuid(),
             'user_id' => $candidate->id,
             'package_id' => $package->id,
             'subscription_status' => 'active',
@@ -291,6 +293,6 @@ class AdminPackageCrudTest extends TestCase
 
     private function permissionIdByName(string $name): int
     {
-        return (int) \App\Models\Permission::query()->where('name', $name)->value('id');
+        return (int) Permission::query()->where('name', $name)->value('id');
     }
 }

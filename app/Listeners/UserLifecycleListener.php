@@ -9,6 +9,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Notifications\UserLifecycleNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Collection;
 
 class UserLifecycleListener implements ShouldQueue
 {
@@ -20,7 +21,7 @@ class UserLifecycleListener implements ShouldQueue
             return;
         }
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, User> $admins */
+        /** @var Collection<int, User> $admins */
         $admins = User::query()
             ->whereHas('roles', static function ($query) use ($adminRole): void {
                 $query->where('id', $adminRole->id);

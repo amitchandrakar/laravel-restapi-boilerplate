@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Http\Resources\Api\V1\CandidateUserResource;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Builds admin "profile details" payload: same shape as {@see \App\Http\Resources\Api\V1\CandidateUserResource}
+ * Builds admin "profile details" payload: same shape as {@see CandidateUserResource}
  * with FK-based geography and master lists resolved to the same string|null per level as `locationFamilyRoots.current`.
  */
 class AdminCandidateProfileDetailsService
@@ -277,14 +278,26 @@ class AdminCandidateProfileDetailsService
         return DB::table('user_images')
             ->where('user_id', $userId)
             ->where('is_active', true)
+            ->whereNull('deleted_at')
             ->orderBy('sort_order')
-            ->get(['id', 'image_type', 'image_url', 'thumbnail_url', 'is_profile_photo', 'sort_order'])
+            ->get([
+                'id',
+                'image_type',
+                'image_url',
+                'image_storage_path',
+                'thumbnail_url',
+                'icon_url',
+                'is_profile_photo',
+                'sort_order',
+            ])
             ->map(static function (object $row): array {
                 return [
                     'id' => (int) data_get($row, 'id'),
                     'type' => (string) data_get($row, 'image_type', ''),
                     'url' => (string) data_get($row, 'image_url', ''),
+                    'imageStoragePath' => data_get($row, 'image_storage_path'),
                     'thumbnailUrl' => data_get($row, 'thumbnail_url'),
+                    'iconUrl' => data_get($row, 'icon_url'),
                     'isProfilePhoto' => (bool) data_get($row, 'is_profile_photo', false),
                     'sortOrder' => (int) data_get($row, 'sort_order', 0),
                 ];
@@ -334,7 +347,7 @@ class AdminCandidateProfileDetailsService
     }
 
     /**
-     * @param  \Illuminate\Support\Collection<int, \stdClass>  $educationRows
+     * @param  Collection<int, \stdClass>  $educationRows
      * @param  list<int>  $partnerDegreeIds
      * @param  list<int>  $partnerLocationIds
      * @param  list<int>  $partnerCommunityIds
