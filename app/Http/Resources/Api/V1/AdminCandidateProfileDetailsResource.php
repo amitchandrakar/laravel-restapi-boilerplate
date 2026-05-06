@@ -24,6 +24,6 @@ class AdminCandidateProfileDetailsResource extends JsonResource
         /** @var User $user */
         $user = $this->resource;
 
-        return app(AdminCandidateProfileDetailsService::class)->buildForCandidate($user);
+        return app(AdminCandidateProfileDetailsService::class)->buildForCandidate($user, $request->user());
     }
 }

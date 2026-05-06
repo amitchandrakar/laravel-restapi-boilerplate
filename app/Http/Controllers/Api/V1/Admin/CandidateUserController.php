@@ -26,6 +26,7 @@ use App\Models\User;
 use App\Services\CandidateProfileSectionService;
 use App\Services\CandidateUserService;
 use App\Services\FeaturedCandidateService;
+use App\Services\ProfileViewService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -35,7 +36,8 @@ class CandidateUserController extends Controller
 {
     public function __construct(
         private readonly CandidateUserService $service,
-        private readonly FeaturedCandidateService $featuredCandidateService
+        private readonly FeaturedCandidateService $featuredCandidateService,
+        private readonly ProfileViewService $profileViewService
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -122,6 +124,11 @@ class CandidateUserController extends Controller
             ['user_id' => $candidate->id],
             $request->ip()
         );
+
+        $actor = $request->user();
+        if ($actor instanceof User) {
+            $this->profileViewService->recordCandidatePeerView($actor, $candidate);
+        }
 
         return $this->successResponse(
             AdminCandidateProfileDetailsResource::make($candidate),

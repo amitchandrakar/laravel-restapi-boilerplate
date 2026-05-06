@@ -29,6 +29,7 @@ All product endpoints are namespaced by version so clients can adopt changes saf
 - **Token-based API authentication** for protected routes using **Bearer tokens** issued after login or registration.
 - Public endpoints (e.g. registration options, health, selected marketing-safe lists) do not require a token unless documented otherwise.
 - Send: `Authorization: Bearer <access_token>` for Sanctum-protected requests.
+- **Password reset:** forgot-password email + token reset, or reset while logged in with current password — see [`password_reset_api.md`](password_reset_api.md).
 
 ### Roles vs package entitlements (two different systems)
 
@@ -48,6 +49,14 @@ See [`module_role_permission.md`](module_role_permission.md) and [`package_featu
 - Profiles are built **in sections** (basics, photos, personal details, horoscope, location, career, family, lifestyle, partner preferences).
 - **Draft vs published:** completion and publish rules are enforced in the **service layer**; published profiles unlock downstream behaviour (e.g. featuring on the public homepage).
 - Documented in [`candidate_sectional_draft_api.md`](candidate_sectional_draft_api.md).
+
+### Contact number requests (candidate ↔ candidate)
+
+- Members may **request** another candidate’s **phone** via **`POST /api/v1/auth/candidate/contact-requests`**; the recipient **accepts or rejects** with **`PATCH …/contact-requests/{uuid}`**. Phone on **`GET /api/v1/admin/candidates/{uuid}/profile-details`** is **hidden for peers** until the request is **accepted** (staff with `admin.candidates.view` still see full contact). See [`candidate_contact_requests_api.md`](candidate_contact_requests_api.md).
+
+### In-app notifications (member feed)
+
+- **`GET /api/v1/auth/notifications`** (and read/summary helpers) expose a **kind-filtered** feed with **`actions`** for clients. See [`member_notifications_api.md`](member_notifications_api.md) and the design notes in [`notifications_plan.md`](notifications_plan.md).
 
 ### Registration and identity
 

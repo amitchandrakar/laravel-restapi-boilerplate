@@ -296,9 +296,6 @@ class AuthController extends Controller
     /**
      * Forgot password
      */
-    /**
-     * Forgot password
-     */
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
         /** @var User|null $user */
@@ -320,10 +317,21 @@ class AuthController extends Controller
     }
 
     /**
-     * Reset password
+     * Reset password (guest: email + token from forgot-password; authenticated: current + new password).
      */
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
+        $authenticated = $request->user();
+        if ($authenticated instanceof User) {
+            $this->authService->changePassword(
+                $authenticated,
+                (string) $request->input('current_password'),
+                (string) $request->input('password')
+            );
+
+            return $this->successResponse(null, 'Password reset successfully');
+        }
+
         $email = (string) $request->input('email');
         /** @var User|null $user */
         $user = User::where('email', $email)->first();

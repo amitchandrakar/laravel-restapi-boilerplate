@@ -214,6 +214,63 @@ class AuthFlowTest extends TestCase
             ->assertJsonPath('data.user.id', $user->id);
     }
 
+    public function test_reset_password_while_logged_in_with_current_password(): void
+    {
+        $this->seed(RbacSeeder::class);
+        [$email, $password, $token] = $this->registerAndLogin();
+
+        $newPassword = 'Password@resetViaApi1';
+
+        $this->withToken($token)
+            ->postJson('/api/v1/auth/reset-password', [
+                'current_password' => $password,
+                'password' => $newPassword,
+                'password_confirmation' => $newPassword,
+            ])
+            ->assertStatus(200)
+            ->assertJsonPath('success', true);
+
+        $this->postJson('/api/v1/auth/login', [
+            'username' => $email,
+            'password' => $password,
+        ])->assertStatus(401);
+
+        $this->postJson('/api/v1/auth/login', [
+            'username' => $email,
+            'password' => $newPassword,
+        ])
+            ->assertStatus(200)
+            ->assertJsonPath('success', true);
+    }
+
+    public function test_reset_password_while_logged_in_rejects_wrong_current_password(): void
+    {
+        $this->seed(RbacSeeder::class);
+        [, $password, $token] = $this->registerAndLogin();
+
+        $this->withToken($token)
+            ->postJson('/api/v1/auth/reset-password', [
+                'current_password' => $password . 'wrong',
+                'password' => 'Password@newValid1',
+                'password_confirmation' => 'Password@newValid1',
+            ])
+            ->assertStatus(403);
+    }
+
+    public function test_reset_password_rejects_invalid_bearer_token(): void
+    {
+        $this->seed(RbacSeeder::class);
+
+        $this->withToken('invalid-token-that-does-not-exist')
+            ->postJson('/api/v1/auth/reset-password', [
+                'current_password' => 'x',
+                'password' => 'Password@newValid2',
+                'password_confirmation' => 'Password@newValid2',
+            ])
+            ->assertStatus(401)
+            ->assertJsonPath('success', false);
+    }
+
     public function test_update_profile_and_change_password_flow(): void
     {
         $this->seed(RbacSeeder::class);

@@ -13,9 +13,11 @@ use App\Http\Controllers\Api\V1\Admin\SiteSettingsController;
 use App\Http\Controllers\Api\V1\Admin\SocialLoginSettingsController;
 use App\Http\Controllers\Api\V1\Admin\TeamUserController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CandidateContactRequestController;
 use App\Http\Controllers\Api\V1\CandidateDiscoveryController;
 use App\Http\Controllers\Api\V1\CandidateKycController;
 use App\Http\Controllers\Api\V1\CandidateProfileController;
+use App\Http\Controllers\Api\V1\MemberNotificationController;
 use App\Http\Controllers\Api\V1\PublicCandidateProfileOptionsController;
 use App\Http\Controllers\Api\V1\PublicFeaturedCandidateController;
 use App\Http\Controllers\Api\V1\UserController;
@@ -36,7 +38,10 @@ Route::prefix('auth')->group(function () use ($sanctumWithTrackedSession) {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
     Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
-    Route::post('reset-password', [AuthController::class, 'resetPassword']);
+    Route::post('reset-password', [AuthController::class, 'resetPassword'])->middleware([
+        'optional.sanctum',
+        'tracked.session',
+    ]);
 
     Route::middleware($sanctumWithTrackedSession)->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
@@ -44,6 +49,16 @@ Route::prefix('auth')->group(function () use ($sanctumWithTrackedSession) {
         Route::get('me', [AuthController::class, 'me']);
         Route::patch('profile', [AuthController::class, 'updateProfile']);
         Route::post('change-password', [AuthController::class, 'changePassword']);
+
+        Route::prefix('notifications')
+            ->middleware('throttle:60,1')
+            ->group(function () {
+                Route::get('/', [MemberNotificationController::class, 'index']);
+                Route::get('summary', [MemberNotificationController::class, 'summary']);
+                Route::post('read-all', [MemberNotificationController::class, 'markAllRead']);
+                Route::get('{notificationId}', [MemberNotificationController::class, 'show']);
+                Route::patch('{notificationId}/read', [MemberNotificationController::class, 'markRead']);
+            });
 
         Route::prefix('candidate/profile')->group(function () {
             Route::patch('basics', [CandidateProfileController::class, 'saveBasics']);
@@ -78,6 +93,12 @@ Route::prefix('auth')->group(function () use ($sanctumWithTrackedSession) {
         Route::get('candidate/favorites', [CandidateDiscoveryController::class, 'favorites']);
         Route::patch('candidate/favorites/{user:uuid}', [CandidateDiscoveryController::class, 'toggleFavorite']);
         Route::get('candidate/matches', [CandidateDiscoveryController::class, 'matches']);
+
+        Route::post('candidate/contact-requests', [CandidateContactRequestController::class, 'store']);
+        Route::patch('candidate/contact-requests/{contactRequest}', [
+            CandidateContactRequestController::class,
+            'respond',
+        ]);
     });
 });
 

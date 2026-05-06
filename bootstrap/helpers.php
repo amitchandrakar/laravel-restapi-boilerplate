@@ -44,11 +44,8 @@ if (!function_exists('api_success')) {
     /**
      * Return a standardized API success response
      */
-    function api_success(
-        mixed $data = null,
-        string $message = 'Success',
-        int $code = 200
-    ): JsonResponse {
+    function api_success(mixed $data = null, string $message = 'Success', int $code = 200): JsonResponse
+    {
         return api_response($data, $message, $code);
     }
 }

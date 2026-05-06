@@ -82,10 +82,8 @@ class Handler extends ExceptionHandler
     /**
      * Handle API exceptions with consistent envelope.
      */
-    protected function handleApiException(
-        Request $request,
-        Throwable $exception
-    ): Response {
+    protected function handleApiException(Request $request, Throwable $exception): Response
+    {
         $exception = $this->prepareException($exception);
 
         if ($exception instanceof ApiException) {
@@ -209,10 +207,8 @@ class Handler extends ExceptionHandler
     /**
      * Convert validation exception to JSON response with envelope and field-level error.fields.
      */
-    protected function convertValidationExceptionToResponse(
-        ValidationException $exception,
-        $request
-    ): Response {
+    protected function convertValidationExceptionToResponse(ValidationException $exception, $request): Response
+    {
         $message = $exception->getMessage() ?: 'Validation failed';
         $fields = ApiResponseBuilder::normalizeValidationFields($exception->errors());
 
@@ -272,10 +268,8 @@ class Handler extends ExceptionHandler
     /**
      * Handle unauthenticated user.
      */
-    protected function unauthenticated(
-        $request,
-        AuthenticationException $exception
-    ): Response {
+    protected function unauthenticated($request, AuthenticationException $exception): Response
+    {
         return ApiResponseBuilder::error(
             $exception->getMessage() ?: 'Unauthenticated',
             HttpStatusCode::UNAUTHORIZED,

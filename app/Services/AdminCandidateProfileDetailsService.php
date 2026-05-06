@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Http\Resources\Api\V1\CandidateUserResource;
+use App\Models\ContactRequest;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -18,9 +19,10 @@ class AdminCandidateProfileDetailsService
     /**
      * @return array<string, mixed>
      */
-    public function buildForCandidate(User $user): array
+    public function buildForCandidate(User $user, ?User $viewer = null): array
     {
         $user->loadMissing('primaryRole');
+        $phone = $this->profilePhoneForViewer($user, $viewer);
 
         $photos = $this->loadPhotos($user->id);
         $defaultPhotoUrl = (string) config('custom.image.profile_default', '/images/Coming-Soon.png');
@@ -158,7 +160,7 @@ class AdminCandidateProfileDetailsService
             'firstName' => $user->first_name,
             'lastName' => $user->last_name,
             'email' => $user->email,
-            'phone' => $user->phone,
+            'phone' => $phone,
             'gender' => $user->gender,
             'dateOfBirth' => $user->date_of_birth !== null ? (string) $user->date_of_birth : null,
             'maritalStatus' => data_get($user, 'marital_status'),
@@ -180,7 +182,7 @@ class AdminCandidateProfileDetailsService
                     'middleName' => data_get($user, 'middle_name'),
                     'lastName' => $user->last_name,
                     'email' => $user->email,
-                    'phone' => $user->phone,
+                    'phone' => $phone,
                     'photoUrl' => $photoUrl,
                     'age' => $user->date_of_birth !== null ? $user->date_of_birth->age : null,
                     'religion' => data_get($user, 'religion'),
@@ -564,5 +566,26 @@ class AdminCandidateProfileDetailsService
         }
 
         return [];
+    }
+
+    private function profilePhoneForViewer(User $profile, ?User $viewer): ?string
+    {
+        if ($viewer === null) {
+            return $profile->phone;
+        }
+        if ((int) $viewer->id === (int) $profile->id) {
+            return $profile->phone;
+        }
+        if ($viewer->can('admin.candidates.view')) {
+            return $profile->phone;
+        }
+        if (
+            $viewer->hasRole('candidate')
+            && !ContactRequest::existsAccepted((int) $viewer->id, (int) $profile->id)
+        ) {
+            return null;
+        }
+
+        return $profile->phone;
     }
 }
