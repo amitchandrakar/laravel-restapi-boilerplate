@@ -29,10 +29,10 @@ Responses use the standard API envelope (`success`, `statusCode`, `message`, `da
 
 ### Request body (JSON)
 
-| Field | Type | Required | Notes |
-| ----- | ---- | -------- | ----- |
-| `candidateUuid` | string (UUID) | Yes | Target candidate’s `users.uuid`. |
-| `requestMessage` | string | No | Max 5000 characters; stored as `request_message`. |
+| Field            | Type          | Required | Notes                                             |
+| ---------------- | ------------- | -------- | ------------------------------------------------- |
+| `candidateUuid`  | string (UUID) | Yes      | Target candidate’s `users.uuid`.                  |
+| `requestMessage` | string        | No       | Max 5000 characters; stored as `request_message`. |
 
 ### Behaviour
 
@@ -47,11 +47,11 @@ Responses use the standard API envelope (`success`, `statusCode`, `message`, `da
 
 ```json
 {
-  "uuid": "<contact_request_uuid>",
-  "candidateUuid": "<target_user_uuid>",
-  "requestStatus": "pending",
-  "requestMessage": "...",
-  "createdAt": "2026-05-02T12:00:00+00:00"
+    "uuid": "<contact_request_uuid>",
+    "candidateUuid": "<target_user_uuid>",
+    "requestStatus": "pending",
+    "requestMessage": "...",
+    "createdAt": "2026-05-02T12:00:00+00:00"
 }
 ```
 
@@ -74,10 +74,10 @@ Responses use the standard API envelope (`success`, `statusCode`, `message`, `da
 
 ### Request body (JSON)
 
-| Field | Type | Required | Notes |
-| ----- | ---- | -------- | ----- |
-| `decision` | string | Yes | `accepted` or `rejected`. |
-| `responseMessage` | string | No | Max 5000 characters; stored as `response_message`. |
+| Field             | Type   | Required | Notes                                              |
+| ----------------- | ------ | -------- | -------------------------------------------------- |
+| `decision`        | string | Yes      | `accepted` or `rejected`.                          |
+| `responseMessage` | string | No       | Max 5000 characters; stored as `response_message`. |
 
 ### Behaviour
 
@@ -90,10 +90,10 @@ Responses use the standard API envelope (`success`, `statusCode`, `message`, `da
 
 ```json
 {
-  "uuid": "<contact_request_uuid>",
-  "requestStatus": "accepted",
-  "responseMessage": "...",
-  "respondedAt": "2026-05-02T12:05:00+00:00"
+    "uuid": "<contact_request_uuid>",
+    "requestStatus": "accepted",
+    "responseMessage": "...",
+    "respondedAt": "2026-05-02T12:05:00+00:00"
 }
 ```
 
@@ -120,8 +120,8 @@ Candidates load another member’s full profile via:
 **Phone masking (peer candidates):**
 
 - If the viewer is **another** **`candidate`**, is **not** viewing their **own** profile, and does **not** have **`admin.candidates.view`**, then top-level **`phone`** and **`sections.personalDetails.phone`** are **`null`** unless there is an **accepted** row in `contact_requests` with:
-  - `from_user_id` = viewer’s id  
-  - `to_user_id` = profile owner’s id  
+    - `from_user_id` = viewer’s id
+    - `to_user_id` = profile owner’s id
 
 **Staff** with `admin.candidates.view` and **self** profile views always see the real phone when set.
 
@@ -137,26 +137,26 @@ Notifications use Laravel’s **`notifications`** table (`database` channel). Th
 
 `data` includes (among others):
 
-| Key | Description |
-| --- | ----------- |
-| `kind` | `contact_request_received` |
-| `contact_request_uuid` | Request UUID for PATCH respond. |
-| `from_user_uuid` | Requester’s user UUID. |
-| `from_user_name` | Requester display name. |
-| `request_message` | Optional message from requester. |
-| `message` | Human-readable summary. |
+| Key                    | Description                      |
+| ---------------------- | -------------------------------- |
+| `kind`                 | `contact_request_received`       |
+| `contact_request_uuid` | Request UUID for PATCH respond.  |
+| `from_user_uuid`       | Requester’s user UUID.           |
+| `from_user_name`       | Requester display name.          |
+| `request_message`      | Optional message from requester. |
+| `message`              | Human-readable summary.          |
 
 ### `ContactRequestAcceptedNotification` (to `from_user`)
 
 Sent **only** when `decision` is **`accepted`**. `data` includes:
 
-| Key | Description |
-| --- | ----------- |
-| `kind` | `contact_request_accepted` |
-| `contact_request_uuid` | Request UUID. |
-| `to_user_uuid` | Accepter’s user UUID. |
-| `to_user_name` | Accepter display name. |
-| `message` | Human-readable summary. |
+| Key                    | Description                |
+| ---------------------- | -------------------------- |
+| `kind`                 | `contact_request_accepted` |
+| `contact_request_uuid` | Request UUID.              |
+| `to_user_uuid`         | Accepter’s user UUID.      |
+| `to_user_name`         | Accepter display name.     |
+| `message`              | Human-readable summary.    |
 
 > **Note:** New users may also receive other database notifications (e.g. welcome). Filter by `type` or by `data.kind` when listing.
 
@@ -172,12 +172,12 @@ Table **`contact_requests`** (see migration `2026_04_30_107000_create_user_inter
 
 ## Implementation reference
 
-| Piece | Location |
-| ----- | -------- |
-| HTTP controller | `app/Http/Controllers/Api/V1/CandidateContactRequestController.php` |
-| Service | `app/Services/ContactRequestService.php` |
-| Model | `app/Models/ContactRequest.php` |
-| Form requests | `app/Http/Requests/Api/V1/Candidate/StoreContactRequestRequest.php`, `RespondContactRequestRequest.php` |
-| Routes | `routes/api/v1.php` (inside `auth` + `sanctum` + `tracked.session` group) |
-| Phone masking | `app/Services/AdminCandidateProfileDetailsService.php` (`profilePhoneForViewer`), `app/Http/Resources/Api/V1/AdminCandidateProfileDetailsResource.php` |
-| Feature tests | `tests/Feature/ContactRequestFlowTest.php` |
+| Piece           | Location                                                                                                                                               |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| HTTP controller | `app/Http/Controllers/Api/V1/CandidateContactRequestController.php`                                                                                    |
+| Service         | `app/Services/ContactRequestService.php`                                                                                                               |
+| Model           | `app/Models/ContactRequest.php`                                                                                                                        |
+| Form requests   | `app/Http/Requests/Api/V1/Candidate/StoreContactRequestRequest.php`, `RespondContactRequestRequest.php`                                                |
+| Routes          | `routes/api/v1.php` (inside `auth` + `sanctum` + `tracked.session` group)                                                                              |
+| Phone masking   | `app/Services/AdminCandidateProfileDetailsService.php` (`profilePhoneForViewer`), `app/Http/Resources/Api/V1/AdminCandidateProfileDetailsResource.php` |
+| Feature tests   | `tests/Feature/ContactRequestFlowTest.php`                                                                                                             |

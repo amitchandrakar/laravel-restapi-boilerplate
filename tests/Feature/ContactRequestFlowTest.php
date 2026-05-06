@@ -37,7 +37,9 @@ class ContactRequestFlowTest extends TestCase
             ])
             ->assertStatus(201);
 
-        $detailsPending = $this->withToken($tokenA)->getJson('/api/v1/admin/candidates/' . $b->uuid . '/profile-details');
+        $detailsPending = $this->withToken($tokenA)->getJson(
+            '/api/v1/admin/candidates/' . $b->uuid . '/profile-details'
+        );
         $detailsPending->assertStatus(200)->assertJsonPath('data.phone', null);
 
         $row = ContactRequest::query()->where('from_user_id', $a->id)->where('to_user_id', $b->id)->firstOrFail();
@@ -71,7 +73,8 @@ class ContactRequestFlowTest extends TestCase
 
         $b->refresh();
         $this->assertSame($beforeTo + 1, $b->notifications()->count());
-        $received = $b->notifications()
+        $received = $b
+            ->notifications()
             ->where('type', ContactRequestReceivedNotification::class)
             ->orderByDesc('created_at')
             ->first();
@@ -113,7 +116,8 @@ class ContactRequestFlowTest extends TestCase
 
         $a->refresh();
         $this->assertSame($beforeFrom + 1, $a->notifications()->count());
-        $acceptedN = $a->notifications()
+        $acceptedN = $a
+            ->notifications()
             ->where('type', ContactRequestAcceptedNotification::class)
             ->orderByDesc('created_at')
             ->first();

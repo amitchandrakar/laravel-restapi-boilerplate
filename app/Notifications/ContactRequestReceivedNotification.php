@@ -31,8 +31,8 @@ class ContactRequestReceivedNotification extends Notification
             'from_user_name' => $fromName !== '' ? $fromName : null,
             'request_message' => $this->contactRequest->request_message,
             'message' => $fromUser !== null
-                ? sprintf('%s requested your contact number.', $fromName)
-                : 'Someone requested your contact number.',
+                    ? sprintf('%s requested your contact number.', $fromName)
+                    : 'Someone requested your contact number.',
         ];
     }
 }

@@ -579,10 +579,7 @@ class AdminCandidateProfileDetailsService
         if ($viewer->can('admin.candidates.view')) {
             return $profile->phone;
         }
-        if (
-            $viewer->hasRole('candidate')
-            && !ContactRequest::existsAccepted((int) $viewer->id, (int) $profile->id)
-        ) {
+        if ($viewer->hasRole('candidate') && !ContactRequest::existsAccepted((int) $viewer->id, (int) $profile->id)) {
             return null;
         }
 

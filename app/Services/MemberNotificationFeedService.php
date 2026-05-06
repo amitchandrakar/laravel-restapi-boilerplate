@@ -15,12 +15,7 @@ class MemberNotificationFeedService
     public function __construct(private readonly CandidateCardDataService $cardData) {}
 
     /** @var list<string> */
-    public const FEED_KINDS = [
-        'contact_request_received',
-        'contact_request_accepted',
-        'new_match',
-        'profile_viewed',
-    ];
+    public const FEED_KINDS = ['contact_request_received', 'contact_request_accepted', 'new_match', 'profile_viewed'];
 
     /**
      * @return LengthAwarePaginator<int, array<string, mixed>>
@@ -40,28 +35,21 @@ class MemberNotificationFeedService
         $imageUrlByRelatedUuid = $this->profileImageUrlByRelatedUserUuid($notifications);
         $contactMetaByUuid = $this->contactRequestMetaByUuid($notifications);
         $mappedItems = $notifications
-            ->map(fn(DatabaseNotification $n): array => $this->toFeedItem($n, $imageUrlByRelatedUuid, $contactMetaByUuid))
+            ->map(
+                fn(DatabaseNotification $n): array => $this->toFeedItem($n, $imageUrlByRelatedUuid, $contactMetaByUuid)
+            )
             ->values()
             ->all();
 
-        return new LengthAwarePaginator(
-            $mappedItems,
-            $paginator->total(),
-            $perPage,
-            $page,
-            [
-                'path' => LengthAwarePaginator::resolveCurrentPath(),
-                'pageName' => 'page',
-            ]
-        );
+        return new LengthAwarePaginator($mappedItems, $paginator->total(), $perPage, $page, [
+            'path' => LengthAwarePaginator::resolveCurrentPath(),
+            'pageName' => 'page',
+        ]);
     }
 
     public function unreadCountForUser(User $user): int
     {
-        return $user->notifications()
-            ->whereNull('read_at')
-            ->whereIn('data->kind', self::FEED_KINDS)
-            ->count();
+        return $user->notifications()->whereNull('read_at')->whereIn('data->kind', self::FEED_KINDS)->count();
     }
 
     /**
@@ -93,8 +81,7 @@ class MemberNotificationFeedService
         DatabaseNotification $n,
         array $profileImageUrlByRelatedUuid = [],
         array $contactRequestMetaByUuid = []
-    ): array
-    {
+    ): array {
         /** @var mixed $raw */
         $raw = $n->data;
         $data = is_array($raw) ? $raw : [];
@@ -106,8 +93,8 @@ class MemberNotificationFeedService
         $relatedUuid = $this->relatedUserUuid($kind, $data);
         $profileImageUrl = $this->cardData->defaultPhotoUrl();
         if ($relatedUuid !== null && $relatedUuid !== '') {
-            $profileImageUrl = $profileImageUrlByRelatedUuid[$relatedUuid]
-                ?? $this->profileImageUrlForUserUuid($relatedUuid);
+            $profileImageUrl =
+                $profileImageUrlByRelatedUuid[$relatedUuid] ?? $this->profileImageUrlForUserUuid($relatedUuid);
         }
 
         $contactRequestUuid = $this->contactRequestUuid($kind, $data);
@@ -277,9 +264,10 @@ class MemberNotificationFeedService
     private function actionsForKind(string $kind, array $data): array
     {
         if ($kind === 'contact_request_received') {
-            $uuid = isset($data['contact_request_uuid']) && is_string($data['contact_request_uuid'])
-                ? $data['contact_request_uuid']
-                : null;
+            $uuid =
+                isset($data['contact_request_uuid']) && is_string($data['contact_request_uuid'])
+                    ? $data['contact_request_uuid']
+                    : null;
             if ($uuid === null || $uuid === '') {
                 return [];
             }
@@ -316,9 +304,10 @@ class MemberNotificationFeedService
         }
 
         if ($kind === 'profile_viewed') {
-            $viewerUuid = isset($data['viewer_user_uuid']) && is_string($data['viewer_user_uuid'])
-                ? $data['viewer_user_uuid']
-                : null;
+            $viewerUuid =
+                isset($data['viewer_user_uuid']) && is_string($data['viewer_user_uuid'])
+                    ? $data['viewer_user_uuid']
+                    : null;
             if ($viewerUuid === null || $viewerUuid === '') {
                 return [];
             }
@@ -335,9 +324,7 @@ class MemberNotificationFeedService
         }
 
         if ($kind === 'contact_request_accepted') {
-            $toUuid = isset($data['to_user_uuid']) && is_string($data['to_user_uuid'])
-                ? $data['to_user_uuid']
-                : null;
+            $toUuid = isset($data['to_user_uuid']) && is_string($data['to_user_uuid']) ? $data['to_user_uuid'] : null;
             if ($toUuid === null || $toUuid === '') {
                 return [];
             }

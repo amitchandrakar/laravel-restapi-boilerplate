@@ -36,11 +36,7 @@ class CandidateContactRequestController extends Controller
         }
 
         try {
-            $row = $this->contactRequestService->create(
-                $from,
-                $to,
-                $request->validated('requestMessage')
-            );
+            $row = $this->contactRequestService->create($from, $to, $request->validated('requestMessage'));
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e->errors(), 'Validation failed');
         }
@@ -85,9 +81,7 @@ class CandidateContactRequestController extends Controller
                 'responseMessage' => $updated->response_message,
                 'respondedAt' => $updated->responded_at?->toIso8601String(),
             ],
-            $updated->request_status === 'accepted'
-                ? 'Contact request accepted'
-                : 'Contact request rejected'
+            $updated->request_status === 'accepted' ? 'Contact request accepted' : 'Contact request rejected'
         );
     }
 }

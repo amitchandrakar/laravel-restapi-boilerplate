@@ -22,29 +22,29 @@ After [`DemoUsersSeeder`](../database/seeders/DemoUsersSeeder.php), [`DemoCandid
 
 ### Query parameters
 
-| Parameter | Type | Default | Notes |
-| --------- | ---- | ------- | ----- |
-| `perPage` | integer | 15 | 1–50 |
-| `page` | integer | 1 | |
-| `unreadOnly` | boolean | false | When true, only rows with `read_at` null |
+| Parameter    | Type    | Default | Notes                                    |
+| ------------ | ------- | ------- | ---------------------------------------- |
+| `perPage`    | integer | 15      | 1–50                                     |
+| `page`       | integer | 1       |                                          |
+| `unreadOnly` | boolean | false   | When true, only rows with `read_at` null |
 
 ### Response `data`
 
 Array of items, each shaped as:
 
-| Field | Type | Notes |
-| ----- | ---- | ----- |
-| `id` | string (UUID) | Notification id |
-| `kind` | string | e.g. `contact_request_received`, `contact_request_accepted`, `new_match`, `profile_viewed` |
-| `message` | string | Human-readable line |
-| `iconKey` | string | Client mapping hint (`contact_request`, `new_match`, `profile_viewed`, `default`) |
-| `profileImageUrl` | string | Absolute URL for the **related user’s** profile photo (sender, matched user, viewer, or accepter—by `kind`); defaults to the same placeholder as discovery cards when none is set |
-| `contactRequestStatus` | string \| null | For contact-request notifications: current `contact_requests.request_status` (live) |
-| `contactRequestUpdatedAt` | string (ISO 8601) \| null | For contact-request notifications: current `contact_requests.updated_at` (live) |
-| `createdAt` | string (ISO 8601) | |
-| `readAt` | string (ISO 8601) \| null | |
-| `data` | object | Stored payload with **camelCase** keys |
-| `actions` | array | Server-derived CTAs (method, path, optional `body`) |
+| Field                     | Type                      | Notes                                                                                                                                                                             |
+| ------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                      | string (UUID)             | Notification id                                                                                                                                                                   |
+| `kind`                    | string                    | e.g. `contact_request_received`, `contact_request_accepted`, `new_match`, `profile_viewed`                                                                                        |
+| `message`                 | string                    | Human-readable line                                                                                                                                                               |
+| `iconKey`                 | string                    | Client mapping hint (`contact_request`, `new_match`, `profile_viewed`, `default`)                                                                                                 |
+| `profileImageUrl`         | string                    | Absolute URL for the **related user’s** profile photo (sender, matched user, viewer, or accepter—by `kind`); defaults to the same placeholder as discovery cards when none is set |
+| `contactRequestStatus`    | string \| null            | For contact-request notifications: current `contact_requests.request_status` (live)                                                                                               |
+| `contactRequestUpdatedAt` | string (ISO 8601) \| null | For contact-request notifications: current `contact_requests.updated_at` (live)                                                                                                   |
+| `createdAt`               | string (ISO 8601)         |                                                                                                                                                                                   |
+| `readAt`                  | string (ISO 8601) \| null |                                                                                                                                                                                   |
+| `data`                    | object                    | Stored payload with **camelCase** keys                                                                                                                                            |
+| `actions`                 | array                     | Server-derived CTAs (method, path, optional `body`)                                                                                                                               |
 
 ### Response `meta`
 

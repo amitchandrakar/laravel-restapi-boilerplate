@@ -50,7 +50,7 @@ class OptionalSanctumAuthentication
             $user->withAccessToken($accessToken);
         }
 
-        $request->setUserResolver(static fn () => $user);
+        $request->setUserResolver(static fn() => $user);
 
         return $next($request);
     }

@@ -11,6 +11,7 @@ use App\Support\ApiResponseBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
+
 class MemberNotificationController extends Controller
 {
     public function __construct(private readonly MemberNotificationFeedService $feedService) {}
@@ -92,7 +93,8 @@ class MemberNotificationController extends Controller
             return $this->errorResponse('Unauthenticated', 401, ApiResponseBuilder::ERROR_UNAUTHORIZED);
         }
 
-        $user->notifications()
+        $user
+            ->notifications()
             ->whereNull('read_at')
             ->whereIn('data->kind', MemberNotificationFeedService::FEED_KINDS)
             ->update(['read_at' => now()]);

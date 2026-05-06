@@ -92,14 +92,8 @@ class DemoCandidateNotificationsSeeder extends Seeder
             ->where('request_message', 'like', 'Demo seed:%')
             ->where(function ($q) use ($priya, $arjun, $rohan): void {
                 $q->where(
-                    static fn($q2) => $q2
-                        ->where('from_user_id', $priya->id)
-                        ->where('to_user_id', $arjun->id)
-                )->orWhere(
-                    static fn($q2) => $q2
-                        ->where('from_user_id', $rohan->id)
-                        ->where('to_user_id', $arjun->id)
-                );
+                    static fn($q2) => $q2->where('from_user_id', $priya->id)->where('to_user_id', $arjun->id)
+                )->orWhere(static fn($q2) => $q2->where('from_user_id', $rohan->id)->where('to_user_id', $arjun->id));
             })
             ->delete();
     }

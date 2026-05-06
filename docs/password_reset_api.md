@@ -13,10 +13,10 @@ Responses use the standard API envelope (`success`, `statusCode`, `message`, `da
 
 ## Base paths
 
-| Endpoint | Path |
-| -------- | ---- |
+| Endpoint            | Path                                |
+| ------------------- | ----------------------------------- |
 | Request reset email | `POST /api/v1/auth/forgot-password` |
-| Apply new password | `POST /api/v1/auth/reset-password` |
+| Apply new password  | `POST /api/v1/auth/reset-password`  |
 
 ---
 
@@ -28,9 +28,9 @@ Responses use the standard API envelope (`success`, `statusCode`, `message`, `da
 
 ### Request body (JSON)
 
-| Field | Type | Required | Notes |
-| ----- | ---- | -------- | ----- |
-| `email` | string | Yes | Must exist on `users.email` or validation returns **422**. |
+| Field   | Type   | Required | Notes                                                      |
+| ------- | ------ | -------- | ---------------------------------------------------------- |
+| `email` | string | Yes      | Must exist on `users.email` or validation returns **422**. |
 
 ### Behaviour
 
@@ -61,11 +61,11 @@ Validation rules depend on whether a user was resolved from the Bearer token.
 
 ### 2a. Guest — body after forgot-password
 
-| Field | Type | Required | Notes |
-| ----- | ---- | -------- | ----- |
-| `email` | string | Yes | Must exist on `users.email`. |
-| `token` | string | Yes | **Plain** token from the forgot-password email (server compares with hashed value in `password_reset_tokens`). |
-| `password` | string | Yes | Min 8 characters; must match `password_confirmation`. |
+| Field      | Type   | Required | Notes                                                                                                          |
+| ---------- | ------ | -------- | -------------------------------------------------------------------------------------------------------------- |
+| `email`    | string | Yes      | Must exist on `users.email`.                                                                                   |
+| `token`    | string | Yes      | **Plain** token from the forgot-password email (server compares with hashed value in `password_reset_tokens`). |
+| `password` | string | Yes      | Min 8 characters; must match `password_confirmation`.                                                          |
 
 ### 2a. Guest — behaviour
 
@@ -84,10 +84,10 @@ Validation rules depend on whether a user was resolved from the Bearer token.
 
 ### 2b. Authenticated — body (Bearer required)
 
-| Field | Type | Required | Notes |
-| ----- | ---- | -------- | ----- |
-| `current_password` | string | Yes | Must match the user’s current password. |
-| `password` | string | Yes | Min 8 characters; must match `password_confirmation`; must be **different** from `current_password`. |
+| Field              | Type   | Required | Notes                                                                                                |
+| ------------------ | ------ | -------- | ---------------------------------------------------------------------------------------------------- |
+| `current_password` | string | Yes      | Must match the user’s current password.                                                              |
+| `password`         | string | Yes      | Min 8 characters; must match `password_confirmation`; must be **different** from `current_password`. |
 
 Do not send `email` / `token` for this branch; they are not required when the user is authenticated.
 

@@ -46,7 +46,10 @@ class MemberNotificationsTest extends TestCase
         $this->assertNotSame('', $first['profileImageUrl']);
         $this->assertNotEmpty($first['actions'] ?? null);
         $this->assertSame('GET', $first['actions'][0]['method'] ?? null);
-        $this->assertStringContainsString('/api/v1/auth/candidate/matches', (string) ($first['actions'][0]['path'] ?? ''));
+        $this->assertStringContainsString(
+            '/api/v1/auth/candidate/matches',
+            (string) ($first['actions'][0]['path'] ?? '')
+        );
 
         $this->assertGreaterThanOrEqual(1, (int) $res->json('meta.unreadCount'));
     }
@@ -99,7 +102,9 @@ class MemberNotificationsTest extends TestCase
 
         $nid = (string) $a->notifications()->orderByDesc('created_at')->value('id');
         $this->assertNotSame('', $nid);
-        $this->withToken($tokenA)->patchJson('/api/v1/auth/notifications/' . $nid . '/read')->assertStatus(200);
+        $this->withToken($tokenA)
+            ->patchJson('/api/v1/auth/notifications/' . $nid . '/read')
+            ->assertStatus(200);
 
         $unread = $this->withToken($tokenA)->getJson('/api/v1/auth/notifications?unreadOnly=1')->json('data');
         $this->assertIsArray($unread);
@@ -114,16 +119,25 @@ class MemberNotificationsTest extends TestCase
         app(MatchNotificationService::class)->notifyBothUsersOfMatch($a, $b, (string) Str::uuid(), 72);
         app(MatchNotificationService::class)->notifyBothUsersOfMatch($a, $b, (string) Str::uuid(), 73);
 
-        $ids = $a->notifications()->orderByDesc('created_at')->limit(2)->pluck('id')->map(static fn($id): string => (string) $id)->all();
+        $ids = $a
+            ->notifications()
+            ->orderByDesc('created_at')
+            ->limit(2)
+            ->pluck('id')
+            ->map(static fn($id): string => (string) $id)
+            ->all();
         $this->assertCount(2, $ids);
 
-        $this->withToken($tokenA)->patchJson('/api/v1/auth/notifications/' . $ids[0] . '/read')->assertStatus(200);
+        $this->withToken($tokenA)
+            ->patchJson('/api/v1/auth/notifications/' . $ids[0] . '/read')
+            ->assertStatus(200);
 
         $this->assertNotNull($a->notifications()->whereKey($ids[0])->value('read_at'));
 
         $this->withToken($tokenA)->postJson('/api/v1/auth/notifications/read-all')->assertStatus(200);
 
-        $unread = $a->notifications()
+        $unread = $a
+            ->notifications()
             ->whereNull('read_at')
             ->whereIn('data->kind', MemberNotificationFeedService::FEED_KINDS)
             ->count();
@@ -153,10 +167,7 @@ class MemberNotificationsTest extends TestCase
     {
         [$a, $b, $tokenA] = $this->twoCandidatesWithTokens();
         app(MatchNotificationService::class)->notifyBothUsersOfMatch($a, $b, (string) Str::uuid(), 75);
-        $nid = (string) $a->notifications()
-            ->where('data->kind', 'new_match')
-            ->orderByDesc('created_at')
-            ->value('id');
+        $nid = (string) $a->notifications()->where('data->kind', 'new_match')->orderByDesc('created_at')->value('id');
 
         $this->withToken($tokenA)
             ->getJson('/api/v1/auth/notifications/' . $nid)
@@ -174,8 +185,12 @@ class MemberNotificationsTest extends TestCase
 
         $before = $b->notifications()->where('type', ProfileViewedNotification::class)->count();
 
-        $this->withToken($tokenA)->getJson('/api/v1/admin/candidates/' . $b->uuid . '/profile-details')->assertStatus(200);
-        $this->withToken($tokenA)->getJson('/api/v1/admin/candidates/' . $b->uuid . '/profile-details')->assertStatus(200);
+        $this->withToken($tokenA)
+            ->getJson('/api/v1/admin/candidates/' . $b->uuid . '/profile-details')
+            ->assertStatus(200);
+        $this->withToken($tokenA)
+            ->getJson('/api/v1/admin/candidates/' . $b->uuid . '/profile-details')
+            ->assertStatus(200);
 
         $b->refresh();
         $after = $b->notifications()->where('type', ProfileViewedNotification::class)->count();

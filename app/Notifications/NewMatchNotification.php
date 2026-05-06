@@ -33,9 +33,7 @@ class NewMatchNotification extends Notification
             'other_user_uuid' => $this->otherUser->uuid,
             'other_user_name' => $name !== '' ? $name : null,
             'match_percentage' => $this->matchPercentage,
-            'message' => $name !== ''
-                ? sprintf('You have a new match with %s.', $name)
-                : 'You have a new match.',
+            'message' => $name !== '' ? sprintf('You have a new match with %s.', $name) : 'You have a new match.',
         ];
     }
 }

@@ -16,8 +16,12 @@ class MatchNotificationService
     /**
      * Notify both users about an active match (symmetric: each sees the other as `other_user`).
      */
-    public function notifyBothUsersOfMatch(User $user, User $matchedUser, string $matchUuid, ?int $matchPercentage): void
-    {
+    public function notifyBothUsersOfMatch(
+        User $user,
+        User $matchedUser,
+        string $matchUuid,
+        ?int $matchPercentage
+    ): void {
         $user->notify(new NewMatchNotification($matchedUser, $matchUuid, $matchPercentage));
         $matchedUser->notify(new NewMatchNotification($user, $matchUuid, $matchPercentage));
     }

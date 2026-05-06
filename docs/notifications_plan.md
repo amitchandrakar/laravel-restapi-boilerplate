@@ -20,12 +20,12 @@ Each notification row in the client should support:
 
 ## HTTP APIs (implemented)
 
-| Endpoint (conceptual) | Purpose |
-| --------------------- | ------- |
-| `GET /api/v1/auth/notifications` | List notifications for the authenticated user with pagination (`cursor` or `page`), optional `unread_only`, sort by `created_at` desc. |
-| `PATCH` or `POST /api/v1/auth/notifications/{id}/read` | Mark one notification read (`id` = notification UUID, Laravel `notifications.id`). |
-| `POST /api/v1/auth/notifications/read-all` | Mark all unread notifications for the user as read. |
-| `GET /api/v1/auth/notifications/{id}` (optional) | Single notification, same DTO as list item — useful for deep links; often unnecessary if list payload is complete. |
+| Endpoint (conceptual)                                  | Purpose                                                                                                                                |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/v1/auth/notifications`                       | List notifications for the authenticated user with pagination (`cursor` or `page`), optional `unread_only`, sort by `created_at` desc. |
+| `PATCH` or `POST /api/v1/auth/notifications/{id}/read` | Mark one notification read (`id` = notification UUID, Laravel `notifications.id`).                                                     |
+| `POST /api/v1/auth/notifications/read-all`             | Mark all unread notifications for the user as read.                                                                                    |
+| `GET /api/v1/auth/notifications/{id}` (optional)       | Single notification, same DTO as list item — useful for deep links; often unnecessary if list payload is complete.                     |
 
 **Validation**
 
@@ -58,12 +58,12 @@ No schema change required for the proposed feed; optional future columns (e.g. `
 
 ## Notification kinds (v1 target)
 
-| `data.kind` | When | Notes / suggested `data` fields |
-| ----------- | ---- | -------------------------------- |
-| `contact_request_received` | Someone requests your contact | Implemented; includes `contact_request_uuid`, from-user identity, `request_message`, human `message`. |
-| `contact_request_accepted` | Recipient accepted | Implemented; includes `contact_request_uuid`, to-user identity, `message`. |
-| `new_match` | New active match row | **Not implemented** — add `NewMatchNotification`; suggest `match_uuid`, `other_user_uuid`, `other_user_name`, optional `match_percentage`. |
-| `profile_viewed` | Someone opened your profile | **Not implemented** — requires **recording** `profile_views` (table exists; app writes not wired) plus `ProfileViewedNotification`. Suggest `viewer_user_uuid`, `viewer_name`, `source` (e.g. `profile_details`). Default recommendation: **named** viewer for v1; optional later flag for anonymous copy. |
+| `data.kind`                | When                          | Notes / suggested `data` fields                                                                                                                                                                                                                                                                            |
+| -------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `contact_request_received` | Someone requests your contact | Implemented; includes `contact_request_uuid`, from-user identity, `request_message`, human `message`.                                                                                                                                                                                                      |
+| `contact_request_accepted` | Recipient accepted            | Implemented; includes `contact_request_uuid`, to-user identity, `message`.                                                                                                                                                                                                                                 |
+| `new_match`                | New active match row          | **Not implemented** — add `NewMatchNotification`; suggest `match_uuid`, `other_user_uuid`, `other_user_name`, optional `match_percentage`.                                                                                                                                                                 |
+| `profile_viewed`           | Someone opened your profile   | **Not implemented** — requires **recording** `profile_views` (table exists; app writes not wired) plus `ProfileViewedNotification`. Suggest `viewer_user_uuid`, `viewer_name`, `source` (e.g. `profile_details`). Default recommendation: **named** viewer for v1; optional later flag for anonymous copy. |
 
 **Filtering in the UI:** Other database notifications exist (e.g. welcome email also uses the `database` channel). Clients should filter by `data.kind` and/or allowlist `type` class names.
 

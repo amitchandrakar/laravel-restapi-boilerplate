@@ -30,8 +30,8 @@ class ContactRequestAcceptedNotification extends Notification
             'to_user_uuid' => $toUser?->uuid,
             'to_user_name' => $toName !== '' ? $toName : null,
             'message' => $toUser !== null
-                ? sprintf('%s accepted your contact request. You can view their phone on their profile.', $toName)
-                : 'Your contact request was accepted.',
+                    ? sprintf('%s accepted your contact request. You can view their phone on their profile.', $toName)
+                    : 'Your contact request was accepted.',
         ];
     }
 }
