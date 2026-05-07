@@ -136,11 +136,7 @@
 - `preferred_education`
 - `preferred_occupation`
 - `preferred_income_min`
-- `preferred_country_id`
-- `preferred_state_id`
-- `preferred_city_id`
 - `preferred_community`
-- `preferred_language_id`
 - `created_at`
 - `updated_at`
 

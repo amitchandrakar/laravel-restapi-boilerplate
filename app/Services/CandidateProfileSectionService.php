@@ -83,7 +83,7 @@ class CandidateProfileSectionService
                 self::SECTION_LOCATION_FAMILY_ROOTS => $this->saveLocationFamilyRootsSection($user, $payload),
                 self::SECTION_CAREER_EDUCATION => $this->saveCareerEducation($user, $payload),
                 self::SECTION_FAMILY_BACKGROUND => $this->saveFamilyBackgroundSection($user, $payload),
-                self::SECTION_LIFESTYLE => $this->saveUsersData($user, $payload),
+                self::SECTION_LIFESTYLE => $this->saveLifestyleSection($user, $payload),
                 self::SECTION_PARTNER_PREFERENCES => $this->savePartnerPreferences($user, $payload),
                 default => throw new InvalidArgumentException('Unsupported section'),
             };
@@ -411,6 +411,17 @@ class CandidateProfileSectionService
             'preferred_drinking',
             'preferred_occupation',
             'preferred_caste',
+            'preferred_sleep_pattern',
+            'preferred_working_hours',
+            'preferred_social_personality',
+            'preferred_dietary_preferences',
+            'preferred_drinking_habits',
+            'preferred_smoking_habits',
+            'preferred_fitness_level',
+            'preferred_travel_style',
+            'preferred_communication_style',
+            'preferred_relationship_with_family',
+            'preferred_weekend_preference',
         ];
 
         foreach ($scalarColumns as $key) {
@@ -424,15 +435,6 @@ class CandidateProfileSectionService
                 continue;
             }
             $row[$key] = $v;
-        }
-
-        $fkColumns = ['preferred_country_id', 'preferred_state_id', 'preferred_city_id', 'preferred_language_id'];
-        foreach ($fkColumns as $key) {
-            if (!array_key_exists($key, $payload) || !Schema::hasColumn($table, $key)) {
-                continue;
-            }
-            $v = $payload[$key];
-            $row[$key] = $v === null || $v === '' ? null : (int) $v;
         }
 
         if (array_key_exists('preferred_income_min', $payload) && Schema::hasColumn($table, 'preferred_income_min')) {
@@ -479,6 +481,26 @@ class CandidateProfileSectionService
             }
         }
 
+        foreach (
+            [
+                'preferred_interests',
+                'preferred_movie_genres',
+                'preferred_hobbies',
+                'preferred_likes',
+                'preferred_dislikes',
+            ] as $key
+        ) {
+            if (!array_key_exists($key, $payload) || !Schema::hasColumn($table, $key)) {
+                continue;
+            }
+            $v = $payload[$key];
+            if (is_array($v)) {
+                $row[$key] = json_encode(array_values($v));
+            } elseif ($v === null) {
+                $row[$key] = null;
+            }
+        }
+
         if ($row === []) {
             return;
         }
@@ -498,5 +520,52 @@ class CandidateProfileSectionService
         $row['created_at'] = $now;
         $row['updated_at'] = $now;
         DB::table($table)->insert($row);
+    }
+
+    private function saveLifestyleSection(User $user, array $payload): void
+    {
+        $scalarKeys = [
+            'diet',
+            'smoking',
+            'drinking',
+            'sleep_pattern',
+            'working_hours',
+            'social_personality',
+            'dietary_preferences',
+            'drinking_habits',
+            'smoking_habits',
+            'fitness_level',
+            'travel_style',
+            'communication_style',
+            'relationship_with_family',
+            'weekend_preference',
+        ];
+        $arrayKeys = ['interests', 'movie_genres', 'hobbies', 'likes', 'dislikes'];
+
+        $columns = [];
+        foreach ($scalarKeys as $key) {
+            if (!array_key_exists($key, $payload) || !Schema::hasColumn('users', $key)) {
+                continue;
+            }
+            $columns[$key] = $payload[$key];
+        }
+        foreach ($arrayKeys as $key) {
+            if (!array_key_exists($key, $payload) || !Schema::hasColumn('users', $key)) {
+                continue;
+            }
+            $v = $payload[$key];
+            if ($v === null) {
+                $columns[$key] = null;
+
+                continue;
+            }
+            if (is_array($v)) {
+                $columns[$key] = array_values(array_map(static fn($s): string => (string) $s, $v));
+            }
+        }
+
+        if ($columns !== []) {
+            $user->update($columns);
+        }
     }
 }

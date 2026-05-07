@@ -112,6 +112,7 @@ class PartnerPreferencesJsonTest extends TestCase
                 'preferred_degree_ids' => [$degree6, $degree13],
                 'preferred_location_ids' => [$cityA, $cityB],
                 'preferred_community_ids' => [$surname1, $surname2],
+                'preferred_interests' => ['Photography', 'Travel'],
             ])
             ->assertStatus(200);
 
@@ -134,6 +135,7 @@ class PartnerPreferencesJsonTest extends TestCase
         $this->assertSame([$degree6, $degree13], $decode($row->preferred_degree_ids));
         $this->assertSame([$cityA, $cityB], $decode($row->preferred_location_ids));
         $this->assertSame([$surname1, $surname2], $decode($row->preferred_community_ids));
+        $this->assertSame(['Photography', 'Travel'], $decode($row->preferred_interests));
         $this->assertSame('Any', $row->preferred_caste);
         $this->assertEquals(50000.0, (float) $row->preferred_income_min);
     }

@@ -70,6 +70,17 @@ class AdminCandidateProfileDetailsService
         $partnerCommunityIds = self::decodeStoredIdList(
             $partner !== null ? data_get($partner, 'preferred_community_ids') : null
         );
+        $preferredInterests = self::decodeStoredStringList(
+            $partner !== null ? data_get($partner, 'preferred_interests') : null
+        );
+        $preferredMovieGenres = self::decodeStoredStringList(
+            $partner !== null ? data_get($partner, 'preferred_movie_genres') : null
+        );
+        $preferredHobbies = self::decodeStoredStringList($partner !== null ? data_get($partner, 'preferred_hobbies') : null);
+        $preferredLikes = self::decodeStoredStringList($partner !== null ? data_get($partner, 'preferred_likes') : null);
+        $preferredDislikes = self::decodeStoredStringList(
+            $partner !== null ? data_get($partner, 'preferred_dislikes') : null
+        );
 
         $maps = $this->loadMasterMaps(
             $user,
@@ -139,17 +150,9 @@ class AdminCandidateProfileDetailsService
             ]
         );
 
-        $preferredLocationResolved = $this->resolvePartnerPreferredLocationStrings($partner, $maps);
-
         $preferredDegreeNames = $this->orderedNames($partnerDegreeIds, $maps['degrees'], 'name');
         $preferredCityNames = $this->orderedNames($partnerLocationIds, $maps['cities'], 'name');
         $preferredCommunityNames = $this->orderedNames($partnerCommunityIds, $maps['surnames'], 'name');
-
-        $preferredLanguageName = null;
-        $langId = $partner !== null ? data_get($partner, 'preferred_language_id') : null;
-        if ($langId !== null && (int) $langId > 0) {
-            $preferredLanguageName = data_get($maps['languages']->get((int) $langId), 'name');
-        }
 
         return [
             'id' => $user->id,
@@ -248,6 +251,22 @@ class AdminCandidateProfileDetailsService
                     'diet' => data_get($user, 'diet'),
                     'smoking' => data_get($user, 'smoking'),
                     'drinking' => data_get($user, 'drinking'),
+                    'sleepPattern' => data_get($user, 'sleep_pattern'),
+                    'workingHours' => data_get($user, 'working_hours'),
+                    'socialPersonality' => data_get($user, 'social_personality'),
+                    'dietaryPreferences' => data_get($user, 'dietary_preferences'),
+                    'drinkingHabits' => data_get($user, 'drinking_habits'),
+                    'smokingHabits' => data_get($user, 'smoking_habits'),
+                    'fitnessLevel' => data_get($user, 'fitness_level'),
+                    'travelStyle' => data_get($user, 'travel_style'),
+                    'communicationStyle' => data_get($user, 'communication_style'),
+                    'relationshipWithFamily' => data_get($user, 'relationship_with_family'),
+                    'weekendPreference' => data_get($user, 'weekend_preference'),
+                    'interests' => data_get($user, 'interests', []),
+                    'movieGenres' => data_get($user, 'movie_genres', []),
+                    'hobbies' => data_get($user, 'hobbies', []),
+                    'likes' => data_get($user, 'likes', []),
+                    'dislikes' => data_get($user, 'dislikes', []),
                 ],
                 'partnerPreferences' => [
                     'preferredMinAge' => data_get($partner, 'preferred_min_age'),
@@ -261,12 +280,26 @@ class AdminCandidateProfileDetailsService
                     'preferredDrinking' => data_get($partner, 'preferred_drinking'),
                     'preferredCaste' => data_get($partner, 'preferred_caste'),
                     'preferredIncomeMin' => data_get($partner, 'preferred_income_min'),
-                    'preferredLanguageName' => $preferredLanguageName,
                     'preferredDegrees' => $preferredDegreeNames,
                     'preferredCities' => $preferredCityNames,
                     'preferredCommunities' => $preferredCommunityNames,
                     'preferredOccupation' => data_get($partner, 'preferred_occupation'),
-                    'preferredLocation' => $preferredLocationResolved,
+                    'preferredSleepPattern' => data_get($partner, 'preferred_sleep_pattern'),
+                    'preferredWorkingHours' => data_get($partner, 'preferred_working_hours'),
+                    'preferredSocialPersonality' => data_get($partner, 'preferred_social_personality'),
+                    'preferredDietaryPreferences' => data_get($partner, 'preferred_dietary_preferences'),
+                    'preferredDrinkingHabits' => data_get($partner, 'preferred_drinking_habits'),
+                    'preferredSmokingHabits' => data_get($partner, 'preferred_smoking_habits'),
+                    'preferredFitnessLevel' => data_get($partner, 'preferred_fitness_level'),
+                    'preferredTravelStyle' => data_get($partner, 'preferred_travel_style'),
+                    'preferredCommunicationStyle' => data_get($partner, 'preferred_communication_style'),
+                    'preferredRelationshipWithFamily' => data_get($partner, 'preferred_relationship_with_family'),
+                    'preferredWeekendPreference' => data_get($partner, 'preferred_weekend_preference'),
+                    'preferredInterests' => $preferredInterests,
+                    'preferredMovieGenres' => $preferredMovieGenres,
+                    'preferredHobbies' => $preferredHobbies,
+                    'preferredLikes' => $preferredLikes,
+                    'preferredDislikes' => $preferredDislikes,
                 ],
             ],
         ];
@@ -399,13 +432,6 @@ class AdminCandidateProfileDetailsService
         $push($districtIds, $user->maternal_district_id);
         $push($villageIds, $user->maternal_village_id);
 
-        if ($partner !== null) {
-            $push($countryIds, data_get($partner, 'preferred_country_id'));
-            $push($stateIds, data_get($partner, 'preferred_state_id'));
-            $push($cityIds, data_get($partner, 'preferred_city_id'));
-            $push($languageIds, data_get($partner, 'preferred_language_id'));
-        }
-
         foreach ($educationRows as $row) {
             $push($degreeIds, data_get($row, 'degree_id'));
         }
@@ -476,36 +502,6 @@ class AdminCandidateProfileDetailsService
         return $out;
     }
 
-    /**
-     * @return array{country: ?string, state: ?string, city: ?string, district: ?string, village: ?string}
-     */
-    private function resolvePartnerPreferredLocationStrings(?object $partner, array $maps): array
-    {
-        $empty = [
-            'country' => null,
-            'state' => null,
-            'city' => null,
-            'district' => null,
-            'village' => null,
-        ];
-        if ($partner === null) {
-            return $empty;
-        }
-
-        return [
-            'country' => $this->resolveOneGeoLevelName(
-                data_get($partner, 'preferred_country_id'),
-                'country',
-                $maps,
-                null
-            ),
-            'state' => $this->resolveOneGeoLevelName(data_get($partner, 'preferred_state_id'), 'state', $maps, null),
-            'city' => $this->resolveOneGeoLevelName(data_get($partner, 'preferred_city_id'), 'city', $maps, null),
-            'district' => null,
-            'village' => null,
-        ];
-    }
-
     private function resolveOneGeoLevelName(mixed $id, string $level, array $maps, mixed $legacyText): ?string
     {
         $tableKey = match ($level) {
@@ -563,6 +559,26 @@ class AdminCandidateProfileDetailsService
             $decoded = json_decode($value, true);
 
             return is_array($decoded) ? array_values(array_map(static fn($id): int => (int) $id, $decoded)) : [];
+        }
+
+        return [];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function decodeStoredStringList(mixed $value): array
+    {
+        if ($value === null || $value === '') {
+            return [];
+        }
+        if (is_array($value)) {
+            return array_values(array_map(static fn($v): string => (string) $v, $value));
+        }
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+
+            return is_array($decoded) ? array_values(array_map(static fn($v): string => (string) $v, $decoded)) : [];
         }
 
         return [];

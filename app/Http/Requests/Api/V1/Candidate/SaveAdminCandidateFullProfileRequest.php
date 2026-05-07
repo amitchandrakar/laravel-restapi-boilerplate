@@ -94,6 +94,7 @@ class SaveAdminCandidateFullProfileRequest extends ApiFormRequest
             HoroscopeBirthPlaceValidator::flatGeoIdRules('maternal_', 'location_family_roots.'),
             SaveCandidateCareerEducationRequest::rulesWithPrefix('career_education'),
             SaveCandidateFamilyBackgroundRequest::rulesWithPrefix('family_background'),
+            SaveCandidateLifestyleRequest::rulesWithPrefix('lifestyle'),
             SaveCandidatePartnerPreferencesRequest::rulesWithPrefix('partner_preferences')
         );
     }

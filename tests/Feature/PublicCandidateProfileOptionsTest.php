@@ -37,6 +37,22 @@ class PublicCandidateProfileOptionsTest extends TestCase
         $this->assertArrayHasKey('bloodGroups', $data);
         $this->assertArrayHasKey('zodiacSigns', $data);
         $this->assertArrayHasKey('diets', $data);
+        $this->assertArrayHasKey('sleepPatterns', $data);
+        $this->assertArrayHasKey('workingHours', $data);
+        $this->assertArrayHasKey('socialPersonalities', $data);
+        $this->assertArrayHasKey('dietaryPreferences', $data);
+        $this->assertArrayHasKey('drinkingHabits', $data);
+        $this->assertArrayHasKey('smokingHabits', $data);
+        $this->assertArrayHasKey('fitnessLevels', $data);
+        $this->assertArrayHasKey('travelStyles', $data);
+        $this->assertArrayHasKey('communicationStyles', $data);
+        $this->assertArrayHasKey('relationshipsWithFamily', $data);
+        $this->assertArrayHasKey('weekendPreferences', $data);
+        $this->assertArrayHasKey('interests', $data);
+        $this->assertArrayHasKey('movieGenres', $data);
+        $this->assertArrayHasKey('hobbies', $data);
+        $this->assertArrayHasKey('likes', $data);
+        $this->assertArrayHasKey('dislikes', $data);
         $this->assertArrayHasKey('countries', $data);
 
         $this->assertCount(1, $data['surnames']);
@@ -59,6 +75,9 @@ class PublicCandidateProfileOptionsTest extends TestCase
         $this->assertArrayHasKey('iconUrl', $data['zodiacSigns'][0]);
         $this->assertStringEndsWith('/images/zodiac/aries.svg', $data['zodiacSigns'][0]['iconUrl']);
         $this->assertCount(5, $data['diets']);
+        $this->assertNotEmpty($data['sleepPatterns']);
+        $this->assertNotEmpty($data['workingHours']);
+        $this->assertNotEmpty($data['interests']);
 
         $countries = $data['countries'];
         $this->assertNotEmpty($countries);
