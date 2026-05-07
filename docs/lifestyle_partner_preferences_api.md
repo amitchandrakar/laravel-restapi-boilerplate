@@ -51,22 +51,22 @@ All keys are **snake_case**.
 
 ```json
 {
-  "sleep_pattern": "Night Owl",
-  "working_hours": "Flexible Hours",
-  "social_personality": "Ambivert",
-  "dietary_preferences": "Vegetarian",
-  "drinking_habits": "Never",
-  "smoking_habits": "Non-smoker",
-  "fitness_level": "Moderately Active",
-  "travel_style": "Road Trip Lover",
-  "communication_style": "Humorous",
-  "relationship_with_family": "Very Close",
-  "weekend_preference": "Family Time",
-  "interests": ["Photography", "Music"],
-  "movie_genres": ["Comedy", "Drama"],
-  "hobbies": ["Cycling"],
-  "likes": ["Home-cooked meals"],
-  "dislikes": ["Negativity"]
+    "sleep_pattern": "Night Owl",
+    "working_hours": "Flexible Hours",
+    "social_personality": "Ambivert",
+    "dietary_preferences": "Vegetarian",
+    "drinking_habits": "Never",
+    "smoking_habits": "Non-smoker",
+    "fitness_level": "Moderately Active",
+    "travel_style": "Road Trip Lover",
+    "communication_style": "Humorous",
+    "relationship_with_family": "Very Close",
+    "weekend_preference": "Family Time",
+    "interests": ["Photography", "Music"],
+    "movie_genres": ["Comedy", "Drama"],
+    "hobbies": ["Cycling"],
+    "likes": ["Home-cooked meals"],
+    "dislikes": ["Negativity"]
 }
 ```
 
@@ -74,15 +74,15 @@ All keys are **snake_case**.
 
 ```json
 {
-  "success": true,
-  "statusCode": 200,
-  "message": "Candidate section saved successfully",
-  "data": {
-    "section": "lifestyle",
-    "completedSections": ["..."]
-  },
-  "error": null,
-  "meta": { }
+    "success": true,
+    "statusCode": 200,
+    "message": "Candidate section saved successfully",
+    "data": {
+        "section": "lifestyle",
+        "completedSections": ["..."]
+    },
+    "error": null,
+    "meta": {}
 }
 ```
 
@@ -143,22 +143,22 @@ All keys are **snake_case**.
 
 ```json
 {
-  "preferred_sleep_pattern": "Early Bird (Morning Person)",
-  "preferred_working_hours": "Standard 9-to-5",
-  "preferred_social_personality": "Introvert",
-  "preferred_dietary_preferences": "Non-Vegetarian",
-  "preferred_drinking_habits": "Occasionally",
-  "preferred_smoking_habits": "Non-smoker",
-  "preferred_fitness_level": "Fitness Enthusiast",
-  "preferred_travel_style": "Budget Traveler",
-  "preferred_communication_style": "Soft-spoken",
-  "preferred_relationship_with_family": "Close-knit Family",
-  "preferred_weekend_preference": "Staying Home",
-  "preferred_interests": ["Travel"],
-  "preferred_movie_genres": ["Action/Adventure"],
-  "preferred_hobbies": ["Trekking/Hiking"],
-  "preferred_likes": ["Meaningful Conversations"],
-  "preferred_dislikes": ["Rudeness/Lack of Manners"]
+    "preferred_sleep_pattern": "Early Bird (Morning Person)",
+    "preferred_working_hours": "Standard 9-to-5",
+    "preferred_social_personality": "Introvert",
+    "preferred_dietary_preferences": "Non-Vegetarian",
+    "preferred_drinking_habits": "Occasionally",
+    "preferred_smoking_habits": "Non-smoker",
+    "preferred_fitness_level": "Fitness Enthusiast",
+    "preferred_travel_style": "Budget Traveler",
+    "preferred_communication_style": "Soft-spoken",
+    "preferred_relationship_with_family": "Close-knit Family",
+    "preferred_weekend_preference": "Staying Home",
+    "preferred_interests": ["Travel"],
+    "preferred_movie_genres": ["Action/Adventure"],
+    "preferred_hobbies": ["Trekking/Hiking"],
+    "preferred_likes": ["Meaningful Conversations"],
+    "preferred_dislikes": ["Rudeness/Lack of Manners"]
 }
 ```
 
@@ -166,15 +166,15 @@ All keys are **snake_case**.
 
 ```json
 {
-  "success": true,
-  "statusCode": 200,
-  "message": "Candidate section saved successfully",
-  "data": {
-    "section": "partner_preferences",
-    "completedSections": ["..."]
-  },
-  "error": null,
-  "meta": { }
+    "success": true,
+    "statusCode": 200,
+    "message": "Candidate section saved successfully",
+    "data": {
+        "section": "partner_preferences",
+        "completedSections": ["..."]
+    },
+    "error": null,
+    "meta": {}
 }
 ```
 
@@ -194,47 +194,47 @@ The payload includes the new values under:
 
 ```json
 {
-  "lifestyle": {
-    "diet": "Vegetarian",
-    "smoking": "Never",
-    "drinking": "Never",
-    "sleepPattern": "Night Owl",
-    "workingHours": "Flexible Hours",
-    "socialPersonality": "Ambivert",
-    "dietaryPreferences": "Vegetarian",
-    "drinkingHabits": "Never",
-    "smokingHabits": "Non-smoker",
-    "fitnessLevel": "Moderately Active",
-    "travelStyle": "Road Trip Lover",
-    "communicationStyle": "Humorous",
-    "relationshipWithFamily": "Very Close",
-    "weekendPreference": "Family Time",
-    "interests": ["Photography", "Music"],
-    "movieGenres": ["Comedy", "Drama"],
-    "hobbies": ["Cycling"],
-    "likes": ["Home-cooked meals"],
-    "dislikes": ["Negativity"]
-  },
-  "partnerPreferences": {
-    "preferredMinAge": 22,
-    "preferredMaxAge": 28,
-    "preferredSleepPattern": "Early Bird (Morning Person)",
-    "preferredWorkingHours": "Standard 9-to-5",
-    "preferredSocialPersonality": "Introvert",
-    "preferredDietaryPreferences": "Non-Vegetarian",
-    "preferredDrinkingHabits": "Occasionally",
-    "preferredSmokingHabits": "Non-smoker",
-    "preferredFitnessLevel": "Fitness Enthusiast",
-    "preferredTravelStyle": "Budget Traveler",
-    "preferredCommunicationStyle": "Soft-spoken",
-    "preferredRelationshipWithFamily": "Close-knit Family",
-    "preferredWeekendPreference": "Staying Home",
-    "preferredInterests": ["Travel"],
-    "preferredMovieGenres": ["Action/Adventure"],
-    "preferredHobbies": ["Trekking/Hiking"],
-    "preferredLikes": ["Meaningful Conversations"],
-    "preferredDislikes": ["Rudeness/Lack of Manners"]
-  }
+    "lifestyle": {
+        "diet": "Vegetarian",
+        "smoking": "Never",
+        "drinking": "Never",
+        "sleepPattern": "Night Owl",
+        "workingHours": "Flexible Hours",
+        "socialPersonality": "Ambivert",
+        "dietaryPreferences": "Vegetarian",
+        "drinkingHabits": "Never",
+        "smokingHabits": "Non-smoker",
+        "fitnessLevel": "Moderately Active",
+        "travelStyle": "Road Trip Lover",
+        "communicationStyle": "Humorous",
+        "relationshipWithFamily": "Very Close",
+        "weekendPreference": "Family Time",
+        "interests": ["Photography", "Music"],
+        "movieGenres": ["Comedy", "Drama"],
+        "hobbies": ["Cycling"],
+        "likes": ["Home-cooked meals"],
+        "dislikes": ["Negativity"]
+    },
+    "partnerPreferences": {
+        "preferredMinAge": 22,
+        "preferredMaxAge": 28,
+        "preferredSleepPattern": "Early Bird (Morning Person)",
+        "preferredWorkingHours": "Standard 9-to-5",
+        "preferredSocialPersonality": "Introvert",
+        "preferredDietaryPreferences": "Non-Vegetarian",
+        "preferredDrinkingHabits": "Occasionally",
+        "preferredSmokingHabits": "Non-smoker",
+        "preferredFitnessLevel": "Fitness Enthusiast",
+        "preferredTravelStyle": "Budget Traveler",
+        "preferredCommunicationStyle": "Soft-spoken",
+        "preferredRelationshipWithFamily": "Close-knit Family",
+        "preferredWeekendPreference": "Staying Home",
+        "preferredInterests": ["Travel"],
+        "preferredMovieGenres": ["Action/Adventure"],
+        "preferredHobbies": ["Trekking/Hiking"],
+        "preferredLikes": ["Meaningful Conversations"],
+        "preferredDislikes": ["Rudeness/Lack of Manners"]
+    }
 }
 ```
 
@@ -242,5 +242,4 @@ The payload includes the new values under:
 
 ## Implementation references
 
-- Migration: `database/migrations/2026_05_06_120000_add_lifestyle_and_partner_preference_fields.php`\n- Save logic: `app/Services/CandidateProfileSectionService.php` (`saveLifestyleSection`, `savePartnerPreferences`)\n- Validation:\n  - `app/Http/Requests/Api/V1/Candidate/SaveCandidateLifestyleRequest.php`\n  - `app/Http/Requests/Api/V1/Candidate/SaveCandidatePartnerPreferencesRequest.php`\n  - `app/Http/Requests/Api/V1/Candidate/SaveAdminCandidateFullProfileRequest.php`\n- Read payloads:\n  - `app/Services/AdminCandidateProfileDetailsService.php`\n  - `app/Http/Resources/Api/V1/CandidateUserResource.php`\n- Test: `tests/Feature/LifestylePartnerPreferencesFieldsTest.php`
-
+- Migration: `database/migrations/2026_05_06_120000_add_lifestyle_and_partner_preference_fields.php`\n- Save logic: `app/Services/CandidateProfileSectionService.php` (`saveLifestyleSection`, `savePartnerPreferences`)\n- Validation:\n - `app/Http/Requests/Api/V1/Candidate/SaveCandidateLifestyleRequest.php`\n - `app/Http/Requests/Api/V1/Candidate/SaveCandidatePartnerPreferencesRequest.php`\n - `app/Http/Requests/Api/V1/Candidate/SaveAdminCandidateFullProfileRequest.php`\n- Read payloads:\n - `app/Services/AdminCandidateProfileDetailsService.php`\n - `app/Http/Resources/Api/V1/CandidateUserResource.php`\n- Test: `tests/Feature/LifestylePartnerPreferencesFieldsTest.php`

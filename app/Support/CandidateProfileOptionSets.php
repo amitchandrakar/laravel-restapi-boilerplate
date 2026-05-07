@@ -181,12 +181,7 @@ final class CandidateProfileOptionSets
      */
     public static function socialPersonalities(): array
     {
-        return self::asValueLabel([
-            'Introvert',
-            'Extrovert',
-            'Ambivert',
-            'Talkative',
-        ]);
+        return self::asValueLabel(['Introvert', 'Extrovert', 'Ambivert', 'Talkative']);
     }
 
     /**
@@ -394,12 +389,7 @@ final class CandidateProfileOptionSets
      */
     public static function dietaryPreferences(): array
     {
-        return self::asValueLabel([
-            'Vegetarian',
-            'Non-Vegetarian',
-            'Eggitarian',
-            'No Dietary Restrictions',
-        ]);
+        return self::asValueLabel(['Vegetarian', 'Non-Vegetarian', 'Eggitarian', 'No Dietary Restrictions']);
     }
 
     /**

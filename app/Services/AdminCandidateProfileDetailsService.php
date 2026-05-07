@@ -76,8 +76,12 @@ class AdminCandidateProfileDetailsService
         $preferredMovieGenres = self::decodeStoredStringList(
             $partner !== null ? data_get($partner, 'preferred_movie_genres') : null
         );
-        $preferredHobbies = self::decodeStoredStringList($partner !== null ? data_get($partner, 'preferred_hobbies') : null);
-        $preferredLikes = self::decodeStoredStringList($partner !== null ? data_get($partner, 'preferred_likes') : null);
+        $preferredHobbies = self::decodeStoredStringList(
+            $partner !== null ? data_get($partner, 'preferred_hobbies') : null
+        );
+        $preferredLikes = self::decodeStoredStringList(
+            $partner !== null ? data_get($partner, 'preferred_likes') : null
+        );
         $preferredDislikes = self::decodeStoredStringList(
             $partner !== null ? data_get($partner, 'preferred_dislikes') : null
         );

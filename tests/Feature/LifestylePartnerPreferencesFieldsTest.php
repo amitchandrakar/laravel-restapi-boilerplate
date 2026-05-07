@@ -73,7 +73,10 @@ class LifestylePartnerPreferencesFieldsTest extends TestCase
         $this->assertIsArray($details);
         $this->assertSame('Night Owl', data_get($details, 'lifestyle.sleepPattern'));
         $this->assertSame(['Photography', 'Music'], data_get($details, 'lifestyle.interests'));
-        $this->assertSame('Early Bird (Morning Person)', data_get($details, 'partnerPreferences.preferredSleepPattern'));
+        $this->assertSame(
+            'Early Bird (Morning Person)',
+            data_get($details, 'partnerPreferences.preferredSleepPattern')
+        );
         $this->assertSame(['Travel'], data_get($details, 'partnerPreferences.preferredInterests'));
 
         $row = DB::table('user_partner_preferences')->where('user_id', $candidate->id)->first();
