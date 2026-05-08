@@ -48,11 +48,14 @@ class MeRegistrationApiTest extends TestCase
     public function test_me_registration_checkout_returns_order_for_paid_package(): void
     {
         $this->mock(RazorpayClient::class, function ($mock): void {
-            $mock->shouldReceive('createOrder')->once()->andReturn([
-                'id' => 'order_me_checkout_1',
-                'amount' => 36500,
-                'currency' => 'INR',
-            ]);
+            $mock
+                ->shouldReceive('createOrder')
+                ->once()
+                ->andReturn([
+                    'id' => 'order_me_checkout_1',
+                    'amount' => 36500,
+                    'currency' => 'INR',
+                ]);
         });
 
         $email = 'me-paid-' . uniqid('', true) . '@example.com';
@@ -152,7 +155,6 @@ class MeRegistrationApiTest extends TestCase
 
     public function test_webhooks_razorpay_alias_matches_payment_webhook(): void
     {
-        $this->postJson('/api/v1/webhooks/razorpay', [], ['X-Razorpay-Signature' => 'bad'])
-            ->assertStatus(401);
+        $this->postJson('/api/v1/webhooks/razorpay', [], ['X-Razorpay-Signature' => 'bad'])->assertStatus(401);
     }
 }

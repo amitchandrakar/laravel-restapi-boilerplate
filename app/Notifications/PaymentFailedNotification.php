@@ -10,10 +10,7 @@ use Illuminate\Notifications\Notification;
 
 class PaymentFailedNotification extends Notification
 {
-    public function __construct(
-        private readonly Payment $payment,
-        private readonly string $reason
-    ) {}
+    public function __construct(private readonly Payment $payment, private readonly string $reason) {}
 
     public function via(object $notifiable): array
     {
@@ -35,8 +32,8 @@ class PaymentFailedNotification extends Notification
             'package_name' => $packageName,
             'reason' => $this->reason,
             'message' => $packageName !== null
-                ? sprintf('Payment for %s could not be completed: %s', $packageName, $this->reason)
-                : sprintf('Payment could not be completed: %s', $this->reason),
+                    ? sprintf('Payment for %s could not be completed: %s', $packageName, $this->reason)
+                    : sprintf('Payment could not be completed: %s', $this->reason),
         ];
     }
 }

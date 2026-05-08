@@ -30,11 +30,14 @@ class RazorpayWebhookTest extends TestCase
     public function test_payment_captured_webhook_marks_payment_success(): void
     {
         $this->mock(RazorpayClient::class, function ($mock): void {
-            $mock->shouldReceive('createOrder')->once()->andReturn([
-                'id' => 'order_wh_1',
-                'amount' => 36500,
-                'currency' => 'INR',
-            ]);
+            $mock
+                ->shouldReceive('createOrder')
+                ->once()
+                ->andReturn([
+                    'id' => 'order_wh_1',
+                    'amount' => 36500,
+                    'currency' => 'INR',
+                ]);
             $mock->shouldReceive('verifyWebhookSignature')->twice()->andReturn(true);
         });
 
@@ -70,8 +73,9 @@ class RazorpayWebhookTest extends TestCase
             ],
         ];
 
-        $this->postJson('/api/v1/payment/razorpay/webhook', $payload, ['X-Razorpay-Signature' => 'testsig'])
-            ->assertStatus(200);
+        $this->postJson('/api/v1/payment/razorpay/webhook', $payload, [
+            'X-Razorpay-Signature' => 'testsig',
+        ])->assertStatus(200);
 
         $this->assertDatabaseHas('payments', [
             'user_id' => $user->id,
@@ -88,8 +92,9 @@ class RazorpayWebhookTest extends TestCase
         ]);
 
         // Idempotent replay
-        $this->postJson('/api/v1/payment/razorpay/webhook', $payload, ['X-Razorpay-Signature' => 'testsig'])
-            ->assertStatus(200);
+        $this->postJson('/api/v1/payment/razorpay/webhook', $payload, [
+            'X-Razorpay-Signature' => 'testsig',
+        ])->assertStatus(200);
     }
 
     public function test_webhook_rejects_invalid_signature(): void
@@ -108,11 +113,14 @@ class RazorpayWebhookTest extends TestCase
     public function test_payment_failed_webhook_marks_payment_failed(): void
     {
         $this->mock(RazorpayClient::class, function ($mock): void {
-            $mock->shouldReceive('createOrder')->once()->andReturn([
-                'id' => 'order_fail_1',
-                'amount' => 36500,
-                'currency' => 'INR',
-            ]);
+            $mock
+                ->shouldReceive('createOrder')
+                ->once()
+                ->andReturn([
+                    'id' => 'order_fail_1',
+                    'amount' => 36500,
+                    'currency' => 'INR',
+                ]);
             $mock->shouldReceive('verifyWebhookSignature')->once()->andReturn(true);
         });
 
@@ -149,8 +157,9 @@ class RazorpayWebhookTest extends TestCase
             ],
         ];
 
-        $this->postJson('/api/v1/payment/razorpay/webhook', $payload, ['X-Razorpay-Signature' => 'testsig'])
-            ->assertStatus(200);
+        $this->postJson('/api/v1/payment/razorpay/webhook', $payload, [
+            'X-Razorpay-Signature' => 'testsig',
+        ])->assertStatus(200);
 
         $this->assertDatabaseHas('payments', [
             'user_id' => $user->id,

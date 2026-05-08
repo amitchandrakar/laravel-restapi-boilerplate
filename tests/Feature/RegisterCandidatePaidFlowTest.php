@@ -30,11 +30,14 @@ class RegisterCandidatePaidFlowTest extends TestCase
     public function test_paid_package_registration_returns_payment_block_and_pending_subscription(): void
     {
         $this->mock(RazorpayClient::class, function ($mock): void {
-            $mock->shouldReceive('createOrder')->once()->andReturn([
-                'id' => 'order_reg_test_1',
-                'amount' => 36500,
-                'currency' => 'INR',
-            ]);
+            $mock
+                ->shouldReceive('createOrder')
+                ->once()
+                ->andReturn([
+                    'id' => 'order_reg_test_1',
+                    'amount' => 36500,
+                    'currency' => 'INR',
+                ]);
         });
 
         $packageUuid = (string) Package::query()->where('code', 'TALASH_BASIC')->value('uuid');
@@ -69,7 +72,9 @@ class RegisterCandidatePaidFlowTest extends TestCase
             'subscription_status' => 'pending',
         ]);
 
-        $this->assertFalse($user->fresh()->getAllPermissions()->pluck('name')->contains('candidate.browse_profiles.full'));
+        $this->assertFalse(
+            $user->fresh()->getAllPermissions()->pluck('name')->contains('candidate.browse_profiles.full')
+        );
 
         $this->assertDatabaseHas('payments', [
             'user_id' => $user->id,

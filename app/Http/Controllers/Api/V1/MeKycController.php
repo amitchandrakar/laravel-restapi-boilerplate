@@ -154,10 +154,7 @@ class MeKycController extends Controller
 
         Cache::forget($key);
 
-        return $this->successResponse(
-            KycDocumentResource::make($doc)->resolve(),
-            'KYC submitted successfully'
-        );
+        return $this->successResponse(KycDocumentResource::make($doc)->resolve(), 'KYC submitted successfully');
     }
 
     private function sessionCacheKey(int $userId, string $sessionId): string

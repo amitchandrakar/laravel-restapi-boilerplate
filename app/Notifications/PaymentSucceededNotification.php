@@ -35,8 +35,8 @@ class PaymentSucceededNotification extends Notification
             'amount' => $amount,
             'currency' => $currency,
             'message' => $packageName !== null
-                ? sprintf('Your payment of %s %s for %s was successful.', $currency, $amount, $packageName)
-                : sprintf('Your payment of %s %s was successful.', $currency, $amount),
+                    ? sprintf('Your payment of %s %s for %s was successful.', $currency, $amount, $packageName)
+                    : sprintf('Your payment of %s %s was successful.', $currency, $amount),
         ];
     }
 }

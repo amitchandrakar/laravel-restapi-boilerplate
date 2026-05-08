@@ -135,7 +135,11 @@ class AuthService
             }
 
             $subscriptionId = $this->attachSubscriptionForRegistration($user->id, $packageId, 'pending', 'gateway');
-            $paymentMeta = $this->registrationPaymentService->createOrderForRegistration($user, $package, $subscriptionId);
+            $paymentMeta = $this->registrationPaymentService->createOrderForRegistration(
+                $user,
+                $package,
+                $subscriptionId
+            );
             $token = $user->createToken('auth-token')->plainTextToken;
 
             return ['user' => $user, 'token' => $token, 'payment' => $paymentMeta];
@@ -164,10 +168,7 @@ class AuthService
         }
 
         /** @var Subscription|null $subscription */
-        $subscription = Subscription::query()
-            ->where('user_id', $user->id)
-            ->where('package_id', $packageId)
-            ->first();
+        $subscription = Subscription::query()->where('user_id', $user->id)->where('package_id', $packageId)->first();
 
         if ($subscription instanceof Subscription && $subscription->subscription_status === 'active') {
             return [
@@ -222,14 +223,18 @@ class AuthService
     public function registrationStatusForMember(User $user, ?string $packageUuidQuery): array
     {
         $package = $this->resolveRegistrationPackageForStatus($user, $packageUuidQuery);
-        $paymentBlock = $package instanceof Package
-            ? $this->buildRegistrationPaymentStatusBlock($user, $package)
-            : [
-                'resolved' => false,
-                'message' => 'Pass package_uuid query or complete a registration checkout to resolve payment state.',
-            ];
+        $paymentBlock =
+            $package instanceof Package
+                ? $this->buildRegistrationPaymentStatusBlock($user, $package)
+                : [
+                    'resolved' => false,
+                    'message' => 'Pass package_uuid query or complete a registration checkout to resolve payment state.',
+                ];
 
-        $aadhaarRaw = $user->verificationDocuments()->where('document_type', KycDocumentService::DOCUMENT_AADHAAR)->first();
+        $aadhaarRaw = $user
+            ->verificationDocuments()
+            ->where('document_type', KycDocumentService::DOCUMENT_AADHAAR)
+            ->first();
         $aadhaar = $aadhaarRaw instanceof UserVerificationDocument ? $aadhaarRaw : null;
 
         $kycStatus = $aadhaar === null ? 'not_submitted' : (string) $aadhaar->verification_status;
@@ -242,19 +247,19 @@ class AuthService
             'user_uuid' => (string) $user->uuid,
             'profile_status' => $profileStatus,
             'package' => $package instanceof Package
-                ? [
-                    'uuid' => (string) $package->uuid,
-                    'name' => (string) $package->name,
-                    'registration_payable_rupees' => $package->registrationPayableAmountRupees(),
-                ]
-                : null,
+                    ? [
+                        'uuid' => (string) $package->uuid,
+                        'name' => (string) $package->name,
+                        'registration_payable_rupees' => $package->registrationPayableAmountRupees(),
+                    ]
+                    : null,
             'payment' => $paymentBlock,
             'kyc' => [
                 'status' => $kycStatus,
                 'document_uuid' => $aadhaar !== null ? (string) $aadhaar->uuid : null,
                 'submitted_at' => $aadhaar !== null && $aadhaar->submitted_at !== null
-                    ? Carbon::parse($aadhaar->submitted_at)->toIso8601String()
-                    : null,
+                        ? Carbon::parse($aadhaar->submitted_at)->toIso8601String()
+                        : null,
             ],
             'next_step' => $nextStep,
         ];
@@ -437,10 +442,7 @@ class AuthService
         }
 
         $now = now();
-        $existing = DB::table('subscriptions')
-            ->where('user_id', $userId)
-            ->where('package_id', $packageId)
-            ->first();
+        $existing = DB::table('subscriptions')->where('user_id', $userId)->where('package_id', $packageId)->first();
 
         $uuid = $existing !== null && isset($existing->uuid) ? (string) $existing->uuid : (string) Str::uuid();
 
@@ -473,10 +475,7 @@ class AuthService
 
     private function findOrCreateRegistrationSubscriptionForPaidPackage(int $userId, int $packageId): int
     {
-        $existing = DB::table('subscriptions')
-            ->where('user_id', $userId)
-            ->where('package_id', $packageId)
-            ->first();
+        $existing = DB::table('subscriptions')->where('user_id', $userId)->where('package_id', $packageId)->first();
 
         if ($existing !== null) {
             return (int) $existing->id;
@@ -544,10 +543,7 @@ class AuthService
         }
 
         /** @var Subscription|null $subscription */
-        $subscription = Subscription::query()
-            ->where('user_id', $user->id)
-            ->where('package_id', $packageId)
-            ->first();
+        $subscription = Subscription::query()->where('user_id', $user->id)->where('package_id', $packageId)->first();
 
         if (!$subscription instanceof Subscription) {
             return [
@@ -591,11 +587,8 @@ class AuthService
             'payment_status' => $latestPayment !== null ? (string) $latestPayment->payment_status : null,
             'pending_payment_uuid' => $latestPayment !== null ? (string) $latestPayment->uuid : null,
             'gateway_order_id' => $latestPayment !== null ? $latestPayment->gateway_order_id : null,
-            'awaiting_checkout' => $latestPayment === null
-                || (
-                    (string) $latestPayment->payment_status === 'pending'
-                    && $latestPayment->gateway_order_id === null
-                ),
+            'awaiting_checkout' => $latestPayment === null ||
+                ((string) $latestPayment->payment_status === 'pending' && $latestPayment->gateway_order_id === null),
         ];
     }
 
@@ -609,7 +602,11 @@ class AuthService
             ? (string) $paymentBlock['subscription_status']
             : '';
 
-        if (!$payableResolved || (!(bool) ($paymentBlock['skip_checkout'] ?? false) && ($subscriptionStatus === 'pending' || $subscriptionStatus === ''))) {
+        if (
+            !$payableResolved ||
+            (!(bool) ($paymentBlock['skip_checkout'] ?? false) &&
+                ($subscriptionStatus === 'pending' || $subscriptionStatus === ''))
+        ) {
             return 'payment';
         }
 

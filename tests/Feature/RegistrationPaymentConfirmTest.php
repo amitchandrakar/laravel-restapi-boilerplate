@@ -30,11 +30,14 @@ class RegistrationPaymentConfirmTest extends TestCase
     public function test_confirm_activates_subscription_and_grants_permissions(): void
     {
         $this->mock(RazorpayClient::class, function ($mock): void {
-            $mock->shouldReceive('createOrder')->once()->andReturn([
-                'id' => 'order_confirm_test_1',
-                'amount' => 36500,
-                'currency' => 'INR',
-            ]);
+            $mock
+                ->shouldReceive('createOrder')
+                ->once()
+                ->andReturn([
+                    'id' => 'order_confirm_test_1',
+                    'amount' => 36500,
+                    'currency' => 'INR',
+                ]);
             $mock->shouldReceive('verifyCheckoutSignature')->once()->andReturn(true);
         });
 
@@ -70,7 +73,9 @@ class RegistrationPaymentConfirmTest extends TestCase
 
         $user = User::query()->where('email', $email)->first();
         $this->assertNotNull($user);
-        $this->assertTrue($user->fresh()->getAllPermissions()->pluck('name')->contains('candidate.browse_profiles.full'));
+        $this->assertTrue(
+            $user->fresh()->getAllPermissions()->pluck('name')->contains('candidate.browse_profiles.full')
+        );
 
         $this->assertSame(1, $user->notifications()->where('data->kind', 'payment_succeeded')->count());
     }
@@ -78,11 +83,14 @@ class RegistrationPaymentConfirmTest extends TestCase
     public function test_confirm_rejects_invalid_signature(): void
     {
         $this->mock(RazorpayClient::class, function ($mock): void {
-            $mock->shouldReceive('createOrder')->once()->andReturn([
-                'id' => 'order_bad_sig_1',
-                'amount' => 36500,
-                'currency' => 'INR',
-            ]);
+            $mock
+                ->shouldReceive('createOrder')
+                ->once()
+                ->andReturn([
+                    'id' => 'order_bad_sig_1',
+                    'amount' => 36500,
+                    'currency' => 'INR',
+                ]);
             $mock->shouldReceive('verifyCheckoutSignature')->once()->andReturn(false);
         });
 
@@ -116,11 +124,14 @@ class RegistrationPaymentConfirmTest extends TestCase
     public function test_confirm_twice_returns_conflict(): void
     {
         $this->mock(RazorpayClient::class, function ($mock): void {
-            $mock->shouldReceive('createOrder')->once()->andReturn([
-                'id' => 'order_double_1',
-                'amount' => 36500,
-                'currency' => 'INR',
-            ]);
+            $mock
+                ->shouldReceive('createOrder')
+                ->once()
+                ->andReturn([
+                    'id' => 'order_double_1',
+                    'amount' => 36500,
+                    'currency' => 'INR',
+                ]);
             $mock->shouldReceive('verifyCheckoutSignature')->twice()->andReturn(true);
         });
 

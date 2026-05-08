@@ -6,14 +6,12 @@ Paid candidate packages use **Razorpay Orders + Checkout JS**, restricted to **U
 
 Set in `.env` (see `.env.example`):
 
-
 | Variable                  | Purpose                                           |
 | ------------------------- | ------------------------------------------------- |
 | `RAZORPAY_KEY_ID`         | Publishable key (Checkout `key`)                  |
 | `RAZORPAY_KEY_SECRET`     | Server secret (order create + signature verify)   |
 | `RAZORPAY_WEBHOOK_SECRET` | Webhook signing secret for `X-Razorpay-Signature` |
 | `RAZORPAY_CURRENCY`       | Default `INR`                                     |
-
 
 Config: `config/services.php` → `razorpay`.
 
@@ -26,28 +24,28 @@ Config: `config/services.php` → `razorpay`.
 
 ```json
 {
-  "data": {
-    "user": { "...": "..." },
-    "token": "...",
-    "permissions": ["..."],
-    "payment": {
-      "paymentUuid": "…",
-      "orderId": "order_…",
-      "keyId": "rzp_…",
-      "amount": 99900,
-      "currency": "INR",
-      "packageName": "…",
-      "checkoutOptions": {
-        "method": {
-          "upi": true,
-          "card": false,
-          "netbanking": false,
-          "wallet": false,
-          "emi": false
+    "data": {
+        "user": { "...": "..." },
+        "token": "...",
+        "permissions": ["..."],
+        "payment": {
+            "paymentUuid": "…",
+            "orderId": "order_…",
+            "keyId": "rzp_…",
+            "amount": 99900,
+            "currency": "INR",
+            "packageName": "…",
+            "checkoutOptions": {
+                "method": {
+                    "upi": true,
+                    "card": false,
+                    "netbanking": false,
+                    "wallet": false,
+                    "emi": false
+                }
+            }
         }
-      }
     }
-  }
 }
 ```
 
@@ -63,23 +61,21 @@ Config: `config/services.php` → `razorpay`.
 
 **Body (JSON):**
 
-
 | Field                 | Type   | Description                           |
 | --------------------- | ------ | ------------------------------------- |
 | `razorpay_order_id`   | string | Order id from registration / Checkout |
 | `razorpay_payment_id` | string | Payment id from Checkout `handler`    |
 | `razorpay_signature`  | string | Signature from Checkout `handler`     |
 
-
 **Success `200`:** activates subscription (idempotent if already success), syncs package permissions, may enqueue `PaymentSucceededNotification`.
 
 ```json
 {
-  "data": {
-    "paymentStatus": "success",
-    "subscription": { "status": "active", "endsAt": "2027-01-01T00:00:00+00:00" },
-    "permissions": ["…"]
-  }
+    "data": {
+        "paymentStatus": "success",
+        "subscription": { "status": "active", "endsAt": "2027-01-01T00:00:00+00:00" },
+        "permissions": ["…"]
+    }
 }
 ```
 
@@ -110,23 +106,23 @@ Duplicate webhook deliveries are deduped using Razorpay event `id` stored on `pa
 
 ```json
 {
-  "entity": "event",
-  "account_id": "acc_xxx",
-  "event": "payment.captured",
-  "contains": ["payment"],
-  "payload": {
-    "payment": {
-      "entity": {
-        "id": "pay_xxx",
-        "entity": "payment",
-        "amount": 99900,
-        "currency": "INR",
-        "status": "captured",
-        "order_id": "order_xxx"
-      }
-    }
-  },
-  "created_at": 1710000000
+    "entity": "event",
+    "account_id": "acc_xxx",
+    "event": "payment.captured",
+    "contains": ["payment"],
+    "payload": {
+        "payment": {
+            "entity": {
+                "id": "pay_xxx",
+                "entity": "payment",
+                "amount": 99900,
+                "currency": "INR",
+                "status": "captured",
+                "order_id": "order_xxx"
+            }
+        }
+    },
+    "created_at": 1710000000
 }
 ```
 
@@ -138,29 +134,33 @@ Use the `orderId` and `keyId` from the registration `payment` block. The API ret
 
 ```javascript
 const options = {
-  key: keyId,
-  amount: amount, // paise, must match order
-  currency: currency,
-  name: 'Alonti',
-  description: packageName,
-  order_id: orderId,
-  ...(checkoutOptions || {}),
-  handler: async function (response) {
-    await fetch('/api/v1/auth/payment/registration/confirm', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: 'Bearer ' + token,
-      },
-      body: JSON.stringify({
-        razorpay_order_id: response.razorpay_order_id,
-        razorpay_payment_id: response.razorpay_payment_id,
-        razorpay_signature: response.razorpay_signature,
-      }),
-    });
-  },
-  modal: { ondismiss: function () { /* user closed */ } },
+    key: keyId,
+    amount: amount, // paise, must match order
+    currency: currency,
+    name: 'Alonti',
+    description: packageName,
+    order_id: orderId,
+    ...(checkoutOptions || {}),
+    handler: async function (response) {
+        await fetch('/api/v1/auth/payment/registration/confirm', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                Authorization: 'Bearer ' + token
+            },
+            body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+            })
+        });
+    },
+    modal: {
+        ondismiss: function () {
+            /* user closed */
+        }
+    }
 };
 const rzp = new Razorpay(options);
 rzp.open();
@@ -172,7 +172,6 @@ On success: feed kind `payment_succeeded`. On failure (webhook path): `payment_f
 
 ## Product rules (summary)
 
-- Subscription stays `**pending`** until payment is **success**; package feature permissions apply only after success.
+- Subscription stays `**pending`** until payment is **success\*\*; package feature permissions apply only after success.
 - Confirmation is **dual-path**: client `confirm` + webhook; both are idempotent.
 - **Refunds / renewals** are out of scope for this v1 registration flow.
-

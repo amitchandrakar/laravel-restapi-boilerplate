@@ -170,7 +170,11 @@ class RegistrationPaymentService
             if ($payment->payment_status !== 'pending') {
                 return;
             }
-            if ($eventIdStr !== null && $payment->webhook_event_id !== null && $payment->webhook_event_id === $eventIdStr) {
+            if (
+                $eventIdStr !== null &&
+                $payment->webhook_event_id !== null &&
+                $payment->webhook_event_id === $eventIdStr
+            ) {
                 return;
             }
 
@@ -242,8 +246,12 @@ class RegistrationPaymentService
         ];
     }
 
-    private function finalizeSucceeded(Payment $payment, string $gatewayPaymentId, ?string $webhookEventId, array $raw): void
-    {
+    private function finalizeSucceeded(
+        Payment $payment,
+        string $gatewayPaymentId,
+        ?string $webhookEventId,
+        array $raw
+    ): void {
         DB::transaction(function () use ($payment, $gatewayPaymentId, $webhookEventId, $raw): void {
             /** @var Payment $locked */
             $locked = Payment::query()->whereKey($payment->id)->lockForUpdate()->firstOrFail();

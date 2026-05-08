@@ -33,7 +33,10 @@ class ProfilePublishedNotificationTest extends TestCase
         ]);
         $admin->assignRole('admin');
 
-        $candidateRoleId = (int) DB::table('roles')->where('name', 'candidate')->where('guard_name', 'web')->value('id');
+        $candidateRoleId = (int) DB::table('roles')
+            ->where('name', 'candidate')
+            ->where('guard_name', 'web')
+            ->value('id');
 
         /** @var User $candidate */
         $candidate = User::query()->create([
@@ -46,10 +49,12 @@ class ProfilePublishedNotificationTest extends TestCase
         ]);
         $candidate->assignRole('candidate');
 
-        $candidate->forceFill([
-            'completed_sections_json' => CandidateProfileSectionService::sections(),
-            'profile_status' => 'draft',
-        ])->save();
+        $candidate
+            ->forceFill([
+                'completed_sections_json' => CandidateProfileSectionService::sections(),
+                'profile_status' => 'draft',
+            ])
+            ->save();
 
         $this->actingAs($admin, 'sanctum')
             ->postJson('/api/v1/admin/candidates/' . $candidate->uuid . '/publish')

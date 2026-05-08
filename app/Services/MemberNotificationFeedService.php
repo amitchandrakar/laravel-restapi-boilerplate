@@ -352,8 +352,7 @@ class MemberNotificationFeedService
         }
 
         if ($kind === 'payment_succeeded' || $kind === 'payment_failed') {
-            $payUuid =
-                isset($data['payment_uuid']) && is_string($data['payment_uuid']) ? $data['payment_uuid'] : null;
+            $payUuid = isset($data['payment_uuid']) && is_string($data['payment_uuid']) ? $data['payment_uuid'] : null;
             if ($payUuid === null || $payUuid === '') {
                 return [];
             }

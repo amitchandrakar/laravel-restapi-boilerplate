@@ -40,9 +40,7 @@ Route::post('payment/razorpay/webhook', [RegistrationPaymentController::class, '
     'throttle:120,1'
 );
 
-Route::post('webhooks/razorpay', [RegistrationPaymentController::class, 'webhook'])->middleware(
-    'throttle:120,1'
-);
+Route::post('webhooks/razorpay', [RegistrationPaymentController::class, 'webhook'])->middleware('throttle:120,1');
 
 Route::prefix('me')
     ->middleware(array_merge($sanctumWithTrackedSession, ['profile.uuid.header']))
@@ -78,8 +76,10 @@ Route::prefix('auth')->group(function () use ($sanctumWithTrackedSession) {
         Route::post('change-password', [AuthController::class, 'changePassword']);
 
         Route::post('payment/registration/confirm', [RegistrationPaymentController::class, 'confirm']);
-        Route::get('payment/registration/{paymentUuid}/status', [RegistrationPaymentController::class, 'status'])
-            ->whereUuid('paymentUuid');
+        Route::get('payment/registration/{paymentUuid}/status', [
+            RegistrationPaymentController::class,
+            'status',
+        ])->whereUuid('paymentUuid');
 
         Route::prefix('notifications')
             ->middleware('throttle:60,1')

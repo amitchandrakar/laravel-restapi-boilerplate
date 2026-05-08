@@ -6,16 +6,16 @@ All endpoints below use the standard JSON envelope unless noted:
 
 ```json
 {
-  "success": true,
-  "statusCode": 200,
-  "message": "…",
-  "data": { },
-  "error": null,
-  "meta": {
-    "timestamp": "…",
-    "requestId": "…",
-    "version": "…"
-  }
+    "success": true,
+    "statusCode": 200,
+    "message": "…",
+    "data": {},
+    "error": null,
+    "meta": {
+        "timestamp": "…",
+        "requestId": "…",
+        "version": "…"
+    }
 }
 ```
 
@@ -25,10 +25,10 @@ Errors use `success: false`, non‑null `error`, and HTTP status matching `statu
 
 ## Authentication and headers
 
-| Concern | Detail |
-|--------|--------|
-| **Auth** | `Authorization: Bearer <sanctum_access_token>` |
-| **Session** | Routes use `auth:sanctum` and `tracked.session` (same as other member APIs). |
+| Concern             | Detail                                                                                                   |
+| ------------------- | -------------------------------------------------------------------------------------------------------- |
+| **Auth**            | `Authorization: Bearer <sanctum_access_token>`                                                           |
+| **Session**         | Routes use `auth:sanctum` and `tracked.session` (same as other member APIs).                             |
 | **Optional header** | `X-User-Profile-Uuid` — if present, must equal the authenticated user’s `users.uuid`; otherwise **403**. |
 
 ---
@@ -44,9 +44,9 @@ Prepares subscription state and either skips Razorpay or returns checkout fields
 
 **Request body (JSON)**
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `package_uuid` | string (UUID) | Yes | Must exist on an active, non‑deleted package. |
+| Field          | Type          | Required | Description                                   |
+| -------------- | ------------- | -------- | --------------------------------------------- |
+| `package_uuid` | string (UUID) | Yes      | Must exist on an active, non‑deleted package. |
 
 **Success `200` — skip checkout** (`data`)
 
@@ -54,8 +54,8 @@ When registration amount for the package is **0**, or the user **already has an 
 
 ```json
 {
-  "skip_checkout": true,
-  "reason": "free_or_complimentary"
+    "skip_checkout": true,
+    "reason": "free_or_complimentary"
 }
 ```
 
@@ -63,8 +63,8 @@ or
 
 ```json
 {
-  "skip_checkout": true,
-  "reason": "already_subscribed"
+    "skip_checkout": true,
+    "reason": "already_subscribed"
 }
 ```
 
@@ -74,21 +74,21 @@ When payment is required and a pending order is created or reused:
 
 ```json
 {
-  "skip_checkout": false,
-  "order_id": "order_…",
-  "key_id": "rzp_…",
-  "amount_paise": 36500,
-  "currency": "INR",
-  "payment_uuid": "…",
-  "checkout_options": {
-    "method": {
-      "upi": true,
-      "card": false,
-      "netbanking": false,
-      "wallet": false,
-      "emi": false
+    "skip_checkout": false,
+    "order_id": "order_…",
+    "key_id": "rzp_…",
+    "amount_paise": 36500,
+    "currency": "INR",
+    "payment_uuid": "…",
+    "checkout_options": {
+        "method": {
+            "upi": true,
+            "card": false,
+            "netbanking": false,
+            "wallet": false,
+            "emi": false
+        }
     }
-  }
 }
 ```
 
@@ -96,11 +96,11 @@ Merge `checkout_options` into Razorpay Checkout `options` on the client (same pa
 
 **Typical errors**
 
-| HTTP | When |
-|------|------|
-| `401` | Missing or invalid Bearer token. |
+| HTTP  | When                                                       |
+| ----- | ---------------------------------------------------------- |
+| `401` | Missing or invalid Bearer token.                           |
 | `403` | User is not a candidate (or profile UUID header mismatch). |
-| `422` | Validation failed (e.g. invalid `package_uuid`). |
+| `422` | Validation failed (e.g. invalid `package_uuid`).           |
 
 ---
 
@@ -115,28 +115,28 @@ Same semantics as `POST /auth/payment/registration/confirm`, exposed under `/me/
 
 **Request body (JSON)**
 
-| Field | Type | Required |
-|-------|------|----------|
-| `razorpay_order_id` | string | Yes |
-| `razorpay_payment_id` | string | Yes |
-| `razorpay_signature` | string | Yes |
+| Field                 | Type   | Required |
+| --------------------- | ------ | -------- |
+| `razorpay_order_id`   | string | Yes      |
+| `razorpay_payment_id` | string | Yes      |
+| `razorpay_signature`  | string | Yes      |
 
 **Success `200` (`data`)**
 
 ```json
 {
-  "payment_status": "success",
-  "permissions": ["candidate.…", "…"]
+    "payment_status": "success",
+    "permissions": ["candidate.…", "…"]
 }
 ```
 
 **Typical errors**
 
-| HTTP | When |
-|------|------|
-| `401` | Unauthenticated. |
+| HTTP  | When                                                         |
+| ----- | ------------------------------------------------------------ |
+| `401` | Unauthenticated.                                             |
 | `409` | Payment already confirmed or cannot be confirmed (conflict). |
-| `422` | Invalid signature or no matching payment for the order. |
+| `422` | Invalid signature or no matching payment for the order.      |
 
 ---
 
@@ -149,50 +149,50 @@ Same semantics as `POST /auth/payment/registration/confirm`, exposed under `/me/
 
 **Query parameters**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `package_uuid` | string (UUID) | No | If omitted, the API infers package context from the user’s latest **pending** subscription, then latest **active** subscription, when possible. |
+| Parameter      | Type          | Required | Description                                                                                                                                     |
+| -------------- | ------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `package_uuid` | string (UUID) | No       | If omitted, the API infers package context from the user’s latest **pending** subscription, then latest **active** subscription, when possible. |
 
 **Success `200` (`data`) — shape**
 
 ```json
 {
-  "user_uuid": "…",
-  "profile_status": "draft",
-  "package": {
-    "uuid": "…",
-    "name": "…",
-    "registration_payable_rupees": 0
-  },
-  "payment": {
-    "resolved": true,
-    "registration_payable_rupees": 3650,
-    "skip_checkout": false,
-    "subscription_status": "pending",
-    "payment_status": "pending",
-    "pending_payment_uuid": "…",
-    "gateway_order_id": "order_…",
-    "awaiting_checkout": false,
-    "reason": "subscription_active"
-  },
-  "kyc": {
-    "status": "not_submitted",
-    "document_uuid": null,
-    "submitted_at": null
-  },
-  "next_step": "payment"
+    "user_uuid": "…",
+    "profile_status": "draft",
+    "package": {
+        "uuid": "…",
+        "name": "…",
+        "registration_payable_rupees": 0
+    },
+    "payment": {
+        "resolved": true,
+        "registration_payable_rupees": 3650,
+        "skip_checkout": false,
+        "subscription_status": "pending",
+        "payment_status": "pending",
+        "pending_payment_uuid": "…",
+        "gateway_order_id": "order_…",
+        "awaiting_checkout": false,
+        "reason": "subscription_active"
+    },
+    "kyc": {
+        "status": "not_submitted",
+        "document_uuid": null,
+        "submitted_at": null
+    },
+    "next_step": "payment"
 }
 ```
 
 **`next_step` values (machine hint)**
 
-| Value | Typical meaning |
-|-------|------------------|
-| `payment` | Complete or retry paid registration checkout / verify. |
-| `verify_identity` | KYC not submitted or not approved (e.g. rejected / resubmit). |
-| `pending_review` | KYC submitted, awaiting staff review. |
-| `complete_profile` | KYC approved but profile not published. |
-| `done` | Paid (if applicable), KYC approved, profile published. |
+| Value              | Typical meaning                                               |
+| ------------------ | ------------------------------------------------------------- |
+| `payment`          | Complete or retry paid registration checkout / verify.        |
+| `verify_identity`  | KYC not submitted or not approved (e.g. rejected / resubmit). |
+| `pending_review`   | KYC submitted, awaiting staff review.                         |
+| `complete_profile` | KYC approved but profile not published.                       |
+| `done`             | Paid (if applicable), KYC approved, profile published.        |
 
 If no package can be resolved and no query is provided, `payment` may include `resolved: false` and a short `message`.
 
@@ -228,9 +228,9 @@ Returns the same list as `GET /api/v1/auth/candidate/kyc/documents` — use this
 
 ```json
 {
-  "session_id": "…",
-  "expires_in_seconds": 3600,
-  "upload_required_fields": ["aadhaar_front", "aadhaar_back", "selfie"]
+    "session_id": "…",
+    "expires_in_seconds": 3600,
+    "upload_required_fields": ["aadhaar_front", "aadhaar_back", "selfie"]
 }
 ```
 
@@ -243,21 +243,21 @@ Returns the same list as `GET /api/v1/auth/candidate/kyc/documents` — use this
 
 **Request:** `multipart/form-data`
 
-| Field | Type | Required | Rules |
-|-------|------|----------|--------|
-| `session_id` | string (UUID) | Yes | From `upload-sessions`. |
-| `aadhaar_front` | file | Yes | Image; max size from `config/kyc_id_verification.php` (`max_upload_kb`, default 5120 KB). |
-| `aadhaar_back` | file | Yes | Same |
-| `selfie` | file | Yes | Same |
+| Field           | Type          | Required | Rules                                                                                     |
+| --------------- | ------------- | -------- | ----------------------------------------------------------------------------------------- |
+| `session_id`    | string (UUID) | Yes      | From `upload-sessions`.                                                                   |
+| `aadhaar_front` | file          | Yes      | Image; max size from `config/kyc_id_verification.php` (`max_upload_kb`, default 5120 KB). |
+| `aadhaar_back`  | file          | Yes      | Same                                                                                      |
+| `selfie`        | file          | Yes      | Same                                                                                      |
 
 **Success `200` (`data`)**
 
 ```json
 {
-  "session_id": "…",
-  "aadhaar_front_url": "https://…/images/uploads/12/id_verification/9ecc5d01-….webp",
-  "aadhaar_back_url": "https://…/images/uploads/12/id_verification/….webp",
-  "selfie_url": "https://…/images/uploads/12/id_verification/….webp"
+    "session_id": "…",
+    "aadhaar_front_url": "https://…/images/uploads/12/id_verification/9ecc5d01-….webp",
+    "aadhaar_back_url": "https://…/images/uploads/12/id_verification/….webp",
+    "selfie_url": "https://…/images/uploads/12/id_verification/….webp"
 }
 ```
 
@@ -272,25 +272,25 @@ Returns the same list as `GET /api/v1/auth/candidate/kyc/documents` — use this
 
 **Request body (JSON)**
 
-| Field | Type | Required |
-|-------|------|----------|
-| `session_id` | string (UUID) | Yes |
-| `document_number_masked` | string | No |
+| Field                    | Type          | Required |
+| ------------------------ | ------------- | -------- |
+| `session_id`             | string (UUID) | Yes      |
+| `document_number_masked` | string        | No       |
 
 **Success `200` (`data`)** — same shape as `KycDocumentResource` (camelCase):
 
 ```json
 {
-  "uuid": "…",
-  "documentType": "aadhaar",
-  "documentNumberMasked": "…",
-  "documentFrontUrl": "https://…",
-  "documentBackUrl": "https://…",
-  "selfieUrl": "https://…",
-  "verificationStatus": "pending",
-  "rejectionReason": null,
-  "submittedAt": "…",
-  "verifiedAt": null
+    "uuid": "…",
+    "documentType": "aadhaar",
+    "documentNumberMasked": "…",
+    "documentFrontUrl": "https://…",
+    "documentBackUrl": "https://…",
+    "selfieUrl": "https://…",
+    "verificationStatus": "pending",
+    "rejectionReason": null,
+    "submittedAt": "…",
+    "verifiedAt": null
 }
 ```
 
@@ -307,18 +307,18 @@ The upload session is cleared after successful submit.
 
 **Request body (JSON)** — all optional
 
-| Field | Type |
-|-------|------|
+| Field       | Type              |
+| ----------- | ----------------- |
 | `fcm_token` | string (max 4096) |
-| `platform` | string (max 64) |
-| `device_id` | string (max 255) |
+| `platform`  | string (max 64)   |
+| `device_id` | string (max 255)  |
 
 **Success `200` (`data`)**
 
 ```json
 {
-  "registered": false,
-  "stub": true
+    "registered": false,
+    "stub": true
 }
 ```
 
@@ -339,8 +339,8 @@ Same handler as `POST /payment/razorpay/webhook`.
 
 **Headers**
 
-| Header | Required |
-|--------|----------|
+| Header                 | Required               |
+| ---------------------- | ---------------------- |
 | `X-Razorpay-Signature` | Yes (HMAC of raw body) |
 
 **Request body:** raw Razorpay webhook JSON (preserve body for signature verification).
