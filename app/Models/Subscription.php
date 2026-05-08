@@ -21,4 +21,15 @@ class Subscription extends BaseModel
     {
         return $this->belongsTo(Package::class, 'package_id');
     }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'started_at' => 'datetime',
+            'ends_at' => 'datetime',
+        ];
+    }
 }

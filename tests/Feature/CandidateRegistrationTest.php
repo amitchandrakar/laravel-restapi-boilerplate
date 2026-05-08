@@ -47,7 +47,7 @@ class CandidateRegistrationTest extends TestCase
 
     public function test_register_candidate_creates_user_subscription_and_permissions(): void
     {
-        $packageUuid = (string) Package::query()->where('code', 'TALASH_BASIC')->value('uuid');
+        $packageUuid = (string) Package::query()->where('code', 'PARICHAY_FREE')->value('uuid');
         $this->assertNotEmpty($packageUuid);
 
         $email = 'candidate-reg-' . uniqid('', true) . '@example.com';
@@ -65,6 +65,7 @@ class CandidateRegistrationTest extends TestCase
         ]);
 
         $response->assertStatus(201)->assertJsonPath('success', true)->assertJsonPath('data.token_type', 'Bearer');
+        $response->assertJsonMissingPath('data.payment');
 
         $user = User::query()->where('email', $email)->first();
         $this->assertNotNull($user);
@@ -73,9 +74,9 @@ class CandidateRegistrationTest extends TestCase
         $this->assertSame($candidateRoleId, (int) $user->role_id);
         $this->assertSame('Test', $user->first_name);
         $this->assertSame('Chandrakar', $user->last_name);
-        $this->assertTrue($user->getAllPermissions()->pluck('name')->contains('candidate.browse_profiles.full'));
+        $this->assertTrue($user->getAllPermissions()->pluck('name')->contains('candidate.browse_profiles.limited'));
 
-        $packageId = (int) Package::query()->where('code', 'TALASH_BASIC')->value('id');
+        $packageId = (int) Package::query()->where('code', 'PARICHAY_FREE')->value('id');
         $this->assertDatabaseHas('subscriptions', [
             'user_id' => $user->id,
             'package_id' => $packageId,
@@ -121,7 +122,7 @@ class CandidateRegistrationTest extends TestCase
 
     public function test_register_candidate_without_email_succeeds_and_can_login_with_phone(): void
     {
-        $packageUuid = (string) Package::query()->where('code', 'TALASH_BASIC')->value('uuid');
+        $packageUuid = (string) Package::query()->where('code', 'PARICHAY_FREE')->value('uuid');
         $phone = '98765' . substr((string) time(), -5);
 
         $response = $this->postJson('/api/v1/auth/register-candidate', [

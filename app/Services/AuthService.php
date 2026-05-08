@@ -5,9 +5,14 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Package;
+use App\Models\Payment;
 use App\Models\Role;
+use App\Models\Subscription;
 use App\Models\User;
+use App\Models\UserVerificationDocument;
+use App\Services\Payment\RegistrationPaymentService;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -21,7 +26,10 @@ class AuthService
 {
     private const LOGIN_GUARD = 'web';
 
-    public function __construct(private readonly PackagePermissionService $packagePermissionService) {}
+    public function __construct(
+        private readonly PackagePermissionService $packagePermissionService,
+        private readonly RegistrationPaymentService $registrationPaymentService
+    ) {}
 
     /**
      * Register a new user.
@@ -89,7 +97,7 @@ class AuthService
      * Register a candidate with profile fields and an explicit package (by UUID).
      *
      * @param  array<string, mixed>  $data
-     * @return array{user: User, token: string}
+     * @return array{user: User, token: string, payment: array<string, mixed>|null}
      */
     public function registerCandidate(array $data): array
     {
@@ -98,12 +106,14 @@ class AuthService
             unset($data['package_uuid'], $data['password_confirmation']);
             $candidateRoleId = $this->candidateRoleId();
 
-            $packageId = (int) Package::query()->where('uuid', $packageUuid)->where('is_active', true)->value('id');
-            if ($packageId === 0) {
+            /** @var Package|null $package */
+            $package = Package::query()->where('uuid', $packageUuid)->where('is_active', true)->first();
+            if (!$package instanceof Package) {
                 throw ValidationException::withMessages([
                     'package_uuid' => ['The selected package is invalid.'],
                 ]);
             }
+            $packageId = (int) $package->id;
             if ($candidateRoleId !== null) {
                 $data['role_id'] = $candidateRoleId;
             }
@@ -115,13 +125,139 @@ class AuthService
                 $user->assignRole('candidate');
             }
 
-            $this->attachSubscriptionForRegistration($user->id, $packageId);
-            $this->packagePermissionService->syncCandidatePermissions($user);
+            $payable = $package->registrationPayableAmountRupees();
+            if ($payable <= 0) {
+                $this->attachSubscriptionForRegistration($user->id, $packageId, 'active', 'system');
+                $this->packagePermissionService->syncCandidatePermissions($user);
+                $token = $user->createToken('auth-token')->plainTextToken;
 
+                return ['user' => $user, 'token' => $token, 'payment' => null];
+            }
+
+            $subscriptionId = $this->attachSubscriptionForRegistration($user->id, $packageId, 'pending', 'gateway');
+            $paymentMeta = $this->registrationPaymentService->createOrderForRegistration($user, $package, $subscriptionId);
             $token = $user->createToken('auth-token')->plainTextToken;
 
-            return ['user' => $user, 'token' => $token];
+            return ['user' => $user, 'token' => $token, 'payment' => $paymentMeta];
         });
+    }
+
+    /**
+     * POST /me/registration/checkout — ensure subscription + Razorpay order for the selected package.
+     *
+     * @return array<string, mixed>
+     */
+    public function prepareRegistrationCheckout(User $user, Package $package): array
+    {
+        $packageId = (int) $package->id;
+        $payable = $package->registrationPayableAmountRupees();
+
+        if ($payable <= 0) {
+            $this->attachSubscriptionForRegistration($user->id, $packageId, 'active', 'system');
+            $user->refresh();
+            $this->packagePermissionService->syncCandidatePermissions($user);
+
+            return [
+                'skip_checkout' => true,
+                'reason' => 'free_or_complimentary',
+            ];
+        }
+
+        /** @var Subscription|null $subscription */
+        $subscription = Subscription::query()
+            ->where('user_id', $user->id)
+            ->where('package_id', $packageId)
+            ->first();
+
+        if ($subscription instanceof Subscription && $subscription->subscription_status === 'active') {
+            return [
+                'skip_checkout' => true,
+                'reason' => 'already_subscribed',
+            ];
+        }
+
+        $subscriptionId = $this->findOrCreateRegistrationSubscriptionForPaidPackage($user->id, $packageId);
+
+        /** @var Payment|null $pendingPayment */
+        $pendingPayment = Payment::query()
+            ->where('subscription_id', $subscriptionId)
+            ->where('gateway_name', 'razorpay')
+            ->where('payment_status', 'pending')
+            ->whereNotNull('gateway_order_id')
+            ->orderByDesc('id')
+            ->first();
+
+        if ($pendingPayment instanceof Payment) {
+            $amountPaise = (int) round(((float) $pendingPayment->amount) * 100);
+
+            return [
+                'skip_checkout' => false,
+                'order_id' => (string) $pendingPayment->gateway_order_id,
+                'key_id' => (string) config('services.razorpay.key_id', ''),
+                'amount_paise' => $amountPaise,
+                'currency' => strtoupper((string) $pendingPayment->currency),
+                'payment_uuid' => (string) $pendingPayment->uuid,
+                'checkout_options' => config('services.razorpay.checkout', []),
+            ];
+        }
+
+        $meta = $this->registrationPaymentService->createOrderForRegistration($user, $package, $subscriptionId);
+
+        return [
+            'skip_checkout' => false,
+            'order_id' => $meta['orderId'],
+            'key_id' => $meta['keyId'],
+            'amount_paise' => $meta['amount'],
+            'currency' => $meta['currency'],
+            'payment_uuid' => $meta['paymentUuid'],
+            'checkout_options' => config('services.razorpay.checkout', []),
+        ];
+    }
+
+    /**
+     * GET /me/registration/status — onboarding gate for payment + KYC.
+     *
+     * @return array<string, mixed>
+     */
+    public function registrationStatusForMember(User $user, ?string $packageUuidQuery): array
+    {
+        $package = $this->resolveRegistrationPackageForStatus($user, $packageUuidQuery);
+        $paymentBlock = $package instanceof Package
+            ? $this->buildRegistrationPaymentStatusBlock($user, $package)
+            : [
+                'resolved' => false,
+                'message' => 'Pass package_uuid query or complete a registration checkout to resolve payment state.',
+            ];
+
+        $aadhaarRaw = $user->verificationDocuments()->where('document_type', KycDocumentService::DOCUMENT_AADHAAR)->first();
+        $aadhaar = $aadhaarRaw instanceof UserVerificationDocument ? $aadhaarRaw : null;
+
+        $kycStatus = $aadhaar === null ? 'not_submitted' : (string) $aadhaar->verification_status;
+
+        $profileStatus = (string) ($user->profile_status ?? 'draft');
+
+        $nextStep = $this->inferRegistrationNextStep($paymentBlock, $kycStatus, $profileStatus);
+
+        return [
+            'user_uuid' => (string) $user->uuid,
+            'profile_status' => $profileStatus,
+            'package' => $package instanceof Package
+                ? [
+                    'uuid' => (string) $package->uuid,
+                    'name' => (string) $package->name,
+                    'registration_payable_rupees' => $package->registrationPayableAmountRupees(),
+                ]
+                : null,
+            'payment' => $paymentBlock,
+            'kyc' => [
+                'status' => $kycStatus,
+                'document_uuid' => $aadhaar !== null ? (string) $aadhaar->uuid : null,
+                'submitted_at' => $aadhaar !== null && $aadhaar->submitted_at !== null
+                    ? Carbon::parse($aadhaar->submitted_at)->toIso8601String()
+                    : null,
+            ],
+            'next_step' => $nextStep,
+        ];
     }
 
     /**
@@ -284,29 +420,212 @@ class AuthService
             return;
         }
 
-        $this->attachSubscriptionForRegistration($userId, $defaultPackageId);
+        $this->attachSubscriptionForRegistration($userId, $defaultPackageId, 'active', 'system');
     }
 
-    private function attachSubscriptionForRegistration(int $userId, int $packageId): void
-    {
+    /**
+     * @return int Subscription primary key (0 if package invalid)
+     */
+    private function attachSubscriptionForRegistration(
+        int $userId,
+        int $packageId,
+        string $subscriptionStatus = 'active',
+        string $renewalSource = 'system'
+    ): int {
         if ($packageId <= 0) {
-            return;
+            return 0;
         }
 
         $now = now();
-        DB::table('subscriptions')->updateOrInsert(
-            ['user_id' => $userId, 'package_id' => $packageId],
-            [
-                'uuid' => (string) Str::uuid(),
+        $existing = DB::table('subscriptions')
+            ->where('user_id', $userId)
+            ->where('package_id', $packageId)
+            ->first();
+
+        $uuid = $existing !== null && isset($existing->uuid) ? (string) $existing->uuid : (string) Str::uuid();
+
+        $row = [
+            'uuid' => $uuid,
+            'subscription_status' => $subscriptionStatus,
+            'started_at' => $now,
+            'ends_at' => $now->copy()->addYear(),
+            'auto_renew' => false,
+            'renewal_source' => $renewalSource,
+            'updated_at' => $now,
+        ];
+
+        if ($existing === null) {
+            $row['created_at'] = $now;
+            $id = (int) DB::table('subscriptions')->insertGetId(
+                array_merge($row, [
+                    'user_id' => $userId,
+                    'package_id' => $packageId,
+                ])
+            );
+
+            return $id;
+        }
+
+        DB::table('subscriptions')->where('id', $existing->id)->update($row);
+
+        return (int) $existing->id;
+    }
+
+    private function findOrCreateRegistrationSubscriptionForPaidPackage(int $userId, int $packageId): int
+    {
+        $existing = DB::table('subscriptions')
+            ->where('user_id', $userId)
+            ->where('package_id', $packageId)
+            ->first();
+
+        if ($existing !== null) {
+            return (int) $existing->id;
+        }
+
+        return $this->attachSubscriptionForRegistration($userId, $packageId, 'pending', 'gateway');
+    }
+
+    private function resolveRegistrationPackageForStatus(User $user, ?string $packageUuidQuery): ?Package
+    {
+        if ($packageUuidQuery !== null && trim($packageUuidQuery) !== '') {
+            /** @var Package|null $p */
+            $p = Package::query()->where('uuid', $packageUuidQuery)->where('is_active', true)->first();
+
+            return $p;
+        }
+
+        /** @var Subscription|null $pendingSub */
+        $pendingSub = Subscription::query()
+            ->where('user_id', $user->id)
+            ->where('subscription_status', 'pending')
+            ->orderByDesc('id')
+            ->first();
+        if ($pendingSub !== null) {
+            /** @var Package|null $pkg */
+            $pkg = Package::query()->whereKey((int) $pendingSub->package_id)->where('is_active', true)->first();
+
+            return $pkg;
+        }
+
+        /** @var Subscription|null $activeSub */
+        $activeSub = Subscription::query()
+            ->where('user_id', $user->id)
+            ->where('subscription_status', 'active')
+            ->orderByDesc('id')
+            ->first();
+        if ($activeSub !== null) {
+            /** @var Package|null $pkg */
+            $pkg = Package::query()->whereKey((int) $activeSub->package_id)->where('is_active', true)->first();
+
+            return $pkg;
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildRegistrationPaymentStatusBlock(User $user, Package $package): array
+    {
+        $packageId = (int) $package->id;
+        $payable = $package->registrationPayableAmountRupees();
+
+        if ($payable <= 0) {
+            return [
+                'resolved' => true,
+                'registration_payable_rupees' => $payable,
+                'skip_checkout' => true,
+                'subscription_status' => null,
+                'payment_status' => null,
+                'pending_payment_uuid' => null,
+                'gateway_order_id' => null,
+            ];
+        }
+
+        /** @var Subscription|null $subscription */
+        $subscription = Subscription::query()
+            ->where('user_id', $user->id)
+            ->where('package_id', $packageId)
+            ->first();
+
+        if (!$subscription instanceof Subscription) {
+            return [
+                'resolved' => true,
+                'registration_payable_rupees' => $payable,
+                'skip_checkout' => false,
+                'subscription_status' => null,
+                'payment_status' => null,
+                'pending_payment_uuid' => null,
+                'gateway_order_id' => null,
+                'awaiting_checkout' => true,
+            ];
+        }
+
+        /** @var Payment|null $latestPayment */
+        $latestPayment = Payment::query()
+            ->where('user_id', $user->id)
+            ->where('package_id', $packageId)
+            ->where('gateway_name', 'razorpay')
+            ->orderByDesc('id')
+            ->first();
+
+        if ($subscription->subscription_status === 'active') {
+            return [
+                'resolved' => true,
+                'registration_payable_rupees' => $payable,
+                'skip_checkout' => true,
+                'reason' => 'subscription_active',
                 'subscription_status' => 'active',
-                'started_at' => $now,
-                'ends_at' => $now->copy()->addYear(),
-                'auto_renew' => false,
-                'renewal_source' => 'system',
-                'updated_at' => $now,
-                'created_at' => $now,
-            ]
-        );
+                'payment_status' => $latestPayment !== null ? (string) $latestPayment->payment_status : null,
+                'pending_payment_uuid' => null,
+                'gateway_order_id' => $latestPayment !== null ? $latestPayment->gateway_order_id : null,
+            ];
+        }
+
+        return [
+            'resolved' => true,
+            'registration_payable_rupees' => $payable,
+            'skip_checkout' => false,
+            'subscription_status' => (string) $subscription->subscription_status,
+            'payment_status' => $latestPayment !== null ? (string) $latestPayment->payment_status : null,
+            'pending_payment_uuid' => $latestPayment !== null ? (string) $latestPayment->uuid : null,
+            'gateway_order_id' => $latestPayment !== null ? $latestPayment->gateway_order_id : null,
+            'awaiting_checkout' => $latestPayment === null
+                || (
+                    (string) $latestPayment->payment_status === 'pending'
+                    && $latestPayment->gateway_order_id === null
+                ),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $paymentBlock
+     */
+    private function inferRegistrationNextStep(array $paymentBlock, string $kycStatus, string $profileStatus): string
+    {
+        $payableResolved = (bool) ($paymentBlock['resolved'] ?? false);
+        $subscriptionStatus = isset($paymentBlock['subscription_status'])
+            ? (string) $paymentBlock['subscription_status']
+            : '';
+
+        if (!$payableResolved || (!(bool) ($paymentBlock['skip_checkout'] ?? false) && ($subscriptionStatus === 'pending' || $subscriptionStatus === ''))) {
+            return 'payment';
+        }
+
+        if (!in_array($kycStatus, ['approved'], true)) {
+            if (in_array($kycStatus, ['pending'], true)) {
+                return 'pending_review';
+            }
+
+            return 'verify_identity';
+        }
+
+        if ($profileStatus !== 'published') {
+            return 'complete_profile';
+        }
+
+        return 'done';
     }
 
     /**

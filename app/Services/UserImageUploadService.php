@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\User;
+use App\Support\GdWebpEncoder;
 use App\Support\UserImageStorageUrl;
-use GdImage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -72,10 +72,10 @@ final class UserImageUploadService
             $iconSize = max(1, min(512, (int) config('user_images.icon_size', 50)));
 
             try {
-                $originalBinary = $this->encodeVariantWebp($tmpPath, $origEdge, $quality['original']);
-                $mdBinary = $this->encodeVariantWebp($tmpPath, $mdEdge, $quality['md']);
-                $smBinary = $this->encodeVariantWebp($tmpPath, $smEdge, $quality['sm']);
-                $iconBinary = $this->encodeSquareIconWebp($tmpPath, $iconSize, $quality['icon']);
+                $originalBinary = GdWebpEncoder::encodeScaledWebp($tmpPath, $origEdge, $quality['original']);
+                $mdBinary = GdWebpEncoder::encodeScaledWebp($tmpPath, $mdEdge, $quality['md']);
+                $smBinary = GdWebpEncoder::encodeScaledWebp($tmpPath, $smEdge, $quality['sm']);
+                $iconBinary = GdWebpEncoder::encodeSquareCenterWebp($tmpPath, $iconSize, $quality['icon']);
             } catch (Throwable $e) {
                 if (config('app.debug')) {
                     Log::warning('UserImageUploadService: image pipeline failed', [
@@ -134,180 +134,6 @@ final class UserImageUploadService
                 'iconUrl' => $urlIcon,
             ];
         });
-    }
-
-    /**
-     * Decode from disk, apply common EXIF JPEG orientation, scale down by longest edge, encode WebP.
-     */
-    private function encodeVariantWebp(string $path, int $maxEdge, int $quality): string
-    {
-        $binary = file_get_contents($path);
-        if ($binary === false || $binary === '') {
-            throw new \RuntimeException('empty file');
-        }
-
-        $im = @imagecreatefromstring($binary);
-        if (!$im instanceof GdImage) {
-            throw new \RuntimeException('decode failed');
-        }
-
-        $im = $this->applyExifOrientation($im, $path);
-        $im = $this->scaleDownMaxEdge($im, $maxEdge);
-
-        return $this->toWebpString($im, $quality);
-    }
-
-    /**
-     * Square WebP icon: scale so the image covers {@see $edge}×{@see $edge}, then center-crop.
-     */
-    private function encodeSquareIconWebp(string $path, int $edge, int $quality): string
-    {
-        if ($edge < 1) {
-            throw new \RuntimeException('invalid icon size');
-        }
-
-        $binary = file_get_contents($path);
-        if ($binary === false || $binary === '') {
-            throw new \RuntimeException('empty file');
-        }
-
-        $im = @imagecreatefromstring($binary);
-        if (!$im instanceof GdImage) {
-            throw new \RuntimeException('decode failed');
-        }
-
-        $im = $this->applyExifOrientation($im, $path);
-        $im = $this->scaleAndCropCenterSquare($im, $edge);
-
-        return $this->toWebpString($im, $quality);
-    }
-
-    private function scaleAndCropCenterSquare(GdImage $src, int $edge): GdImage
-    {
-        $w = imagesx($src);
-        $h = imagesy($src);
-
-        $scale = max($edge / $w, $edge / $h);
-        $nw = max(1, (int) round($w * $scale));
-        $nh = max(1, (int) round($h * $scale));
-
-        $scaled = imagecreatetruecolor($nw, $nh);
-        if (!$scaled instanceof GdImage) {
-            imagedestroy($src);
-            throw new \RuntimeException('alloc failed');
-        }
-
-        imagealphablending($scaled, false);
-        imagesavealpha($scaled, true);
-        $transparent = (int) imagecolorallocatealpha($scaled, 0, 0, 0, 127);
-        imagefill($scaled, 0, 0, $transparent);
-        imagealphablending($scaled, true);
-        imagecopyresampled($scaled, $src, 0, 0, 0, 0, $nw, $nh, $w, $h);
-        imagedestroy($src);
-
-        $sx = (int) max(0, ($nw - $edge) / 2);
-        $sy = (int) max(0, ($nh - $edge) / 2);
-        $cropW = min($edge, $nw);
-        $cropH = min($edge, $nh);
-
-        $out = imagecreatetruecolor($edge, $edge);
-        if (!$out instanceof GdImage) {
-            imagedestroy($scaled);
-            throw new \RuntimeException('alloc failed');
-        }
-
-        imagealphablending($out, false);
-        imagesavealpha($out, true);
-        $transparentOut = (int) imagecolorallocatealpha($out, 0, 0, 0, 127);
-        imagefill($out, 0, 0, $transparentOut);
-        imagealphablending($out, true);
-        imagecopy($out, $scaled, 0, 0, $sx, $sy, $cropW, $cropH);
-        imagedestroy($scaled);
-
-        return $out;
-    }
-
-    private function applyExifOrientation(GdImage $im, string $path): GdImage
-    {
-        if (!function_exists('exif_read_data')) {
-            return $im;
-        }
-
-        $info = @getimagesize($path);
-        if ($info === false || $info[2] !== IMAGETYPE_JPEG) {
-            return $im;
-        }
-
-        $exif = @exif_read_data($path);
-        if (!is_array($exif) || !isset($exif['Orientation'])) {
-            return $im;
-        }
-
-        $angle = match ((int) $exif['Orientation']) {
-            3 => 180,
-            6 => -90,
-            8 => 90,
-            default => null,
-        };
-
-        if ($angle === null) {
-            return $im;
-        }
-
-        $bg = imagecolorallocatealpha($im, 0, 0, 0, 127);
-        $rotated = @imagerotate($im, $angle, $bg);
-        if (!$rotated instanceof GdImage) {
-            return $im;
-        }
-
-        imagedestroy($im);
-
-        return $rotated;
-    }
-
-    private function scaleDownMaxEdge(GdImage $src, int $maxEdge): GdImage
-    {
-        $w = imagesx($src);
-        $h = imagesy($src);
-
-        if ($w <= $maxEdge && $h <= $maxEdge) {
-            return $src;
-        }
-
-        $ratio = min($maxEdge / $w, $maxEdge / $h);
-        $nw = max(1, (int) round($w * $ratio));
-        $nh = max(1, (int) round($h * $ratio));
-
-        $dst = imagecreatetruecolor($nw, $nh);
-        if (!$dst instanceof GdImage) {
-            imagedestroy($src);
-            throw new \RuntimeException('alloc failed');
-        }
-
-        imagealphablending($dst, false);
-        imagesavealpha($dst, true);
-        $transparent = (int) imagecolorallocatealpha($dst, 0, 0, 0, 127);
-        imagefill($dst, 0, 0, $transparent);
-        imagealphablending($dst, true);
-        imagecopyresampled($dst, $src, 0, 0, 0, 0, $nw, $nh, $w, $h);
-        imagedestroy($src);
-
-        return $dst;
-    }
-
-    private function toWebpString(GdImage $im, int $quality): string
-    {
-        $q = max(0, min(100, $quality));
-        ob_start();
-        imagewebp($im, null, $q);
-        $bin = ob_get_clean();
-        imagedestroy($im);
-
-        if (!is_string($bin) || $bin === '') {
-            throw new \RuntimeException('webp encode failed');
-        }
-
-        return $bin;
     }
 
     private function nextSortOrder(int $userId): int

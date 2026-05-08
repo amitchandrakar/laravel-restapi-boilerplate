@@ -47,6 +47,18 @@ class Package extends BaseModel
     }
 
     /**
+     * Amount charged at candidate registration (INR). Uses discounted_price when set, otherwise price.
+     */
+    public function registrationPayableAmountRupees(): float
+    {
+        if ($this->discounted_price !== null) {
+            return max(0.0, (float) $this->discounted_price);
+        }
+
+        return max(0.0, (float) ($this->price ?? 0));
+    }
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array

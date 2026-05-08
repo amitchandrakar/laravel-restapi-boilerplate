@@ -61,6 +61,7 @@ See [`module_role_permission.md`](module_role_permission.md) and [`package_featu
 ### Registration and identity
 
 - **Public registration** flows expose structured options (e.g. packages, surnames) and support **candidate registration** with validated payloads.
+- **Paid packages (Razorpay UPI):** registration may return a **`payment`** block (order + key) for Checkout; confirm + webhook complete activation — see [`payment_razorpay_api.md`](payment_razorpay_api.md).
 - **KYC (Know Your Customer):** candidates submit **identity document metadata** (e.g. Aadhaar, driving licence) as URLs and masked identifiers; **admin/reviewer** workflows move documents through **pending → approved / rejected / resubmission_required** with audit-friendly timestamps.
 - **Featured profiles:** admins (with the dedicated permission) may mark **published** candidates as featured; a **public, rate-limited** endpoint returns a **minimal, non-sensitive** teaser for marketing or discovery UIs.
 

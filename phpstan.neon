@@ -3,6 +3,9 @@ includes:
     - phpstan-baseline.neon
 
 parameters:
+    stubFiles:
+        - stubs/razorpay-api.stub
+
     paths:
         - app
 
@@ -13,9 +16,5 @@ parameters:
         - app/Http/Controllers/Api/V1/Auth/RegisterController.php (?)
         - app/Http/Controllers/Api/V1/Auth/ResetPasswordController.php (?)
 
-    # Level (0-9) - start with 5 for production
+    # Level (0-9) — start with 5 for production
     level: 5
-
-
-
-

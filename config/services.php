@@ -33,4 +33,24 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+
+    'razorpay' => [
+        'key_id' => env('RAZORPAY_KEY_ID'),
+        'key_secret' => env('RAZORPAY_KEY_SECRET'),
+        'webhook_secret' => env('RAZORPAY_WEBHOOK_SECRET'),
+        'currency' => env('RAZORPAY_CURRENCY', 'INR'),
+        /*
+         * Passed through registration/checkout API responses for Razorpay Checkout (Standard).
+         * Merge into Checkout options on the client — locks flow to UPI only when card/netbanking/etc. are false.
+         */
+        'checkout' => [
+            'method' => [
+                'upi' => true,
+                'card' => false,
+                'netbanking' => false,
+                'wallet' => false,
+                'emi' => false,
+            ],
+        ],
+    ],
 ];

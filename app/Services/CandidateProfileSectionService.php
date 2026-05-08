@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\User;
+use App\Notifications\ProfilePublishedNotification;
 use App\Support\UserImageStorageUrl;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -167,6 +168,9 @@ class CandidateProfileSectionService
                 'published_at' => now(),
             ])
             ->save();
+
+        $user->refresh();
+        $user->notify(new ProfilePublishedNotification($user));
 
         return ['published' => true, 'missingSections' => []];
     }

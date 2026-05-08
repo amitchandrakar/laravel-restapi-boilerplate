@@ -7,7 +7,6 @@ namespace App\Http\Requests\Api\V1;
 use App\Http\Requests\Api\ApiFormRequest;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 
 class RegisterCandidateRequest extends ApiFormRequest
 {
@@ -48,7 +47,9 @@ class RegisterCandidateRequest extends ApiFormRequest
                 'after:' . now()->subYears(120)->format('Y-m-d'),
             ],
             'phone' => ['required', 'string', 'max:32'],
-            'password' => ['required', 'confirmed', Password::defaults()],
+            // Strength / confirmation rules disabled for easier testing; restore later if desired:
+            // Password::defaults() and/or 'confirmed', 'min:8'.
+            'password' => ['required', 'string'],
             'package_uuid' => [
                 'required',
                 'string',

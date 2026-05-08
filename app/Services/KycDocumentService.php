@@ -11,6 +11,8 @@ use Illuminate\Validation\ValidationException;
 
 class KycDocumentService
 {
+    public function __construct(private readonly KycIdVerificationUploadService $kycIdVerificationUpload) {}
+
     public const DOCUMENT_AADHAAR = 'aadhaar';
 
     public const DOCUMENT_DRIVING_LICENSE = 'driving_license';
@@ -39,6 +41,15 @@ class KycDocumentService
             ->where('user_id', $user->id)
             ->where('document_type', $type)
             ->first();
+
+        $previousUrls = null;
+        if ($existing instanceof UserVerificationDocument) {
+            $previousUrls = [
+                'document_front_url' => $existing->document_front_url,
+                'document_back_url' => $existing->document_back_url,
+                'selfie_url' => $existing->selfie_url,
+            ];
+        }
 
         if ($existing instanceof UserVerificationDocument) {
             $status = (string) $existing->verification_status;
@@ -70,8 +81,10 @@ class KycDocumentService
         if ($existing instanceof UserVerificationDocument) {
             $existing->fill($attributes);
             $existing->save();
+            $fresh = $existing->fresh();
+            $this->deleteReplacedIdVerificationFiles($user->id, $previousUrls, $attributes);
 
-            return $existing->fresh();
+            return $fresh instanceof UserVerificationDocument ? $fresh : $existing;
         }
 
         /** @var UserVerificationDocument $created */
@@ -136,5 +149,26 @@ class KycDocumentService
         $document->save();
 
         return $document->fresh();
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $previous
+     * @param  array<string, mixed>  $new
+     */
+    private function deleteReplacedIdVerificationFiles(int $userId, ?array $previous, array $new): void
+    {
+        if ($previous === null) {
+            return;
+        }
+
+        foreach (['document_front_url', 'document_back_url', 'selfie_url'] as $field) {
+            $old = $previous[$field] ?? null;
+            $next = $new[$field] ?? null;
+            if (!is_string($old) || $old === '' || $old === $next) {
+                continue;
+            }
+
+            $this->kycIdVerificationUpload->deleteStoredKeyIfOwned($old, $userId);
+        }
     }
 }

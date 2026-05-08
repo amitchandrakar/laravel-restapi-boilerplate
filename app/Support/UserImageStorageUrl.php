@@ -54,6 +54,20 @@ final class UserImageStorageUrl
     }
 
     /**
+     * Resolve a stored relative disk key or passthrough URL to a browser-loadable absolute URL.
+     */
+    public static function resolvePublicHttpUrl(?string $stored): ?string
+    {
+        if ($stored === null || $stored === '') {
+            return null;
+        }
+
+        $url = self::publicUrl($stored);
+
+        return self::toAbsoluteHttpUrl($url ?? $stored);
+    }
+
+    /**
      * From an MD relative key `{userId}/MD/{uuid}.ext`, build `{userId}/ORIGINAL/{uuid}.ext`.
      */
     public static function originalKeyFromMdKey(string $mdKey): ?string

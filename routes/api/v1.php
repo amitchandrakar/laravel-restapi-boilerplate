@@ -17,9 +17,13 @@ use App\Http\Controllers\Api\V1\CandidateContactRequestController;
 use App\Http\Controllers\Api\V1\CandidateDiscoveryController;
 use App\Http\Controllers\Api\V1\CandidateKycController;
 use App\Http\Controllers\Api\V1\CandidateProfileController;
+use App\Http\Controllers\Api\V1\MeDeviceController;
+use App\Http\Controllers\Api\V1\MeKycController;
 use App\Http\Controllers\Api\V1\MemberNotificationController;
+use App\Http\Controllers\Api\V1\MeRegistrationController;
 use App\Http\Controllers\Api\V1\PublicCandidateProfileOptionsController;
 use App\Http\Controllers\Api\V1\PublicFeaturedCandidateController;
+use App\Http\Controllers\Api\V1\RegistrationPaymentController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +34,29 @@ Route::prefix('public')
     ->group(function () {
         Route::get('featured-candidates', [PublicFeaturedCandidateController::class, 'index']);
         Route::get('candidate-profile-options', PublicCandidateProfileOptionsController::class);
+    });
+
+Route::post('payment/razorpay/webhook', [RegistrationPaymentController::class, 'webhook'])->middleware(
+    'throttle:120,1'
+);
+
+Route::post('webhooks/razorpay', [RegistrationPaymentController::class, 'webhook'])->middleware(
+    'throttle:120,1'
+);
+
+Route::prefix('me')
+    ->middleware(array_merge($sanctumWithTrackedSession, ['profile.uuid.header']))
+    ->group(function () {
+        Route::post('registration/checkout', [MeRegistrationController::class, 'checkout']);
+        Route::post('registration/payments/verify', [MeRegistrationController::class, 'verify']);
+        Route::get('registration/status', [MeRegistrationController::class, 'status']);
+
+        Route::get('kyc/documents', [MeKycController::class, 'documents']);
+        Route::post('kyc/upload-sessions', [MeKycController::class, 'uploadSessions']);
+        Route::post('kyc/upload', [MeKycController::class, 'upload']);
+        Route::post('kyc/submit', [MeKycController::class, 'submit']);
+
+        Route::put('devices', [MeDeviceController::class, 'update']);
     });
 
 Route::prefix('auth')->group(function () use ($sanctumWithTrackedSession) {
@@ -49,6 +76,10 @@ Route::prefix('auth')->group(function () use ($sanctumWithTrackedSession) {
         Route::get('me', [AuthController::class, 'me']);
         Route::patch('profile', [AuthController::class, 'updateProfile']);
         Route::post('change-password', [AuthController::class, 'changePassword']);
+
+        Route::post('payment/registration/confirm', [RegistrationPaymentController::class, 'confirm']);
+        Route::get('payment/registration/{paymentUuid}/status', [RegistrationPaymentController::class, 'status'])
+            ->whereUuid('paymentUuid');
 
         Route::prefix('notifications')
             ->middleware('throttle:60,1')

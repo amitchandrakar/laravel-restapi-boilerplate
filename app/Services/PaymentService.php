@@ -77,6 +77,7 @@ class PaymentService
                 'failed_reason',
                 'raw_response_json',
                 'paid_at',
+                'webhook_event_id',
             ] as $field
         ) {
             if (array_key_exists($field, $data)) {

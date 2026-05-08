@@ -2,7 +2,7 @@
 
 use App\Http\Middleware\AttachRequestId;
 use App\Http\Middleware\EnsureActiveTrackedSession;
-use App\Http\Middleware\EnsureSanctumToken;
+use App\Http\Middleware\EnsureProfileUuidHeaderMatchesUser;
 use App\Http\Middleware\FlushSanctumGuardState;
 use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\LogApiCalls;
@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
             'tracked.session' => EnsureActiveTrackedSession::class,
             'optional.sanctum' => OptionalSanctumAuthentication::class,
+            'profile.uuid.header' => EnsureProfileUuidHeaderMatchesUser::class,
         ]);
 
         // API middleware: request ID first, then force JSON

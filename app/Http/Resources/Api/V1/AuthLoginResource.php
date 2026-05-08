@@ -33,6 +33,20 @@ class AuthLoginResource extends JsonResource
             $out['session_token_hash'] = $data['session_token_hash'];
         }
 
+        if (array_key_exists('payment', $data) && is_array($data['payment'])) {
+            /** @var array<string, mixed> $p */
+            $p = $data['payment'];
+            $out['payment'] = [
+                'paymentUuid' => $p['paymentUuid'] ?? null,
+                'orderId' => $p['orderId'] ?? null,
+                'keyId' => $p['keyId'] ?? null,
+                'amount' => $p['amount'] ?? null,
+                'currency' => $p['currency'] ?? null,
+                'packageName' => $p['packageName'] ?? null,
+                'checkoutOptions' => $p['checkoutOptions'] ?? null,
+            ];
+        }
+
         return $out;
     }
 }

@@ -83,16 +83,18 @@ class AuthController extends Controller
         $tokenHash = SanctumPlainTokenHasher::hashPlainTextToken((string) $result['token']);
         StartUserSessionJob::dispatchSync($user->id, $tokenHash, null, $meta['ip'], $meta['ua'], $meta['device_id']);
 
-        return $this->createdResponse(
-            AuthLoginResource::make([
-                'user' => UserResource::make($user),
-                'token' => $result['token'],
-                'token_type' => 'Bearer',
-                'permissions' => $user->getAllPermissions()->pluck('name')->values()->all(),
-                'session_token_hash' => $tokenHash,
-            ]),
-            'Candidate registered successfully'
-        );
+        $loginPayload = [
+            'user' => UserResource::make($user),
+            'token' => $result['token'],
+            'token_type' => 'Bearer',
+            'permissions' => $user->getAllPermissions()->pluck('name')->values()->all(),
+            'session_token_hash' => $tokenHash,
+        ];
+        if ($result['payment'] !== null) {
+            $loginPayload['payment'] = $result['payment'];
+        }
+
+        return $this->createdResponse(AuthLoginResource::make($loginPayload), 'Candidate registered successfully');
     }
 
     /**

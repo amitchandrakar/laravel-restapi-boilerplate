@@ -15,7 +15,15 @@ class MemberNotificationFeedService
     public function __construct(private readonly CandidateCardDataService $cardData) {}
 
     /** @var list<string> */
-    public const FEED_KINDS = ['contact_request_received', 'contact_request_accepted', 'new_match', 'profile_viewed'];
+    public const FEED_KINDS = [
+        'contact_request_received',
+        'contact_request_accepted',
+        'new_match',
+        'profile_viewed',
+        'payment_succeeded',
+        'payment_failed',
+        'profile_published',
+    ];
 
     /**
      * @return LengthAwarePaginator<int, array<string, mixed>>
@@ -130,6 +138,7 @@ class MemberNotificationFeedService
             'contact_request_accepted' => $data['to_user_uuid'] ?? null,
             'new_match' => $data['other_user_uuid'] ?? null,
             'profile_viewed' => $data['viewer_user_uuid'] ?? null,
+            'profile_published' => $data['user_uuid'] ?? null,
             default => null,
         };
 
@@ -253,6 +262,8 @@ class MemberNotificationFeedService
             'contact_request_received', 'contact_request_accepted' => 'contact_request',
             'new_match' => 'new_match',
             'profile_viewed' => 'profile_viewed',
+            'payment_succeeded', 'payment_failed' => 'payment',
+            'profile_published' => 'profile_published',
             default => 'default',
         };
     }
@@ -335,6 +346,36 @@ class MemberNotificationFeedService
                     'label' => 'View profile',
                     'method' => 'GET',
                     'path' => '/api/v1/admin/candidates/' . $toUuid . '/profile-details',
+                    'body' => null,
+                ],
+            ];
+        }
+
+        if ($kind === 'payment_succeeded' || $kind === 'payment_failed') {
+            $payUuid =
+                isset($data['payment_uuid']) && is_string($data['payment_uuid']) ? $data['payment_uuid'] : null;
+            if ($payUuid === null || $payUuid === '') {
+                return [];
+            }
+
+            return [
+                [
+                    'action' => 'view_registration_payment',
+                    'label' => 'Payment status',
+                    'method' => 'GET',
+                    'path' => '/api/v1/auth/payment/registration/' . $payUuid . '/status',
+                    'body' => null,
+                ],
+            ];
+        }
+
+        if ($kind === 'profile_published') {
+            return [
+                [
+                    'action' => 'open_me',
+                    'label' => 'View profile',
+                    'method' => 'GET',
+                    'path' => '/api/v1/auth/me',
                     'body' => null,
                 ],
             ];
