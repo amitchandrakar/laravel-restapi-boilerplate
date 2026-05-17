@@ -23,6 +23,7 @@ class SeoSettingsController extends Controller
         }
 
         $updated = $this->seoSettingsService->update($request->validated());
+
         LogAuditJob::dispatch(
             (int) $request->user()->id,
             'settings',
@@ -33,6 +34,7 @@ class SeoSettingsController extends Controller
             $request->ip(),
             $request->userAgent()
         );
+
         LogUserActivityJob::dispatch(
             (int) $request->user()->id,
             'admin.settings.seo.update',

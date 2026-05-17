@@ -17,9 +17,3 @@ parameters:
 			identifier: property.phpDocType
 			count: 1
 			path: app/Http/Middleware/VerifyCsrfToken.php
-
-		-
-			message: '#^Trait App\\Traits\\PaytraceTrait is used zero times and is not analysed\.$#'
-			identifier: trait.unused
-			count: 1
-			path: app/Traits/PaytraceTrait.php

@@ -41,10 +41,13 @@ class TeamUserService
         return DB::transaction(function () use ($user, $data): User {
             $role = $this->resolveAssignableRole($data);
             $payload = $this->mapPayload($data);
+
             if ($role instanceof Role) {
                 $payload['role_id'] = $role->id;
             }
+
             $user->update($payload);
+
             if ($role instanceof Role) {
                 $this->applyTeamRole($user, $role);
             }
@@ -61,12 +64,14 @@ class TeamUserService
     private function mapPayload(array $data): array
     {
         unset($data['password_confirmation']);
+
         if (isset($data['name'])) {
             $parts = preg_split('/\s+/', trim((string) $data['name']), 2, PREG_SPLIT_NO_EMPTY);
             $data['first_name'] = $parts[0] ?? '';
             $data['last_name'] = $parts[1] ?? '';
             unset($data['name']);
         }
+
         if (isset($data['city'])) {
             $data['current_city'] = $data['city'];
             unset($data['city']);
@@ -88,6 +93,7 @@ class TeamUserService
         }
 
         $role = Role::query()->find((int) $data['role_id']);
+
         if (!$role instanceof Role || !in_array($role->name, self::ALLOWED_TEAM_ROLE_NAMES, true)) {
             throw new ModelNotFoundException('Invalid team role selected.');
         }

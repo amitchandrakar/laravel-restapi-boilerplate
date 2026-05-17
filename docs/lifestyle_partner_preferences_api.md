@@ -42,7 +42,7 @@ All keys are **snake_case**.
 #### Multi-select arrays of strings (nullable; stored as JSON arrays)
 
 - `interests`: `string[]`
-- `movie_genres`: `string[]`
+- `movie_genres`: `string[]` (options returned by `GET /api/v1/public/candidate-profile-options`; includes **Romantic**)
 - `hobbies`: `string[]`
 - `likes`: `string[]`
 - `dislikes`: `string[]`

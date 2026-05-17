@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\DB;
  */
 class AdminCandidateProfileDetailsService
 {
+    public function __construct(private readonly ReferralService $referralService) {}
+
     /**
      * @return array<string, mixed>
      */
@@ -158,7 +160,7 @@ class AdminCandidateProfileDetailsService
         $preferredCityNames = $this->orderedNames($partnerLocationIds, $maps['cities'], 'name');
         $preferredCommunityNames = $this->orderedNames($partnerCommunityIds, $maps['surnames'], 'name');
 
-        return [
+        $payload = [
             'id' => $user->id,
             'uuid' => $user->uuid,
             'userType' => 'candidate',
@@ -307,6 +309,19 @@ class AdminCandidateProfileDetailsService
                 ],
             ],
         ];
+
+        if ($viewer instanceof User && (int) $viewer->id === (int) $user->id) {
+            $payload['preferences'] = [
+                'phoneAlertsEnabled' => (bool) ($user->phone_alerts_enabled ?? false),
+                'emailNotificationsEnabled' => (bool) ($user->email_notifications_enabled ?? true),
+                'showOnlineStatus' => (bool) ($user->show_online_status ?? false),
+                'hidePhoneNumber' => (bool) ($user->hide_phone_number ?? true),
+            ];
+
+            $payload['referral'] = $this->referralService->referralPayloadForUser($user);
+        }
+
+        return $payload;
     }
 
     /**

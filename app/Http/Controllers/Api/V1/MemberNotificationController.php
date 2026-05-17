@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Requests\Api\V1\ListMemberNotificationsRequest;
 use App\Models\User;
+use App\Services\MemberDashboardStatsService;
 use App\Services\MemberNotificationFeedService;
 use App\Support\ApiResponseBuilder;
 use Illuminate\Http\JsonResponse;
@@ -14,7 +15,10 @@ use Illuminate\Notifications\DatabaseNotification;
 
 class MemberNotificationController extends Controller
 {
-    public function __construct(private readonly MemberNotificationFeedService $feedService) {}
+    public function __construct(
+        private readonly MemberNotificationFeedService $feedService,
+        private readonly MemberDashboardStatsService $statsService
+    ) {}
 
     public function index(ListMemberNotificationsRequest $request): JsonResponse
     {
@@ -48,7 +52,13 @@ class MemberNotificationController extends Controller
 
         $count = $this->feedService->unreadCountForUser($user);
 
-        return $this->successResponse(['unreadCount' => $count], 'Notification summary fetched successfully');
+        return $this->successResponse(
+            [
+                'unreadCount' => $count,
+                'stats' => $this->statsService->statsForUser($user),
+            ],
+            'Notification summary fetched successfully'
+        );
     }
 
     public function show(Request $request, string $notificationId): JsonResponse

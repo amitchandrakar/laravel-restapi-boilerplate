@@ -46,6 +46,14 @@ class PublicFeaturedCandidateResource extends JsonResource
         }
 
         $age = $user->date_of_birth !== null ? $user->date_of_birth->age : null;
+        $dateOfBirth = $user->date_of_birth !== null ? (string) $user->date_of_birth : null;
+
+        $matchPercentage = null;
+        $scoreByUserId = $request->attributes->get('matchScoreByUserId');
+        if (is_array($scoreByUserId)) {
+            $raw = $scoreByUserId[(int) $user->id] ?? null;
+            $matchPercentage = $raw === null ? null : max(0, min(100, (int) $raw));
+        }
 
         return [
             'uuid' => $user->uuid,
@@ -55,6 +63,8 @@ class PublicFeaturedCandidateResource extends JsonResource
             'currentCity' => $user->current_city,
             'currentState' => $user->current_state,
             'age' => $age,
+            'dateOfBirth' => $dateOfBirth,
+            'matchPercentage' => $matchPercentage,
         ];
     }
 }

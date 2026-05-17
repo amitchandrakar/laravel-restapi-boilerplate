@@ -15,6 +15,7 @@ use App\Http\Requests\Api\V1\Candidate\SaveCandidateLocationFamilyRootsRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidatePartnerPreferencesRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidatePersonalDetailsRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidatePhotosRequest;
+use App\Http\Requests\Api\V1\Candidate\SaveCandidatePreferencesRequest;
 use App\Http\Requests\Api\V1\StoreCandidateUserRequest;
 use App\Http\Requests\Api\V1\UpdateCandidateUserRequest;
 use App\Http\Resources\Api\V1\AdminCandidateProfileDetailsResource;
@@ -286,6 +287,58 @@ class CandidateUserController extends Controller
             $user,
             CandidateProfileSectionService::SECTION_PARTNER_PREFERENCES,
             $sectionService
+        );
+    }
+
+    public function savePreferences(string $user, SaveCandidatePreferencesRequest $request): JsonResponse
+    {
+        $candidate = $this->findCandidateByUuid($user);
+        if (!$candidate instanceof User) {
+            return $this->notFoundResponse('Candidate not found');
+        }
+
+        $actor = $request->user();
+        if (!$actor instanceof User) {
+            return $this->forbiddenResponse();
+        }
+
+        $isAdminEditor = $actor->can('admin.candidates.edit');
+        $isSelfCandidate = $actor->hasRole('candidate') && (int) $actor->id === (int) $candidate->id;
+        if (!$isAdminEditor && !$isSelfCandidate) {
+            return $this->forbiddenResponse();
+        }
+
+        $payload = $request->validated();
+
+        $updates = [];
+        if (array_key_exists('phoneAlertsEnabled', $payload)) {
+            $updates['phone_alerts_enabled'] = (bool) $payload['phoneAlertsEnabled'];
+        }
+        if (array_key_exists('emailNotificationsEnabled', $payload)) {
+            $updates['email_notifications_enabled'] = (bool) $payload['emailNotificationsEnabled'];
+        }
+        if (array_key_exists('showOnlineStatus', $payload)) {
+            $updates['show_online_status'] = (bool) $payload['showOnlineStatus'];
+        }
+        if (array_key_exists('hidePhoneNumber', $payload)) {
+            $updates['hide_phone_number'] = (bool) $payload['hidePhoneNumber'];
+        }
+
+        if ($updates !== []) {
+            $candidate->forceFill($updates)->save();
+            $candidate->refresh();
+        }
+
+        return $this->successResponse(
+            [
+                'preferences' => [
+                    'phoneAlertsEnabled' => (bool) ($candidate->phone_alerts_enabled ?? false),
+                    'emailNotificationsEnabled' => (bool) ($candidate->email_notifications_enabled ?? true),
+                    'showOnlineStatus' => (bool) ($candidate->show_online_status ?? false),
+                    'hidePhoneNumber' => (bool) ($candidate->hide_phone_number ?? true),
+                ],
+            ],
+            'Preferences updated'
         );
     }
 

@@ -28,6 +28,7 @@
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.6",
+        "brianium/paratest": "^7.0",
         "fakerphp/faker": "^1.23",
         "kitloong/laravel-migrations-generator": "^7.2",
         "larastan/larastan": "^3.8",

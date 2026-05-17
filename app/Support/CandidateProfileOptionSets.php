@@ -241,6 +241,7 @@ final class CandidateProfileOptionSets
         return self::asValueLabel([
             'Action/Adventure',
             'Comedy',
+            'Romantic',
             'Rom-Com',
             'Drama',
             'Thriller',

@@ -297,6 +297,10 @@ Route::prefix('admin')
             CandidateUserController::class,
             'savePartnerPreferences',
         ])->middleware('permission:admin.candidates.edit');
+        Route::match(['put', 'patch'], 'candidates/{user:uuid}/sections/preferences', [
+            CandidateUserController::class,
+            'savePreferences',
+        ]);
         Route::get('candidates/{user:uuid}/section-progress', [
             CandidateUserController::class,
             'sectionProgress',
