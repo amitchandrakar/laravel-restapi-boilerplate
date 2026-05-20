@@ -112,7 +112,7 @@ class AuthService
             /** @var Package|null $package */
             $package = Package::query()->where('uuid', $packageUuid)->where('is_active', true)->first();
 
-            if (!$package instanceof Package) {
+            if (!($package instanceof Package)) {
                 throw ValidationException::withMessages([
                     'package_uuid' => ['The selected package is invalid.'],
                 ]);
@@ -576,7 +576,7 @@ class AuthService
         /** @var Subscription|null $subscription */
         $subscription = Subscription::query()->where('user_id', $user->id)->where('package_id', $packageId)->first();
 
-        if (!$subscription instanceof Subscription) {
+        if (!($subscription instanceof Subscription)) {
             return [
                 'resolved' => true,
                 'registration_payable_rupees' => $payable,

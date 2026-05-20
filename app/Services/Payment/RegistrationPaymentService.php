@@ -104,7 +104,7 @@ class RegistrationPaymentService
             ->where('gateway_name', 'razorpay')
             ->first();
 
-        if (!$payment instanceof Payment) {
+        if (!($payment instanceof Payment)) {
             throw ValidationException::withMessages([
                 'razorpay_order_id' => ['No matching registration payment was found.'],
             ]);
@@ -159,7 +159,7 @@ class RegistrationPaymentService
         /** @var Payment|null $payment */
         $payment = Payment::query()->where('gateway_order_id', $orderId)->where('gateway_name', 'razorpay')->first();
 
-        if (!$payment instanceof Payment) {
+        if (!($payment instanceof Payment)) {
             return;
         }
 
@@ -236,7 +236,7 @@ class RegistrationPaymentService
         /** @var Payment|null $payment */
         $payment = Payment::query()->where('uuid', $paymentUuid)->where('user_id', $user->id)->first();
 
-        if (!$payment instanceof Payment) {
+        if (!($payment instanceof Payment)) {
             throw ValidationException::withMessages([
                 'paymentUuid' => ['Payment not found.'],
             ]);

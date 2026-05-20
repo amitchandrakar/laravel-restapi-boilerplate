@@ -22,7 +22,7 @@ class EnsureProfileUuidHeaderMatchesUser
 
         $user = $request->user();
 
-        if (!$user instanceof User) {
+        if (!($user instanceof User)) {
             return $next($request);
         }
 

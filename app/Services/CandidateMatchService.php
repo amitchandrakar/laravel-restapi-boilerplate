@@ -61,7 +61,7 @@ class CandidateMatchService
             $uid = (int) $row->matched_user_id;
             $matchedUser = $users->get($uid);
 
-            if (!$matchedUser instanceof User) {
+            if (!($matchedUser instanceof User)) {
                 continue;
             }
 

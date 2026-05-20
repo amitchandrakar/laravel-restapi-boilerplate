@@ -96,7 +96,7 @@ class CandidateUserController extends Controller
         // }
         $candidate = $this->findCandidateByUuid($user);
 
-        if (!$candidate instanceof User) {
+        if (!($candidate instanceof User)) {
             return $this->notFoundResponse('Candidate not found');
         }
         LogUserActivityJob::dispatch(
@@ -114,7 +114,7 @@ class CandidateUserController extends Controller
     {
         $candidate = $this->findCandidateByUuid($user);
 
-        if (!$candidate instanceof User) {
+        if (!($candidate instanceof User)) {
             return $this->notFoundResponse('Candidate not found');
         }
 
@@ -148,7 +148,7 @@ class CandidateUserController extends Controller
         }
         $candidate = $this->findCandidateByUuid($user);
 
-        if (!$candidate instanceof User) {
+        if (!($candidate instanceof User)) {
             return $this->notFoundResponse('Candidate not found');
         }
         $oldValues = $candidate->only(['email', 'phone', 'status', 'current_city']);
@@ -181,7 +181,7 @@ class CandidateUserController extends Controller
         }
         $candidate = $this->findCandidateByUuid($user);
 
-        if (!$candidate instanceof User) {
+        if (!($candidate instanceof User)) {
             return $this->notFoundResponse('Candidate not found');
         }
         $oldValues = $candidate->only(['email', 'phone', 'status', 'current_city']);
@@ -300,13 +300,13 @@ class CandidateUserController extends Controller
     {
         $candidate = $this->findCandidateByUuid($user);
 
-        if (!$candidate instanceof User) {
+        if (!($candidate instanceof User)) {
             return $this->notFoundResponse('Candidate not found');
         }
 
         $actor = $request->user();
 
-        if (!$actor instanceof User) {
+        if (!($actor instanceof User)) {
             return $this->forbiddenResponse();
         }
 
@@ -365,7 +365,7 @@ class CandidateUserController extends Controller
         }
         $candidate = $this->findCandidateByUuid($user);
 
-        if (!$candidate instanceof User) {
+        if (!($candidate instanceof User)) {
             return $this->notFoundResponse('Candidate not found');
         }
 
@@ -385,7 +385,7 @@ class CandidateUserController extends Controller
         }
         $candidate = $this->findCandidateByUuid($user);
 
-        if (!$candidate instanceof User) {
+        if (!($candidate instanceof User)) {
             return $this->notFoundResponse('Candidate not found');
         }
         $result = $sectionService->publish($candidate);
@@ -409,7 +409,7 @@ class CandidateUserController extends Controller
         }
         $candidate = $this->findCandidateByUuid($user);
 
-        if (!$candidate instanceof User) {
+        if (!($candidate instanceof User)) {
             return $this->notFoundResponse('Candidate not found');
         }
 
@@ -452,7 +452,7 @@ class CandidateUserController extends Controller
         }
         $candidate = $this->findCandidateByUuid($user);
 
-        if (!$candidate instanceof User) {
+        if (!($candidate instanceof User)) {
             return $this->notFoundResponse('Candidate not found');
         }
 
@@ -493,7 +493,7 @@ class CandidateUserController extends Controller
         $candidateUuid = (string) ($payload['candidate_uuid'] ?? '');
         $candidate = $candidateUuid !== '' ? User::query()->candidates()->where('uuid', $candidateUuid)->first() : null;
 
-        if (!$candidate instanceof User) {
+        if (!($candidate instanceof User)) {
             $firstName = (string) data_get($payload, 'personal_details.first_name', 'Candidate');
             $lastName = (string) data_get($payload, 'personal_details.last_name', 'User');
             $email = (string) data_get($payload, 'basics.email');
@@ -548,7 +548,7 @@ class CandidateUserController extends Controller
         }
         $candidate = $this->findCandidateByUuid($user);
 
-        if (!$candidate instanceof User) {
+        if (!($candidate instanceof User)) {
             return $this->notFoundResponse('Candidate not found');
         }
 
@@ -593,7 +593,7 @@ class CandidateUserController extends Controller
     {
         $actor = $request->user();
 
-        if (!$actor instanceof User) {
+        if (!($actor instanceof User)) {
             return false;
         }
 
@@ -611,7 +611,7 @@ class CandidateUserController extends Controller
     {
         $actor = $request->user();
 
-        if (!$actor instanceof User) {
+        if (!($actor instanceof User)) {
             return false;
         }
 

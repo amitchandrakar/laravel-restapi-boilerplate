@@ -24,7 +24,7 @@ class MemberNotificationController extends Controller
     {
         $user = $request->user();
 
-        if (!$user instanceof User) {
+        if (!($user instanceof User)) {
             return $this->errorResponse('Unauthenticated', 401, ApiResponseBuilder::ERROR_UNAUTHORIZED);
         }
 
@@ -48,7 +48,7 @@ class MemberNotificationController extends Controller
     {
         $user = $request->user();
 
-        if (!$user instanceof User) {
+        if (!($user instanceof User)) {
             return $this->errorResponse('Unauthenticated', 401, ApiResponseBuilder::ERROR_UNAUTHORIZED);
         }
 
@@ -67,7 +67,7 @@ class MemberNotificationController extends Controller
     {
         $user = $request->user();
 
-        if (!$user instanceof User) {
+        if (!($user instanceof User)) {
             return $this->errorResponse('Unauthenticated', 401, ApiResponseBuilder::ERROR_UNAUTHORIZED);
         }
 
@@ -84,7 +84,7 @@ class MemberNotificationController extends Controller
     {
         $user = $request->user();
 
-        if (!$user instanceof User) {
+        if (!($user instanceof User)) {
             return $this->errorResponse('Unauthenticated', 401, ApiResponseBuilder::ERROR_UNAUTHORIZED);
         }
 
@@ -107,7 +107,7 @@ class MemberNotificationController extends Controller
     {
         $user = $request->user();
 
-        if (!$user instanceof User) {
+        if (!($user instanceof User)) {
             return $this->errorResponse('Unauthenticated', 401, ApiResponseBuilder::ERROR_UNAUTHORIZED);
         }
 
@@ -128,7 +128,7 @@ class MemberNotificationController extends Controller
         /** @var DatabaseNotification|null $notification */
         $notification = DatabaseNotification::query()->find($notificationId);
 
-        if (!$notification instanceof DatabaseNotification) {
+        if (!($notification instanceof DatabaseNotification)) {
             return null;
         }
 

@@ -95,7 +95,7 @@ class TeamUserService
 
         $role = Role::query()->find((int) $data['role_id']);
 
-        if (!$role instanceof Role || !in_array($role->name, self::ALLOWED_TEAM_ROLE_NAMES, true)) {
+        if (!($role instanceof Role) || !in_array($role->name, self::ALLOWED_TEAM_ROLE_NAMES, true)) {
             throw new ModelNotFoundException('Invalid team role selected.');
         }
 

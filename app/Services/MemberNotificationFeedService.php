@@ -68,7 +68,7 @@ class MemberNotificationFeedService
         /** @var DatabaseNotification|null $n */
         $n = $user->notifications()->whereKey($notificationId)->first();
 
-        if (!$n instanceof DatabaseNotification) {
+        if (!($n instanceof DatabaseNotification)) {
             return null;
         }
         $kind = data_get($n->data, 'kind');

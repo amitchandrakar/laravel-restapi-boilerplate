@@ -41,7 +41,7 @@ class UpdateAdminRoleRequest extends ApiFormRequest
             /** @var Role|null $role */
             $role = $this->route('role');
 
-            if (!$role instanceof Role) {
+            if (!($role instanceof Role)) {
                 return;
             }
 

@@ -32,7 +32,7 @@ class SyncProfileToAlgolia implements ShouldQueue
 
         $user = User::query()->find($this->userId);
 
-        if (!$user instanceof User) {
+        if (!($user instanceof User)) {
             return;
         }
 

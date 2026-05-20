@@ -66,7 +66,7 @@ class PublicFeaturedCandidateController extends Controller
         }
         $user = $accessToken->tokenable;
 
-        if (!$user instanceof User) {
+        if (!($user instanceof User)) {
             return null;
         }
 

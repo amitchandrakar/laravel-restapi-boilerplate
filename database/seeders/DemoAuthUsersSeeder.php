@@ -69,7 +69,7 @@ class DemoAuthUsersSeeder extends Seeder
     {
         $role = Role::query()->where('name', $roleName)->where('guard_name', $guard)->first();
 
-        if (!$role instanceof Role) {
+        if (!($role instanceof Role)) {
             return;
         }
 

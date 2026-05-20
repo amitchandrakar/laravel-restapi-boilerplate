@@ -106,7 +106,7 @@ class PaymentService
         /** @var Subscription|null $subscription */
         $subscription = Subscription::query()->find($payment->subscription_id);
 
-        if (!$subscription instanceof Subscription) {
+        if (!($subscription instanceof Subscription)) {
             return;
         }
 

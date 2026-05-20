@@ -49,7 +49,7 @@ trait ApiResponse
             $paginator = $paginator->resource;
         }
 
-        if (!$paginator instanceof LengthAwarePaginator) {
+        if (!($paginator instanceof LengthAwarePaginator)) {
             throw new \InvalidArgumentException('Pagination data not found.');
         }
         $items = $resource instanceof JsonResource ? $resource->resolve() : $paginator->items();

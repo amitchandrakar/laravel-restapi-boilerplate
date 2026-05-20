@@ -72,7 +72,7 @@ class TeamUserController extends Controller
         }
         $teamUser = User::query()->teamUsers()->where('id', $user->id)->first();
 
-        if (!$teamUser instanceof User) {
+        if (!($teamUser instanceof User)) {
             return $this->notFoundResponse('Team user not found');
         }
 
@@ -94,7 +94,7 @@ class TeamUserController extends Controller
         }
         $teamUser = User::query()->teamUsers()->where('id', $user->id)->first();
 
-        if (!$teamUser instanceof User) {
+        if (!($teamUser instanceof User)) {
             return $this->notFoundResponse('Team user not found');
         }
         $oldValues = $teamUser->only(['email', 'phone', 'department', 'job_title', 'status']);
@@ -128,7 +128,7 @@ class TeamUserController extends Controller
         }
         $teamUser = User::query()->teamUsers()->where('id', $user->id)->first();
 
-        if (!$teamUser instanceof User) {
+        if (!($teamUser instanceof User)) {
             return $this->notFoundResponse('Team user not found');
         }
         $oldValues = $teamUser->only(['email', 'phone', 'department', 'job_title', 'status']);

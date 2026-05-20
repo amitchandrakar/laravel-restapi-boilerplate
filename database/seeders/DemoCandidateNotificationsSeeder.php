@@ -32,7 +32,12 @@ class DemoCandidateNotificationsSeeder extends Seeder
         $rohan = User::query()->where('email', 'rohan.kulkarni@demo.alonti.local')->first();
         $ananya = User::query()->where('email', 'ananya.desai@demo.alonti.local')->first();
 
-        if (!$arjun instanceof User || !$priya instanceof User || !$rohan instanceof User || !$ananya instanceof User) {
+        if (
+            !($arjun instanceof User) ||
+            !($priya instanceof User) ||
+            !($rohan instanceof User) ||
+            !($ananya instanceof User)
+        ) {
             return;
         }
 

@@ -24,7 +24,7 @@ final class GdWebpEncoder
 
         $im = @imagecreatefromstring($binary);
 
-        if (!$im instanceof GdImage) {
+        if (!($im instanceof GdImage)) {
             throw new \RuntimeException('decode failed');
         }
 
@@ -51,7 +51,7 @@ final class GdWebpEncoder
 
         $im = @imagecreatefromstring($binary);
 
-        if (!$im instanceof GdImage) {
+        if (!($im instanceof GdImage)) {
             throw new \RuntimeException('decode failed');
         }
 
@@ -72,7 +72,7 @@ final class GdWebpEncoder
 
         $scaled = imagecreatetruecolor($nw, $nh);
 
-        if (!$scaled instanceof GdImage) {
+        if (!($scaled instanceof GdImage)) {
             imagedestroy($src);
 
             throw new \RuntimeException('alloc failed');
@@ -93,7 +93,7 @@ final class GdWebpEncoder
 
         $out = imagecreatetruecolor($edge, $edge);
 
-        if (!$out instanceof GdImage) {
+        if (!($out instanceof GdImage)) {
             imagedestroy($scaled);
 
             throw new \RuntimeException('alloc failed');
@@ -142,7 +142,7 @@ final class GdWebpEncoder
         $bg = imagecolorallocatealpha($im, 0, 0, 0, 127);
         $rotated = @imagerotate($im, $angle, $bg);
 
-        if (!$rotated instanceof GdImage) {
+        if (!($rotated instanceof GdImage)) {
             return $im;
         }
 
@@ -166,7 +166,7 @@ final class GdWebpEncoder
 
         $dst = imagecreatetruecolor($nw, $nh);
 
-        if (!$dst instanceof GdImage) {
+        if (!($dst instanceof GdImage)) {
             imagedestroy($src);
 
             throw new \RuntimeException('alloc failed');

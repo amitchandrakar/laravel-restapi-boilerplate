@@ -6,7 +6,6 @@
  * @see https://docs.sentry.io/platforms/php/guides/laravel/configuration/options/
  */
 return [
-
     // @see https://docs.sentry.io/concepts/key-terms/dsn-explainer/
     'dsn' => env('SENTRY_LARAVEL_DSN', env('SENTRY_DSN')),
 
@@ -140,5 +139,4 @@ return [
         // Enable the tracing integrations supplied by Sentry (recommended)
         'default_integrations' => env('SENTRY_TRACE_DEFAULT_INTEGRATIONS_ENABLED', true),
     ],
-
 ];

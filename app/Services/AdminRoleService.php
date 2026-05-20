@@ -44,7 +44,7 @@ class AdminRoleService
             ->orderBy('permissions.name')
             ->get()
             ->map(static function (Model $model): array {
-                if (!$model instanceof Permission) {
+                if (!($model instanceof Permission)) {
                     throw new \LogicException('Expected Permission model from role permissions relation.');
                 }
 

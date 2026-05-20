@@ -143,7 +143,7 @@ class PackageController extends Controller
 
         $packageModel = Package::query()->find($package);
 
-        if (!$packageModel instanceof Package) {
+        if (!($packageModel instanceof Package)) {
             return $this->notFoundResponse('Package not found');
         }
 

@@ -17,7 +17,7 @@ class UserLifecycleListener implements ShouldQueue
         $guard = (string) config('auth.defaults.guard', 'web');
         $adminRole = Role::query()->where('name', 'admin')->where('guard_name', $guard)->first();
 
-        if (!$adminRole instanceof Role) {
+        if (!($adminRole instanceof Role)) {
             return;
         }
 

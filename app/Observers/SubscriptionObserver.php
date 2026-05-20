@@ -32,7 +32,7 @@ class SubscriptionObserver
         /** @var User|null $user */
         $user = User::query()->find($userId);
 
-        if (!$user instanceof User) {
+        if (!($user instanceof User)) {
             return;
         }
 
