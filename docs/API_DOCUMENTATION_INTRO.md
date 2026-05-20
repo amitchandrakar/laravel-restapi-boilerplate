@@ -13,7 +13,8 @@ The codebase evolved from a disciplined Laravel API foundation: **strict typing*
 All product endpoints are namespaced by version so clients can adopt changes safely.
 
 - **Current base path:** `/api/v1/…`
-- Routes are defined in [`routes/api.php`](../routes/api.php) (API prefix) and [`routes/api/v1.php`](../routes/api/v1.php) (v1 group).
+- Routes are defined in [`routes/api.php`](../routes/api.php) (API prefix), [`routes/api/v1.php`](../routes/api/v1.php) (v1 loader), [`routes/api/v1/admin.php`](../routes/api/v1/admin.php) (admin panel), and [`routes/api/v1/app.php`](../routes/api/v1/app.php) (mobile app).
+- **Audience prefixes:** `/api/v1/admin/…` (staff dashboard) and `/api/v1/app/…` (member mobile app). Shared session endpoints (`login`, `logout`, `me`, `forgot-password`, `reset-password`, etc.) are registered in **both** trees with the same controllers. Candidate signup uses **`POST /api/v1/app/auth/register`** or **`register-candidate`** on the app tree only; staff CRUD uses admin routes.
 - Future versions (e.g. `/api/v2/…`) can be added alongside v1 without breaking existing clients.
 
 **Example**
@@ -36,7 +37,7 @@ All product endpoints are namespaced by version so clients can adopt changes saf
 1. **Admin RBAC (Spatie Permission)**
     - **Roles** such as `admin`, `reviewer`, and `candidate` identify who someone is in the product.
     - **Admin and reviewer** receive granular **permissions** (e.g. `admin.candidates.view`, `admin.packages.edit`) used as **route middleware** on `/api/v1/admin/…` routes.
-    - **Candidates** do not receive admin-module permissions; they use member APIs under `/api/v1/auth/…` (and similar) after authentication.
+    - **Candidates** do not receive admin-module permissions; they use member APIs under `/api/v1/app/auth/…` (and similar) after authentication.
 
 2. **Package / subscription features (candidates)**
     - What a **candidate** can do in the product (e.g. browse profiles, full vs limited view) is driven by **active subscription → package → feature permissions**, not by admin RBAC keys.
@@ -52,11 +53,11 @@ See [`module_role_permission.md`](module_role_permission.md) and [`package_featu
 
 ### Contact number requests (candidate ↔ candidate)
 
-- Members may **request** another candidate’s **phone** via **`POST /api/v1/auth/candidate/contact-requests`**; the recipient **accepts or rejects** with **`PATCH …/contact-requests/{uuid}`**. Phone on **`GET /api/v1/admin/candidates/{uuid}/profile-details`** is **hidden for peers** until the request is **accepted** (staff with `admin.candidates.view` still see full contact). See [`candidate_contact_requests_api.md`](candidate_contact_requests_api.md).
+- Members may **request** another candidate’s **phone** via **`POST /api/v1/app/auth/candidate/contact-requests`**; the recipient **accepts or rejects** with **`PATCH …/contact-requests/{uuid}`**. Phone on **`GET /api/v1/admin/candidates/{uuid}/profile-details`** is **hidden for peers** until the request is **accepted** (staff with `admin.candidates.view` still see full contact). See [`candidate_contact_requests_api.md`](candidate_contact_requests_api.md).
 
 ### In-app notifications (member feed)
 
-- **`GET /api/v1/auth/notifications`** (and read/summary helpers) expose a **kind-filtered** feed with **`actions`** for clients. See [`member_notifications_api.md`](member_notifications_api.md) and the design notes in [`notifications_plan.md`](notifications_plan.md).
+- **`GET /api/v1/app/auth/notifications`** (and read/summary helpers) expose a **kind-filtered** feed with **`actions`** for clients. See [`member_notifications_api.md`](member_notifications_api.md) and the design notes in [`notifications_plan.md`](notifications_plan.md).
 
 ### Registration and identity
 

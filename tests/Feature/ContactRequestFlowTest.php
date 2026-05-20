@@ -26,7 +26,7 @@ it('redacts phone numbers on peer profiles until a contact request is accepted',
     $details->assertStatus(200)->assertJsonPath('data.phone', null);
 
     $this->withToken($tokenA)
-        ->postJson('/api/v1/auth/candidate/contact-requests', [
+        ->postJson('/api/v1/app/auth/candidate/contact-requests', [
             'candidateUuid' => $b->uuid,
             'requestMessage' => 'Please share your number.',
         ])
@@ -39,7 +39,7 @@ it('redacts phone numbers on peer profiles until a contact request is accepted',
     $tokenB = contactRequestLoginToken($b->email);
 
     $this->withToken($tokenB)
-        ->patchJson('/api/v1/auth/candidate/contact-requests/' . $row->uuid, [
+        ->patchJson('/api/v1/app/auth/candidate/contact-requests/' . $row->uuid, [
             'decision' => 'accepted',
         ])
         ->assertStatus(200)
@@ -58,7 +58,7 @@ it('notifies recipients on submit but only alerts senders after acceptance', fun
     $beforeFrom = $a->notifications()->count();
 
     $this->withToken($tokenA)
-        ->postJson('/api/v1/auth/candidate/contact-requests', [
+        ->postJson('/api/v1/app/auth/candidate/contact-requests', [
             'candidateUuid' => $b->uuid,
         ])
         ->assertStatus(201);
@@ -81,7 +81,7 @@ it('notifies recipients on submit but only alerts senders after acceptance', fun
     $row = ContactRequest::query()->where('from_user_id', $a->id)->where('to_user_id', $b->id)->firstOrFail();
 
     $this->withToken($tokenB)
-        ->patchJson('/api/v1/auth/candidate/contact-requests/' . $row->uuid, [
+        ->patchJson('/api/v1/app/auth/candidate/contact-requests/' . $row->uuid, [
             'decision' => 'rejected',
         ])
         ->assertStatus(200);
@@ -90,7 +90,7 @@ it('notifies recipients on submit but only alerts senders after acceptance', fun
     expect($a->notifications()->count())->toBe($beforeFrom);
 
     $this->withToken($tokenA)
-        ->postJson('/api/v1/auth/candidate/contact-requests', [
+        ->postJson('/api/v1/app/auth/candidate/contact-requests', [
             'candidateUuid' => $b->uuid,
         ])
         ->assertStatus(201);
@@ -102,7 +102,7 @@ it('notifies recipients on submit but only alerts senders after acceptance', fun
         ->firstOrFail();
 
     $this->withToken($tokenB)
-        ->patchJson('/api/v1/auth/candidate/contact-requests/' . $row2->uuid, [
+        ->patchJson('/api/v1/app/auth/candidate/contact-requests/' . $row2->uuid, [
             'decision' => 'accepted',
         ])
         ->assertStatus(200);
@@ -127,11 +127,11 @@ it('rejects creating a second pending invitation to the same peer', function () 
     [$a, $b, $tokenA] = contactRequestTwoCandidatesWithTokens();
 
     $this->withToken($tokenA)
-        ->postJson('/api/v1/auth/candidate/contact-requests', ['candidateUuid' => $b->uuid])
+        ->postJson('/api/v1/app/auth/candidate/contact-requests', ['candidateUuid' => $b->uuid])
         ->assertStatus(201);
 
     $this->withToken($tokenA)
-        ->postJson('/api/v1/auth/candidate/contact-requests', ['candidateUuid' => $b->uuid])
+        ->postJson('/api/v1/app/auth/candidate/contact-requests', ['candidateUuid' => $b->uuid])
         ->assertStatus(422);
 });
 
@@ -139,7 +139,7 @@ it('rejects invitations that target your own profile UUID', function () {
     [$a, , $tokenA] = contactRequestTwoCandidatesWithTokens();
 
     $this->withToken($tokenA)
-        ->postJson('/api/v1/auth/candidate/contact-requests', ['candidateUuid' => $a->uuid])
+        ->postJson('/api/v1/app/auth/candidate/contact-requests', ['candidateUuid' => $a->uuid])
         ->assertStatus(422);
 });
 
@@ -148,19 +148,19 @@ it('returns forbidden when a user who is not the recipient tries to settle a req
     [, , $tokenC] = contactRequestTwoCandidatesWithTokens('other1-', 'other2-');
 
     $this->withToken($tokenA)
-        ->postJson('/api/v1/auth/candidate/contact-requests', ['candidateUuid' => $b->uuid])
+        ->postJson('/api/v1/app/auth/candidate/contact-requests', ['candidateUuid' => $b->uuid])
         ->assertStatus(201);
 
     $row = ContactRequest::query()->where('from_user_id', $a->id)->where('to_user_id', $b->id)->firstOrFail();
 
     $this->withToken($tokenC)
-        ->patchJson('/api/v1/auth/candidate/contact-requests/' . $row->uuid, ['decision' => 'accepted'])
+        ->patchJson('/api/v1/app/auth/candidate/contact-requests/' . $row->uuid, ['decision' => 'accepted'])
         ->assertStatus(403);
 });
 
 it('returns forbidden when the sender lacks outbound contact permissions', function (): void {
     $email = 'no-send-' . uniqid('', true) . '@example.com';
-    $this->postJson('/api/v1/auth/register', [
+    $this->postJson('/api/v1/app/auth/register', [
         'name' => 'No Send',
         'email' => $email,
         'password' => CONTACT_REQUEST_TEST_PW,
@@ -175,7 +175,7 @@ it('returns forbidden when the sender lacks outbound contact permissions', funct
     $tokenA = contactRequestLoginToken($email);
 
     $this->withToken($tokenA)
-        ->postJson('/api/v1/auth/candidate/contact-requests', ['candidateUuid' => $target->uuid])
+        ->postJson('/api/v1/app/auth/candidate/contact-requests', ['candidateUuid' => $target->uuid])
         ->assertStatus(403);
 });
 /**
@@ -187,7 +187,7 @@ function contactRequestTwoCandidatesWithTokens(string $prefixA = 'cr-a-', string
     $emailB = $prefixB . uniqid('', true) . '@example.com';
 
     test()
-        ->postJson('/api/v1/auth/register', [
+        ->postJson('/api/v1/app/auth/register', [
             'name' => 'Contact A',
             'email' => $emailA,
             'password' => CONTACT_REQUEST_TEST_PW,
@@ -196,7 +196,7 @@ function contactRequestTwoCandidatesWithTokens(string $prefixA = 'cr-a-', string
         ->assertStatus(201);
 
     test()
-        ->postJson('/api/v1/auth/register', [
+        ->postJson('/api/v1/app/auth/register', [
             'name' => 'Contact B',
             'email' => $emailB,
             'password' => CONTACT_REQUEST_TEST_PW,
@@ -235,7 +235,7 @@ function contactRequestSubscribeToTalash(User $user): void
 }
 function contactRequestLoginToken(string $email): string
 {
-    $login = test()->postJson('/api/v1/auth/login', [
+    $login = test()->postJson('/api/v1/app/auth/login', [
         'username' => $email,
         'password' => CONTACT_REQUEST_TEST_PW,
     ]);

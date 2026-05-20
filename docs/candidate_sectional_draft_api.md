@@ -4,7 +4,7 @@ This API supports long candidate profile forms with section-wise save, draft pro
 
 ## Modes
 
-- Candidate self-service routes: `/api/v1/auth/candidate/profile/*` (auth candidate)
+- Candidate self-service routes: `/api/v1/app/auth/candidate/profile/*` (auth candidate)
 - Admin-managed routes: `/api/v1/admin/candidates/{user}/*` (admin permissions)
 
 ## Sections
@@ -27,9 +27,9 @@ Full request/response examples: [`lifestyle_partner_preferences_api.md`](lifesty
 
 ## Candidate Self Routes
 
-- `PATCH /api/v1/auth/candidate/profile/{section}`
-- `GET /api/v1/auth/candidate/profile/progress`
-- `POST /api/v1/auth/candidate/profile/publish`
+- `PATCH /api/v1/app/auth/candidate/profile/{section}`
+- `GET /api/v1/app/auth/candidate/profile/progress`
+- `POST /api/v1/app/auth/candidate/profile/publish`
 
 ## Admin Routes
 

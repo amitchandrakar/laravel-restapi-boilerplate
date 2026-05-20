@@ -47,7 +47,7 @@ it('notifies candidates when admins publish their profile', function () {
 
     expect($candidate->fresh()->notifications()->where('data->kind', 'profile_published')->count())->toBe(1);
 
-    $res = $this->actingAs($candidate, 'sanctum')->getJson('/api/v1/auth/notifications')->assertStatus(200);
+    $res = $this->actingAs($candidate, 'sanctum')->getJson('/api/v1/app/auth/notifications')->assertStatus(200);
     $items = (array) $res->json('data');
     $kinds = collect($items)->pluck('kind')->all();
     expect($kinds)->toContain('profile_published');

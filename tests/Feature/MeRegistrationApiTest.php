@@ -16,7 +16,7 @@ beforeEach(function () {
 
 it('skips payment checkout for free packages during `/me` registration flows', function () {
     $email = 'me-checkout-' . uniqid('', true) . '@example.com';
-    $register = $this->postJson('/api/v1/auth/register', [
+    $register = $this->postJson('/api/v1/app/auth/register', [
         'name' => 'Me Checkout User',
         'email' => $email,
         'password' => 'secret',
@@ -27,7 +27,7 @@ it('skips payment checkout for free packages during `/me` registration flows', f
     $freeUuid = (string) Package::query()->where('code', 'PARICHAY_FREE')->value('uuid');
 
     $this->withHeader('Authorization', 'Bearer ' . $token)
-        ->postJson('/api/v1/me/registration/checkout', ['package_uuid' => $freeUuid])
+        ->postJson('/api/v1/app/me/registration/checkout', ['package_uuid' => $freeUuid])
         ->assertStatus(200)
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.skip_checkout', true);
@@ -46,7 +46,7 @@ it('creates Razorpay orders for paid `/me` checkout selections', function () {
     });
 
     $email = 'me-paid-' . uniqid('', true) . '@example.com';
-    $register = $this->postJson('/api/v1/auth/register', [
+    $register = $this->postJson('/api/v1/app/auth/register', [
         'name' => 'Me Paid User',
         'email' => $email,
         'password' => 'secret',
@@ -57,7 +57,7 @@ it('creates Razorpay orders for paid `/me` checkout selections', function () {
     $paidUuid = (string) Package::query()->where('code', 'TALASH_BASIC')->value('uuid');
 
     $this->withHeader('Authorization', 'Bearer ' . $token)
-        ->postJson('/api/v1/me/registration/checkout', ['package_uuid' => $paidUuid])
+        ->postJson('/api/v1/app/me/registration/checkout', ['package_uuid' => $paidUuid])
         ->assertStatus(200)
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.skip_checkout', false)
@@ -66,7 +66,7 @@ it('creates Razorpay orders for paid `/me` checkout selections', function () {
 
 it('reports structured onboarding payloads from `/me/registration/status`', function () {
     $email = 'me-status-' . uniqid('', true) . '@example.com';
-    $register = $this->postJson('/api/v1/auth/register', [
+    $register = $this->postJson('/api/v1/app/auth/register', [
         'name' => 'Me Status User',
         'email' => $email,
         'password' => 'secret',
@@ -77,7 +77,7 @@ it('reports structured onboarding payloads from `/me/registration/status`', func
     expect($user)->not->toBeNull();
 
     $this->withHeader('Authorization', 'Bearer ' . $token)
-        ->getJson('/api/v1/me/registration/status')
+        ->getJson('/api/v1/app/me/registration/status')
         ->assertStatus(200)
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.user_uuid', $user->uuid)
@@ -86,7 +86,7 @@ it('reports structured onboarding payloads from `/me/registration/status`', func
 
 it('responds with 403 when profile UUID headers do not match the token subject', function () {
     $email = 'me-header-' . uniqid('', true) . '@example.com';
-    $register = $this->postJson('/api/v1/auth/register', [
+    $register = $this->postJson('/api/v1/app/auth/register', [
         'name' => 'Me Header User',
         'email' => $email,
         'password' => 'secret',
@@ -97,7 +97,7 @@ it('responds with 403 when profile UUID headers do not match the token subject',
         'Authorization' => 'Bearer ' . $token,
         'X-User-Profile-Uuid' => '00000000-0000-4000-8000-000000000099',
     ])
-        ->getJson('/api/v1/me/registration/status')
+        ->getJson('/api/v1/app/me/registration/status')
         ->assertStatus(403);
 });
 
@@ -105,7 +105,7 @@ it('captures multipart KYC uploads plus submission through `/me/kyc/*` endpoints
     Storage::fake('public');
 
     $email = 'me-kyc-' . uniqid('', true) . '@example.com';
-    $register = $this->postJson('/api/v1/auth/register', [
+    $register = $this->postJson('/api/v1/app/auth/register', [
         'name' => 'Me Kyc User',
         'email' => $email,
         'password' => 'secret',
@@ -113,13 +113,13 @@ it('captures multipart KYC uploads plus submission through `/me/kyc/*` endpoints
     $token = (string) $register->json('data.token');
 
     $session = $this->withHeader('Authorization', 'Bearer ' . $token)
-        ->postJson('/api/v1/me/kyc/upload-sessions')
+        ->postJson('/api/v1/app/me/kyc/upload-sessions')
         ->assertStatus(200)
         ->json('data.session_id');
     expect($session)->toBeString();
 
     $this->withHeader('Authorization', 'Bearer ' . $token)
-        ->post('/api/v1/me/kyc/upload', [
+        ->post('/api/v1/app/me/kyc/upload', [
             'session_id' => $session,
             'aadhaar_front' => UploadedFile::fake()->image('front.jpg', 80, 80),
             'aadhaar_back' => UploadedFile::fake()->image('back.jpg', 80, 80),
@@ -128,7 +128,7 @@ it('captures multipart KYC uploads plus submission through `/me/kyc/*` endpoints
         ->assertStatus(200);
 
     $this->withHeader('Authorization', 'Bearer ' . $token)
-        ->postJson('/api/v1/me/kyc/submit', [
+        ->postJson('/api/v1/app/me/kyc/submit', [
             'session_id' => $session,
             'document_number_masked' => 'XXXXXXXX9012',
         ])
@@ -138,5 +138,5 @@ it('captures multipart KYC uploads plus submission through `/me/kyc/*` endpoints
 });
 
 it('routes Razorpay signature validation through the same gateway as canonical webhooks', function () {
-    $this->postJson('/api/v1/webhooks/razorpay', [], ['X-Razorpay-Signature' => 'bad'])->assertStatus(401);
+    $this->postJson('/api/v1/app/webhooks/razorpay', [], ['X-Razorpay-Signature' => 'bad'])->assertStatus(401);
 });

@@ -30,7 +30,7 @@ Domain-specific 404 messages (e.g. candidate UUID that exists but is not a candi
 
 Admin routes under `/api/v1/admin/*` use Spatie `permission:...` middleware. Controllers may repeat `$request->user()->can(...)` for parity with other admin modules.
 
-**Users resource** (`/api/v1/users/*`): requires `admin.users.view` | `admin.users.add` | `admin.users.edit` | `admin.users.delete` per action (see [`routes/api/v1.php`](../routes/api/v1.php)).
+**Users resource** (`/api/v1/admin/users/*`): requires `admin.users.view` | `admin.users.add` | `admin.users.edit` | `admin.users.delete` per action (see [`routes/api/v1/admin.php`](../routes/api/v1/admin.php)).
 
 ## Tests
 

@@ -17,7 +17,7 @@ Config: `config/services.php` → `razorpay`.
 
 ## Registration response shape
 
-`POST /api/v1/auth/register-candidate`
+`POST /api/v1/app/auth/register-candidate`
 
 - **Free package:** `201` with `token`, `user`, `permissions` (package entitlements). No `payment` object.
 - **Paid package:** `201` with `token`, `user`, base candidate permissions only; subscription is **pending** until payment succeeds. Includes:
@@ -57,7 +57,7 @@ Config: `config/services.php` → `razorpay`.
 
 **Auth:** `Authorization: Bearer <token>` (same token from registration).
 
-`POST /api/v1/auth/payment/registration/confirm`
+`POST /api/v1/app/auth/payment/registration/confirm`
 
 **Body (JSON):**
 
@@ -83,13 +83,13 @@ Config: `config/services.php` → `razorpay`.
 
 ## Payment status (polling)
 
-`GET /api/v1/auth/payment/registration/{paymentUuid}/status`
+`GET /api/v1/app/auth/payment/registration/{paymentUuid}/status`
 
 Returns current `paymentStatus`, `orderId`, and linked `subscription` summary for the authenticated user.
 
 ## Webhook (server-to-server)
 
-`POST /api/v1/payment/razorpay/webhook`
+`POST /api/v1/app/payment/razorpay/webhook`
 
 - **Public** (no Bearer). Throttled.
 - Header: `X-Razorpay-Signature` — HMAC of **raw body** with `RAZORPAY_WEBHOOK_SECRET`.
@@ -142,7 +142,7 @@ const options = {
     order_id: orderId,
     ...(checkoutOptions || {}),
     handler: async function (response) {
-        await fetch('/api/v1/auth/payment/registration/confirm', {
+        await fetch('/api/v1/app/auth/payment/registration/confirm', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

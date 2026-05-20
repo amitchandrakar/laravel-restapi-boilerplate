@@ -1,4 +1,4 @@
-# Member onboarding API (`/api/v1/me/…`)
+# Member onboarding API (`/api/v1/app/me/…`)
 
 Base URL prefix: **`/api/v1`**.
 
@@ -40,7 +40,7 @@ Prepares subscription state and either skips Razorpay or returns checkout fields
 ### `POST /me/registration/checkout`
 
 **Method:** `POST`  
-**Path:** `/api/v1/me/registration/checkout`
+**Path:** `/api/v1/app/me/registration/checkout`
 
 **Request body (JSON)**
 
@@ -111,7 +111,7 @@ Same semantics as `POST /auth/payment/registration/confirm`, exposed under `/me/
 ### `POST /me/registration/payments/verify`
 
 **Method:** `POST`  
-**Path:** `/api/v1/me/registration/payments/verify`
+**Path:** `/api/v1/app/me/registration/payments/verify`
 
 **Request body (JSON)**
 
@@ -145,7 +145,7 @@ Same semantics as `POST /auth/payment/registration/confirm`, exposed under `/me/
 ### `GET /me/registration/status`
 
 **Method:** `GET`  
-**Path:** `/api/v1/me/registration/status`
+**Path:** `/api/v1/app/me/registration/status`
 
 **Query parameters**
 
@@ -209,9 +209,9 @@ Persisted values in the database are **relative keys**; API responses expose **a
 ### `GET /me/kyc/documents`
 
 **Method:** `GET`  
-**Path:** `/api/v1/me/kyc/documents`
+**Path:** `/api/v1/app/me/kyc/documents`
 
-Returns the same list as `GET /api/v1/auth/candidate/kyc/documents` — use this on the ID verification screen to show current images and status (`verificationStatus`, `rejectionReason`).
+Returns the same list as `GET /api/v1/app/auth/candidate/kyc/documents` — use this on the ID verification screen to show current images and status (`verificationStatus`, `rejectionReason`).
 
 **Success `200` (`data`):** array of `KycDocumentResource` objects.
 
@@ -220,7 +220,7 @@ Returns the same list as `GET /api/v1/auth/candidate/kyc/documents` — use this
 ### `POST /me/kyc/upload-sessions`
 
 **Method:** `POST`  
-**Path:** `/api/v1/me/kyc/upload-sessions`
+**Path:** `/api/v1/app/me/kyc/upload-sessions`
 
 **Request body:** none.
 
@@ -239,7 +239,7 @@ Returns the same list as `GET /api/v1/auth/candidate/kyc/documents` — use this
 ### `POST /me/kyc/upload`
 
 **Method:** `POST`  
-**Path:** `/api/v1/me/kyc/upload`
+**Path:** `/api/v1/app/me/kyc/upload`
 
 **Request:** `multipart/form-data`
 
@@ -268,7 +268,7 @@ Returns the same list as `GET /api/v1/auth/candidate/kyc/documents` — use this
 ### `POST /me/kyc/submit`
 
 **Method:** `POST`  
-**Path:** `/api/v1/me/kyc/submit`
+**Path:** `/api/v1/app/me/kyc/submit`
 
 **Request body (JSON)**
 
@@ -303,7 +303,7 @@ The upload session is cleared after successful submit.
 ### `PUT /me/devices`
 
 **Method:** `PUT`  
-**Path:** `/api/v1/me/devices`
+**Path:** `/api/v1/app/me/devices`
 
 **Request body (JSON)** — all optional
 
@@ -333,7 +333,7 @@ Same handler as `POST /payment/razorpay/webhook`.
 ### `POST /webhooks/razorpay`
 
 **Method:** `POST`  
-**Path:** `/api/v1/webhooks/razorpay`
+**Path:** `/api/v1/app/webhooks/razorpay`
 
 **Authentication:** none (public).
 
@@ -354,4 +354,4 @@ Same handler as `POST /payment/razorpay/webhook`.
 ## Related documentation
 
 - Razorpay env keys, Checkout hints, and legacy confirm/status routes: [`payment_razorpay_api.md`](payment_razorpay_api.md).
-- URL‑based KYC (alternative to multipart): `PUT /api/v1/auth/candidate/kyc/documents` — see existing candidate/KYC docs.
+- URL‑based KYC (alternative to multipart): `PUT /api/v1/app/auth/candidate/kyc/documents` — see existing candidate/KYC docs.

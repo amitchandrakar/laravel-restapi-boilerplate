@@ -90,7 +90,7 @@ it('stores partner preference arrays as JSON on the candidate record', function 
     $candidate->assignRole('candidate');
 
     $this->actingAs($candidate, 'sanctum')
-        ->patchJson('/api/v1/auth/candidate/profile/partner-preferences', [
+        ->patchJson('/api/v1/app/auth/candidate/profile/partner-preferences', [
             'preferred_min_age' => 18,
             'preferred_max_age' => 25,
             'preferred_gender' => 'Male',

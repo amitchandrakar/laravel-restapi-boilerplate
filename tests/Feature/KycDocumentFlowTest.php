@@ -12,7 +12,7 @@ it('lets candidates submit KYC documents and reviewers finalize approval', funct
     $candidate = $this->createUserWithRole('candidate', 'kyc-candidate@example.com');
     $reviewer = $this->createUserWithRole('reviewer', 'kyc-reviewer@example.com');
 
-    $submit = $this->actingAs($candidate, 'sanctum')->putJson('/api/v1/auth/candidate/kyc/documents', [
+    $submit = $this->actingAs($candidate, 'sanctum')->putJson('/api/v1/app/auth/candidate/kyc/documents', [
         'document_type' => 'aadhaar',
         'document_number_masked' => 'XXXX-XXXX-1234',
         'document_front_url' => DOC_URL_FRONT,
@@ -23,7 +23,7 @@ it('lets candidates submit KYC documents and reviewers finalize approval', funct
     $this->assertNotSame('', $uuid);
 
     $this->actingAs($candidate, 'sanctum')
-        ->putJson('/api/v1/auth/candidate/kyc/documents', [
+        ->putJson('/api/v1/app/auth/candidate/kyc/documents', [
             'document_type' => 'aadhaar',
             'document_number_masked' => 'XXXX-XXXX-9999',
             'document_front_url' => DOC_URL_FRONT,
@@ -55,7 +55,7 @@ it('requires rejection reasons and forbids reviewing documents that are not pend
     $reviewer = $this->createUserWithRole('reviewer', 'kyc-reject-reviewer@example.com');
 
     $uuid = (string) $this->actingAs($candidate, 'sanctum')
-        ->putJson('/api/v1/auth/candidate/kyc/documents', [
+        ->putJson('/api/v1/app/auth/candidate/kyc/documents', [
             'document_type' => 'driving_license',
             'document_front_url' => DOC_URL_FRONT,
             'document_back_url' => DOC_URL_BACK,
@@ -89,7 +89,7 @@ it('permits resubmission after reviewers reject a pending document', function ()
     $reviewer = $this->createUserWithRole('reviewer', 'kyc-resubmit-reviewer@example.com');
 
     $uuid = (string) $this->actingAs($candidate, 'sanctum')
-        ->putJson('/api/v1/auth/candidate/kyc/documents', [
+        ->putJson('/api/v1/app/auth/candidate/kyc/documents', [
             'document_type' => 'aadhaar',
             'document_front_url' => DOC_URL_FRONT,
             'document_back_url' => DOC_URL_BACK,
@@ -104,7 +104,7 @@ it('permits resubmission after reviewers reject a pending document', function ()
         ->assertStatus(200);
 
     $this->actingAs($candidate, 'sanctum')
-        ->putJson('/api/v1/auth/candidate/kyc/documents', [
+        ->putJson('/api/v1/app/auth/candidate/kyc/documents', [
             'document_type' => 'aadhaar',
             'document_front_url' => 'https://example.com/kyc/front2.jpg',
             'document_back_url' => 'https://example.com/kyc/back2.jpg',
@@ -118,7 +118,7 @@ it('rejects KYC submissions with unknown document type codes', function () {
     $candidate = $this->createUserWithRole('candidate', 'kyc-invalid@example.com');
 
     $this->actingAs($candidate, 'sanctum')
-        ->putJson('/api/v1/auth/candidate/kyc/documents', [
+        ->putJson('/api/v1/app/auth/candidate/kyc/documents', [
             'document_type' => 'pan',
             'document_front_url' => DOC_URL_FRONT,
             'document_back_url' => DOC_URL_BACK,

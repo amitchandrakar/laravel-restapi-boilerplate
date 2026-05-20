@@ -716,7 +716,7 @@ public function scopePublished(Builder $query): Builder
 All APIs are versioned from day one. Never make breaking changes to a released version.
 
 ```
-/api/v1/auth/login
+/api/v1/app/auth/login
 /api/v1/profiles
 /api/v1/search
 ```
@@ -1337,23 +1337,23 @@ it('rate limits the OTP endpoint after 5 consecutive requests', function () {
     $phone = '+919876543210';
 
     foreach (range(1, 5) as $i) {
-        $this->postJson('/api/v1/auth/otp/send', ['phone' => $phone]);
+        $this->postJson('/api/v1/app/auth/otp/send', ['phone' => $phone]);
     }
 
-    $this->postJson('/api/v1/auth/otp/send', ['phone' => $phone])->assertStatus(429);
+    $this->postJson('/api/v1/app/auth/otp/send', ['phone' => $phone])->assertStatus(429);
 });
 
 it('rate limits the login endpoint after repeated failures', function () {
     $user = User::factory()->create();
 
     foreach (range(1, 5) as $i) {
-        $this->postJson('/api/v1/auth/login', [
+        $this->postJson('/api/v1/app/auth/login', [
             'email' => $user->email,
             'password' => 'wrong-password',
         ]);
     }
 
-    $this->postJson('/api/v1/auth/login', [
+    $this->postJson('/api/v1/app/auth/login', [
         'email' => $user->email,
         'password' => 'wrong-password',
     ])->assertStatus(429);
@@ -1433,13 +1433,13 @@ it('locks an account after 5 failed login attempts', function () {
     $user = User::factory()->create();
 
     foreach (range(1, 5) as $i) {
-        $this->postJson('/api/v1/auth/login', [
+        $this->postJson('/api/v1/app/auth/login', [
             'email' => $user->email,
             'password' => 'wrong',
         ]);
     }
 
-    $this->postJson('/api/v1/auth/login', [
+    $this->postJson('/api/v1/app/auth/login', [
         'email' => $user->email,
         'password' => 'correct-password',
     ])->assertStatus(423); // Locked
@@ -1453,7 +1453,7 @@ it('rejects expired authentication tokens', function () {
 });
 
 it('rejects weak passwords during registration', function () {
-    $this->postJson('/api/v1/auth/register', [
+    $this->postJson('/api/v1/app/auth/register', [
         'password' => '123456',
         'password_confirmation' => '123456',
     ])
@@ -1513,7 +1513,7 @@ it('rejects expired signed URLs for KYC document access', function () {
 it('logs a failed login attempt with ip address and user agent', function () {
     $user = User::factory()->create();
 
-    $this->postJson('/api/v1/auth/login', [
+    $this->postJson('/api/v1/app/auth/login', [
         'email' => $user->email,
         'password' => 'wrong-password',
     ]);
@@ -1527,7 +1527,7 @@ it('logs a failed login attempt with ip address and user agent', function () {
 it('logs a successful login event', function () {
     $user = User::factory()->create();
 
-    $this->postJson('/api/v1/auth/login', [
+    $this->postJson('/api/v1/app/auth/login', [
         'email' => $user->email,
         'password' => 'correct-password',
     ]);
@@ -1957,7 +1957,7 @@ jobs:
                   curl --fail https://api.yourdomain.com/api/v1/health || exit 1
                   # Auth endpoint reachable (422 = validation, not 500)
                   STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-                    -X POST https://api.yourdomain.com/api/v1/auth/login \
+                    -X POST https://api.yourdomain.com/api/v1/app/auth/login \
                     -H "Content-Type: application/json" -d '{}')
                   [ "$STATUS" = "422" ] || exit 1
                   # Algolia health endpoint

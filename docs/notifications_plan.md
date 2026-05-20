@@ -22,10 +22,10 @@ Each notification row in the client should support:
 
 | Endpoint (conceptual)                                  | Purpose                                                                                                                                |
 | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/v1/auth/notifications`                       | List notifications for the authenticated user with pagination (`cursor` or `page`), optional `unread_only`, sort by `created_at` desc. |
-| `PATCH` or `POST /api/v1/auth/notifications/{id}/read` | Mark one notification read (`id` = notification UUID, Laravel `notifications.id`).                                                     |
-| `POST /api/v1/auth/notifications/read-all`             | Mark all unread notifications for the user as read.                                                                                    |
-| `GET /api/v1/auth/notifications/{id}` (optional)       | Single notification, same DTO as list item — useful for deep links; often unnecessary if list payload is complete.                     |
+| `GET /api/v1/app/auth/notifications`                       | List notifications for the authenticated user with pagination (`cursor` or `page`), optional `unread_only`, sort by `created_at` desc. |
+| `PATCH` or `POST /api/v1/app/auth/notifications/{id}/read` | Mark one notification read (`id` = notification UUID, Laravel `notifications.id`).                                                     |
+| `POST /api/v1/app/auth/notifications/read-all`             | Mark all unread notifications for the user as read.                                                                                    |
+| `GET /api/v1/app/auth/notifications/{id}` (optional)       | Single notification, same DTO as list item — useful for deep links; often unnecessary if list payload is complete.                     |
 
 **Validation**
 
@@ -34,9 +34,9 @@ Each notification row in the client should support:
 
 **Suggested additions**
 
-- **Unread badge:** `GET /api/v1/auth/notifications/summary` with `{ "unreadCount": n }` or include `meta.unreadCount` on the list response.
+- **Unread badge:** `GET /api/v1/app/auth/notifications/summary` with `{ "unreadCount": n }` or include `meta.unreadCount` on the list response.
 - **Stable `data.kind`** on every notification so clients do not parse Laravel’s `type` FQCN.
-- **`actions` in API JSON** (derived server-side), e.g. `{ "action": "accept_contact_request", "method": "PATCH", "path": "/api/v1/auth/candidate/contact-requests/{uuid}", "body": { "decision": "accepted" } }` so web/mobile stay aligned.
+- **`actions` in API JSON** (derived server-side), e.g. `{ "action": "accept_contact_request", "method": "PATCH", "path": "/api/v1/app/auth/candidate/contact-requests/{uuid}", "body": { "decision": "accepted" } }` so web/mobile stay aligned.
 - **Pagination:** cursor-based on `(created_at, id)` for large inboxes.
 - **Throttle** list and mark-read endpoints.
 
@@ -98,10 +98,10 @@ sequenceDiagram
 
 ## Implementation outline (when development starts)
 
-- **Routes:** Under `/api/v1/auth/…` with `auth:sanctum` and `tracked.session` (same as other member routes), prefix e.g. `notifications`.
+- **Routes:** Under `/api/v1/app/auth/…` with `auth:sanctum` and `tracked.session` (same as other member routes), prefix e.g. `notifications`.
 - **Controller + service:** Thin controller; `NotificationFeedService` (or similar) maps `DatabaseNotification` rows to a **stable camelCase JSON** shape (`iconKey`, `message`, `createdAt`, `readAt`, `kind`, `rawData` or merged fields, `actions`).
 - **Security:** Never expose another user’s notifications; use route-model binding or manual lookup + ownership check.
-- **Contact request actions:** Reuse `PATCH /api/v1/auth/candidate/contact-requests/{uuid}` with `decision` `accepted` / `rejected` (see [`candidate_contact_requests_api.md`](candidate_contact_requests_api.md)).
+- **Contact request actions:** Reuse `PATCH /api/v1/app/auth/candidate/contact-requests/{uuid}` with `decision` `accepted` / `rejected` (see [`candidate_contact_requests_api.md`](candidate_contact_requests_api.md)).
 - **Tests:** Pagination, read one, read all, 403 on foreign notification id, DTO shape per `kind`.
 
 ---

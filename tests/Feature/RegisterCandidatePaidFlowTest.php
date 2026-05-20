@@ -30,7 +30,7 @@ it('returns payment instructions with a pending subscription when registering fo
     $packageUuid = (string) Package::query()->where('code', 'TALASH_BASIC')->value('uuid');
     $email = 'paid-reg-' . uniqid('', true) . '@example.com';
 
-    $response = $this->postJson('/api/v1/auth/register-candidate', [
+    $response = $this->postJson('/api/v1/app/auth/register-candidate', [
         'first_name' => 'Paid',
         'last_name' => 'Chandrakar',
         'email' => $email,

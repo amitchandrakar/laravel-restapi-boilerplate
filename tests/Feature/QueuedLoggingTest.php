@@ -18,14 +18,14 @@ it('queues structured logging jobs from critical authentication flows', function
     $email = 'queue-log-' . uniqid('', true) . '@example.com';
     $password = 'Password@123';
 
-    $this->postJson('/api/v1/auth/register', [
+    $this->postJson('/api/v1/app/auth/register', [
         'name' => 'Queue User',
         'email' => $email,
         'password' => $password,
         'password_confirmation' => $password,
     ])->assertStatus(201);
 
-    $login = $this->postJson('/api/v1/auth/login', [
+    $login = $this->postJson('/api/v1/app/auth/login', [
         'username' => $email,
         'password' => $password,
     ])->assertStatus(200);
@@ -44,7 +44,7 @@ it('queues structured logging jobs from critical authentication flows', function
         'test-device'
     ))->handle(app(UserActionLogService::class));
 
-    $this->withToken($token)->postJson('/api/v1/auth/logout')->assertStatus(200);
+    $this->withToken($token)->postJson('/api/v1/app/auth/logout')->assertStatus(200);
 
     Queue::assertPushed(LogAuditJob::class);
     Queue::assertPushed(LogUserActivityJob::class);

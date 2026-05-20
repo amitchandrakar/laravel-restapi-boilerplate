@@ -6,9 +6,9 @@ Related: profile phone visibility on **`GET /api/v1/admin/candidates/{user:uuid}
 
 ## Base path and auth
 
-- **Prefix:** `/api/v1/auth/candidate/contact-requests`
+- **Prefix:** `/api/v1/app/auth/candidate/contact-requests`
 - **Authentication:** `Authorization: Bearer <token>`
-- **Middleware stack:** `auth:sanctum`, `tracked.session` (same as other member routes under `/api/v1/auth/…`).
+- **Middleware stack:** `auth:sanctum`, `tracked.session` (same as other member routes under `/api/v1/app/auth/…`).
 
 Responses use the standard API envelope (`success`, `statusCode`, `message`, `data`, `error`, `meta`). See [`API_DOCUMENTATION_INTRO.md`](API_DOCUMENTATION_INTRO.md).
 
@@ -23,7 +23,7 @@ Responses use the standard API envelope (`success`, `statusCode`, `message`, `da
 
 ## 1. Create contact request
 
-**`POST /api/v1/auth/candidate/contact-requests`**
+**`POST /api/v1/app/auth/candidate/contact-requests`**
 
 **Middleware:** `permission:candidate.send_contact_requests`
 
@@ -68,7 +68,7 @@ Responses use the standard API envelope (`success`, `statusCode`, `message`, `da
 
 ## 2. Accept or reject contact request
 
-**`PATCH /api/v1/auth/candidate/contact-requests/{uuid}`**
+**`PATCH /api/v1/app/auth/candidate/contact-requests/{uuid}`**
 
 - `{uuid}` is the **`contact_requests.uuid`** value (not the numeric `id`).
 
@@ -178,6 +178,6 @@ Table **`contact_requests`** (see migration `2026_04_30_107000_create_user_inter
 | Service         | `app/Services/ContactRequestService.php`                                                                                                               |
 | Model           | `app/Models/ContactRequest.php`                                                                                                                        |
 | Form requests   | `app/Http/Requests/Api/V1/Candidate/StoreContactRequestRequest.php`, `RespondContactRequestRequest.php`                                                |
-| Routes          | `routes/api/v1.php` (inside `auth` + `sanctum` + `tracked.session` group)                                                                              |
+| Routes          | `routes/api/v1/app.php` (inside `auth` + `sanctum` + `tracked.session` group)                                                                            |
 | Phone masking   | `app/Services/AdminCandidateProfileDetailsService.php` (`profilePhoneForViewer`), `app/Http/Resources/Api/V1/AdminCandidateProfileDetailsResource.php` |
 | Feature tests   | `tests/Feature/ContactRequestFlowTest.php`                                                                                                             |

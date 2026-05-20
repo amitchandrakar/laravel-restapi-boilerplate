@@ -20,7 +20,7 @@ All responses follow the existing API envelope:
 ### Endpoint
 
 - **Method**: `GET`
-- **Path**: `/api/v1/auth/notifications/summary`
+- **Path**: `/api/v1/app/auth/notifications/summary`
 - **Auth**: required (`Authorization: Bearer <token>`)
 
 ### Request
@@ -70,7 +70,7 @@ All responses follow the existing API envelope:
 ### Endpoint
 
 - **Method**: `GET`
-- **Path**: `/api/v1/public/featured-candidates`
+- **Path**: `/api/v1/app/public/featured-candidates`
 - **Auth**: optional
     - Anonymous callers: OK
     - Authenticated callers: OK (adds `matchPercentage`)

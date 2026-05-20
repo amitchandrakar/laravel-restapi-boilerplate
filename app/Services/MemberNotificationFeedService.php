@@ -304,7 +304,7 @@ class MemberNotificationFeedService
             if ($uuid === null || $uuid === '') {
                 return [];
             }
-            $path = '/api/v1/auth/candidate/contact-requests/' . $uuid;
+            $path = '/api/v1/app/auth/candidate/contact-requests/' . $uuid;
 
             return [
                 [
@@ -330,7 +330,7 @@ class MemberNotificationFeedService
                     'action' => 'open_matches',
                     'label' => 'View matches',
                     'method' => 'GET',
-                    'path' => '/api/v1/auth/candidate/matches',
+                    'path' => '/api/v1/app/auth/candidate/matches',
                     'body' => null,
                 ],
             ];
@@ -387,7 +387,7 @@ class MemberNotificationFeedService
                     'action' => 'view_registration_payment',
                     'label' => 'Payment status',
                     'method' => 'GET',
-                    'path' => '/api/v1/auth/payment/registration/' . $payUuid . '/status',
+                    'path' => '/api/v1/app/auth/payment/registration/' . $payUuid . '/status',
                     'body' => null,
                 ],
             ];
@@ -399,7 +399,7 @@ class MemberNotificationFeedService
                     'action' => 'open_me',
                     'label' => 'View profile',
                     'method' => 'GET',
-                    'path' => '/api/v1/auth/me',
+                    'path' => '/api/v1/app/auth/me',
                     'body' => null,
                 ],
             ];

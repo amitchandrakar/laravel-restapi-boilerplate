@@ -27,15 +27,15 @@ We follow **PSR-12** formatting with additional static analysis and documentatio
 
 ### Quality tools (run before every PR)
 
-| Command | Tool | Purpose |
-|---------|------|---------|
-| `composer format` | [Pint](https://laravel.com/docs/pint) | Auto-format PHP (`app/`, `tests/`, etc.) |
-| `composer lint` | Pint `--test` | CI-safe format check |
-| `composer phpcs` | PHPCS + Slevomat | Unused imports/variables, native type hints, doc spacing |
-| `composer phpcs:fix` | PHPCBF | Auto-fix a subset of PHPCS issues |
-| `composer analyse` | PHPStan 8 + Larastan + strict-rules | Types, dead paths, stricter comparisons |
-| `composer test` | Pest | Behaviour |
-| `composer quality` | All of the above (except format) | Full local gate |
+| Command              | Tool                                  | Purpose                                                  |
+| -------------------- | ------------------------------------- | -------------------------------------------------------- |
+| `composer format`    | [Pint](https://laravel.com/docs/pint) | Auto-format PHP (`app/`, `tests/`, etc.)                 |
+| `composer lint`      | Pint `--test`                         | CI-safe format check                                     |
+| `composer phpcs`     | PHPCS + Slevomat                      | Unused imports/variables, native type hints, doc spacing |
+| `composer phpcs:fix` | PHPCBF                                | Auto-fix a subset of PHPCS issues                        |
+| `composer analyse`   | PHPStan 8 + Larastan + strict-rules   | Types, dead paths, stricter comparisons                  |
+| `composer test`      | Pest                                  | Behaviour                                                |
+| `composer quality`   | All of the above (except format)      | Full local gate                                          |
 
 Configuration lives in:
 

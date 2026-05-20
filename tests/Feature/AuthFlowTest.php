@@ -20,7 +20,7 @@ beforeEach(function (): void {
 it('covers registration, login, forgot password, and anonymous password reset', function (): void {
     $email = 'auth-flow-' . uniqid('', true) . '@example.com';
 
-    $register = $this->postJson('/api/v1/auth/register', [
+    $register = $this->postJson('/api/v1/app/auth/register', [
         'name' => 'Auth Flow Test',
         'email' => $email,
         'password' => REGISTER_PASSWORD,
@@ -37,7 +37,7 @@ it('covers registration, login, forgot password, and anonymous password reset', 
     $candidateRoleId = (int) Role::query()->where('name', 'candidate')->where('guard_name', 'web')->value('id');
     expect((int) $registeredUser->role_id)->toBe($candidateRoleId);
 
-    $login = $this->postJson('/api/v1/auth/login', [
+    $login = $this->postJson('/api/v1/app/auth/login', [
         'username' => $email,
         'password' => REGISTER_PASSWORD,
     ]);
@@ -54,7 +54,7 @@ it('covers registration, login, forgot password, and anonymous password reset', 
         $capturedResetToken = $e->resetHash;
     });
 
-    $forgot = $this->postJson('/api/v1/auth/forgot-password', [
+    $forgot = $this->postJson('/api/v1/app/auth/forgot-password', [
         'email' => $email,
     ]);
     $forgot->assertStatus(200)->assertJsonPath('success', true);
@@ -65,7 +65,7 @@ it('covers registration, login, forgot password, and anonymous password reset', 
     /** @var string $resetToken */
     $resetToken = $capturedResetToken;
 
-    $reset = $this->postJson('/api/v1/auth/reset-password', [
+    $reset = $this->postJson('/api/v1/app/auth/reset-password', [
         'email' => $email,
         'token' => $resetToken,
         'password' => NEW_PASSWORD_AFTER_RESET,
@@ -73,12 +73,12 @@ it('covers registration, login, forgot password, and anonymous password reset', 
     ]);
     $reset->assertStatus(200)->assertJsonPath('success', true);
 
-    $this->postJson('/api/v1/auth/login', [
+    $this->postJson('/api/v1/app/auth/login', [
         'username' => $email,
         'password' => REGISTER_PASSWORD,
     ])->assertStatus(401);
 
-    $final = $this->postJson('/api/v1/auth/login', [
+    $final = $this->postJson('/api/v1/app/auth/login', [
         'username' => $email,
         'password' => NEW_PASSWORD_AFTER_RESET,
     ]);
@@ -89,7 +89,7 @@ it('covers registration, login, forgot password, and anonymous password reset', 
 });
 
 it('returns validation errors for forgot-password requests with unknown emails', function () {
-    $this->postJson('/api/v1/auth/forgot-password', [
+    $this->postJson('/api/v1/app/auth/forgot-password', [
         'email' => 'nobody-' . uniqid('', true) . '@example.com',
     ])
         ->assertStatus(422)
@@ -102,7 +102,7 @@ it('subscribes new users to the default registration package when configured', f
     $email = 'auth-default-package-' . uniqid('', true) . '@example.com';
     $password = 'Password@default1';
 
-    $this->postJson('/api/v1/auth/register', [
+    $this->postJson('/api/v1/app/auth/register', [
         'name' => 'Default Package User',
         'email' => $email,
         'password' => $password,
@@ -124,7 +124,7 @@ it('accepts discrete first and last names when the legacy name field is omitted'
     $email = 'auth-split-name-' . uniqid('', true) . '@example.com';
     $password = 'Password@split1';
 
-    $this->postJson('/api/v1/auth/register', [
+    $this->postJson('/api/v1/app/auth/register', [
         'first_name' => 'Split',
         'last_name' => 'NameUser',
         'email' => $email,
@@ -144,23 +144,23 @@ it('rotates tokens on refresh and revokes the refreshed token after logout', fun
     [$email, $password, $token] = registerAndLogin();
 
     $this->withToken($token)
-        ->getJson('/api/v1/auth/me')
+        ->getJson('/api/v1/app/auth/me')
         ->assertStatus(200)
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.email', $email);
 
-    $refresh = $this->withToken($token)->postJson('/api/v1/auth/refresh');
+    $refresh = $this->withToken($token)->postJson('/api/v1/app/auth/refresh');
     $refresh->assertStatus(200)->assertJsonPath('success', true);
     $newToken = (string) $refresh->json('data.token');
     expect($newToken)->not->toBe($token);
 
-    $this->withToken($newToken)->postJson('/api/v1/auth/logout')->assertStatus(200)->assertJsonPath('success', true);
+    $this->withToken($newToken)->postJson('/api/v1/app/auth/logout')->assertStatus(200)->assertJsonPath('success', true);
 
     expect(PersonalAccessToken::findToken($newToken))->toBeNull(
         'Sanctum token should be removed from storage after logout'
     );
 
-    $this->withToken($newToken)->getJson('/api/v1/auth/me')->assertStatus(401);
+    $this->withToken($newToken)->getJson('/api/v1/app/auth/me')->assertStatus(401);
 });
 
 it('authenticates candidates using either phone or email as the username', function () {
@@ -175,7 +175,7 @@ it('authenticates candidates using either phone or email as the username', funct
     ]);
     $user->assignRole('candidate');
 
-    $this->postJson('/api/v1/auth/login', [
+    $this->postJson('/api/v1/app/auth/login', [
         'username' => '9876500011',
         'password' => 'Password@phone1',
     ])
@@ -183,7 +183,7 @@ it('authenticates candidates using either phone or email as the username', funct
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.user.id', $user->id);
 
-    $this->postJson('/api/v1/auth/login', [
+    $this->postJson('/api/v1/app/auth/login', [
         'username' => $user->email,
         'password' => 'Password@phone1',
     ])
@@ -197,7 +197,7 @@ it('lets authenticated users reset their password with a valid current password'
     $newPassword = 'Password@resetViaApi1';
 
     $this->withToken($token)
-        ->postJson('/api/v1/auth/reset-password', [
+        ->postJson('/api/v1/app/auth/reset-password', [
             'current_password' => $password,
             'password' => $newPassword,
             'password_confirmation' => $newPassword,
@@ -205,12 +205,12 @@ it('lets authenticated users reset their password with a valid current password'
         ->assertStatus(200)
         ->assertJsonPath('success', true);
 
-    $this->postJson('/api/v1/auth/login', [
+    $this->postJson('/api/v1/app/auth/login', [
         'username' => $email,
         'password' => $password,
     ])->assertStatus(401);
 
-    $this->postJson('/api/v1/auth/login', [
+    $this->postJson('/api/v1/app/auth/login', [
         'username' => $email,
         'password' => $newPassword,
     ])
@@ -222,7 +222,7 @@ it('rejects authenticated password resets when the current password is incorrect
     [, $password, $token] = registerAndLogin();
 
     $this->withToken($token)
-        ->postJson('/api/v1/auth/reset-password', [
+        ->postJson('/api/v1/app/auth/reset-password', [
             'current_password' => $password . 'wrong',
             'password' => 'Password@newValid1',
             'password_confirmation' => 'Password@newValid1',
@@ -232,7 +232,7 @@ it('rejects authenticated password resets when the current password is incorrect
 
 it('rejects reset-password mutations that lack a valid bearer token', function () {
     $this->withToken('invalid-token-that-does-not-exist')
-        ->postJson('/api/v1/auth/reset-password', [
+        ->postJson('/api/v1/app/auth/reset-password', [
             'current_password' => 'x',
             'password' => 'Password@newValid2',
             'password_confirmation' => 'Password@newValid2',
@@ -245,7 +245,7 @@ it('supports updating profile metadata and rotating the password in sequence', f
     [$email, $password, $token] = registerAndLogin();
 
     $this->withToken($token)
-        ->patchJson('/api/v1/auth/profile', [
+        ->patchJson('/api/v1/app/auth/profile', [
             'firstName' => 'UpdatedFirst',
             'lastName' => 'UpdatedLast',
             'phone' => '9990001111',
@@ -258,7 +258,7 @@ it('supports updating profile metadata and rotating the password in sequence', f
         ->assertJsonPath('data.phone', '9990001111');
 
     $this->withToken($token)
-        ->postJson('/api/v1/auth/change-password', [
+        ->postJson('/api/v1/app/auth/change-password', [
             'current_password' => $password,
             'password' => 'Password@changed1',
             'password_confirmation' => 'Password@changed1',
@@ -266,12 +266,12 @@ it('supports updating profile metadata and rotating the password in sequence', f
         ->assertStatus(200)
         ->assertJsonPath('success', true);
 
-    $this->postJson('/api/v1/auth/login', [
+    $this->postJson('/api/v1/app/auth/login', [
         'username' => $email,
         'password' => $password,
     ])->assertStatus(401);
 
-    $this->postJson('/api/v1/auth/login', [
+    $this->postJson('/api/v1/app/auth/login', [
         'username' => $email,
         'password' => 'Password@changed1',
     ])
@@ -296,7 +296,7 @@ function registerAndLogin(): array
     $password = 'Password@seed1';
 
     test()
-        ->postJson('/api/v1/auth/register', [
+        ->postJson('/api/v1/app/auth/register', [
             'name' => 'Auth Test User',
             'email' => $email,
             'password' => $password,
@@ -304,7 +304,7 @@ function registerAndLogin(): array
         ])
         ->assertStatus(201);
 
-    $login = test()->postJson('/api/v1/auth/login', [
+    $login = test()->postJson('/api/v1/app/auth/login', [
         'username' => $email,
         'password' => $password,
     ]);

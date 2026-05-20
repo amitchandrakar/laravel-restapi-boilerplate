@@ -31,7 +31,7 @@ it('marks payments successful when capture webhooks arrive with valid payloads',
     $packageUuid = (string) Package::query()->where('code', 'TALASH_BASIC')->value('uuid');
     $email = 'wh-' . uniqid('', true) . '@example.com';
 
-    $this->postJson('/api/v1/auth/register-candidate', [
+    $this->postJson('/api/v1/app/auth/register-candidate', [
         'first_name' => 'Wh',
         'last_name' => 'Chandrakar',
         'email' => $email,
@@ -60,7 +60,7 @@ it('marks payments successful when capture webhooks arrive with valid payloads',
         ],
     ];
 
-    $this->postJson('/api/v1/payment/razorpay/webhook', $payload, [
+    $this->postJson('/api/v1/app/payment/razorpay/webhook', $payload, [
         'X-Razorpay-Signature' => 'testsig',
     ])->assertStatus(202);
 
@@ -79,7 +79,7 @@ it('marks payments successful when capture webhooks arrive with valid payloads',
     ]);
 
     // Idempotent replay
-    $this->postJson('/api/v1/payment/razorpay/webhook', $payload, [
+    $this->postJson('/api/v1/app/payment/razorpay/webhook', $payload, [
         'X-Razorpay-Signature' => 'testsig',
     ])->assertStatus(202);
 });
@@ -90,7 +90,7 @@ it('rejects Razorpay webhooks that fail HMAC verification', function () {
     });
 
     $this->postJson(
-        '/api/v1/payment/razorpay/webhook',
+        '/api/v1/app/payment/razorpay/webhook',
         ['event' => 'payment.captured'],
         ['X-Razorpay-Signature' => 'bad']
     )->assertStatus(401);
@@ -112,7 +112,7 @@ it('stores failed-payment state when Razorpay reports a capture failure', functi
     $packageUuid = (string) Package::query()->where('code', 'TALASH_BASIC')->value('uuid');
     $email = 'wh-fail-' . uniqid('', true) . '@example.com';
 
-    $this->postJson('/api/v1/auth/register-candidate', [
+    $this->postJson('/api/v1/app/auth/register-candidate', [
         'first_name' => 'Fail',
         'last_name' => 'Chandrakar',
         'email' => $email,
@@ -142,7 +142,7 @@ it('stores failed-payment state when Razorpay reports a capture failure', functi
         ],
     ];
 
-    $this->postJson('/api/v1/payment/razorpay/webhook', $payload, [
+    $this->postJson('/api/v1/app/payment/razorpay/webhook', $payload, [
         'X-Razorpay-Signature' => 'testsig',
     ])->assertStatus(202);
 

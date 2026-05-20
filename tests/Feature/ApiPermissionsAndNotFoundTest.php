@@ -46,7 +46,7 @@ it('returns not found for an unknown user id', function () {
     $admin = $this->createUserWithRole('admin', 'api-404-user@example.com');
 
     $this->actingAs($admin, 'sanctum')
-        ->getJson('/api/v1/users/999999')
+        ->getJson('/api/v1/admin/users/999999')
         ->assertStatus(404)
         ->assertJsonPath('success', false)
         ->assertJsonPath('error.code', ApiResponseBuilder::ERROR_NOT_FOUND)
@@ -70,7 +70,7 @@ it('returns forbidden when a candidate lists users', function () {
     $candidate = $this->createUserWithRole('candidate', 'api-403-users@example.com');
 
     $this->actingAs($candidate, 'sanctum')
-        ->getJson('/api/v1/users')
+        ->getJson('/api/v1/admin/users')
         ->assertStatus(403)
         ->assertJsonPath('success', false)
         ->assertJsonPath('error.code', ApiResponseBuilder::ERROR_FORBIDDEN);

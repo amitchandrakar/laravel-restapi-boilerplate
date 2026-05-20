@@ -2,9 +2,9 @@
 
 In-app notification feed for authenticated members (candidates). Uses Laravel’s `notifications` table; only rows with a **`data.kind`** in the product allowlist are returned (contact requests, new matches, profile views). Other database notifications (e.g. welcome) are omitted from this feed.
 
-**Auth:** `Authorization: Bearer <token>` plus **`tracked.session`** (same as other `/api/v1/auth/…` member routes).
+**Auth:** `Authorization: Bearer <token>` plus **`tracked.session`** (same as other `/api/v1/app/auth/…` member routes).
 
-**Base path:** `/api/v1/auth/notifications`
+**Base path:** `/api/v1/app/auth/notifications`
 
 See [`API_DOCUMENTATION_INTRO.md`](API_DOCUMENTATION_INTRO.md) for the standard JSON envelope.
 
@@ -16,7 +16,7 @@ After [`DemoUsersSeeder`](../database/seeders/DemoUsersSeeder.php), [`DemoCandid
 
 ## List notifications
 
-**`GET /api/v1/auth/notifications`**
+**`GET /api/v1/app/auth/notifications`**
 
 **Throttle:** 60 requests per minute (per route group).
 
@@ -55,7 +55,7 @@ Array of items, each shaped as:
 
 ## Unread summary
 
-**`GET /api/v1/auth/notifications/summary`**
+**`GET /api/v1/app/auth/notifications/summary`**
 
 **`data`:** `{ "unreadCount": <integer> }`
 
@@ -63,7 +63,7 @@ Array of items, each shaped as:
 
 ## Single notification
 
-**`GET /api/v1/auth/notifications/{notificationId}`**
+**`GET /api/v1/app/auth/notifications/{notificationId}`**
 
 Returns one feed item (same shape as list elements). **404** if missing or not a feed kind.
 
@@ -71,7 +71,7 @@ Returns one feed item (same shape as list elements). **404** if missing or not a
 
 ## Mark one as read
 
-**`PATCH /api/v1/auth/notifications/{notificationId}/read`**
+**`PATCH /api/v1/app/auth/notifications/{notificationId}/read`**
 
 **403** if the notification belongs to another user.
 
@@ -79,7 +79,7 @@ Returns one feed item (same shape as list elements). **404** if missing or not a
 
 ## Mark all feed notifications read
 
-**`POST /api/v1/auth/notifications/read-all`**
+**`POST /api/v1/app/auth/notifications/read-all`**
 
 Sets `read_at` for all unread notifications whose `data.kind` is in the feed allowlist.
 
@@ -87,8 +87,8 @@ Sets `read_at` for all unread notifications whose `data.kind` is in the feed all
 
 ## `actions` examples
 
-- **`contact_request_received`:** `PATCH` actions targeting `/api/v1/auth/candidate/contact-requests/{uuid}` with `body.decision` `accepted` or `rejected`.
-- **`new_match`:** `GET` `/api/v1/auth/candidate/matches`.
+- **`contact_request_received`:** `PATCH` actions targeting `/api/v1/app/auth/candidate/contact-requests/{uuid}` with `body.decision` `accepted` or `rejected`.
+- **`new_match`:** `GET` `/api/v1/app/auth/candidate/matches`.
 - **`profile_viewed` / `contact_request_accepted`:** `GET` profile-details path for the relevant user UUID.
 
 ---

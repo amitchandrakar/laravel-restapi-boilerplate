@@ -12,7 +12,7 @@ it('lists only published featured candidates on the public feed', function (): v
     $admin = $this->createUserWithRole('admin', 'featured-admin@example.com');
     $candidate = createFeaturedPublishedCandidate('featured-cand@example.com');
 
-    $this->getJson('/api/v1/public/featured-candidates')
+    $this->getJson('/api/v1/app/public/featured-candidates')
         ->assertStatus(200)
         ->assertJsonPath('success', true)
         ->assertJsonPath('data', []);
@@ -24,7 +24,7 @@ it('lists only published featured candidates on the public feed', function (): v
         ->assertStatus(200)
         ->assertJsonPath('data.isFeatured', true);
 
-    $this->getJson('/api/v1/public/featured-candidates')
+    $this->getJson('/api/v1/app/public/featured-candidates')
         ->assertStatus(200)
         ->assertJsonPath('data.0.uuid', $candidate->uuid);
 
@@ -34,7 +34,7 @@ it('lists only published featured candidates on the public feed', function (): v
         ])
         ->assertStatus(200);
 
-    $this->getJson('/api/v1/public/featured-candidates')->assertStatus(200)->assertJsonPath('data', []);
+    $this->getJson('/api/v1/app/public/featured-candidates')->assertStatus(200)->assertJsonPath('data', []);
 });
 
 it('blocks featuring unpublished profiles and rejects unauthorized reviewers', function (): void {
@@ -67,7 +67,7 @@ it('uses the default hero image when featured candidates have no gallery photos'
         ])
         ->assertStatus(200);
 
-    $this->getJson('/api/v1/public/featured-candidates')
+    $this->getJson('/api/v1/app/public/featured-candidates')
         ->assertStatus(200)
         ->assertJsonPath('data.0.photoUrl', '/images/Coming-Soon.png');
 });

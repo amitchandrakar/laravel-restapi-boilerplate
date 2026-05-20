@@ -26,7 +26,7 @@ it('includes actionable new-match rows with unread metadata in the notifications
     app(MatchNotificationService::class)->notifyBothUsersOfMatch($a, $b, $matchUuid, 88);
 
     $res = $this->withToken($tokenA)
-        ->getJson('/api/v1/auth/notifications')
+        ->getJson('/api/v1/app/auth/notifications')
         ->assertStatus(200)
         ->assertJsonPath('success', true);
 
@@ -41,7 +41,7 @@ it('includes actionable new-match rows with unread metadata in the notifications
     expect($first['profileImageUrl'])->not->toBe('');
     expect($first['actions'] ?? null)->not->toBeEmpty();
     expect($first['actions'][0]['method'] ?? null)->toBe('GET');
-    expect(str_contains((string) ($first['actions'][0]['path'] ?? ''), '/api/v1/auth/candidate/matches'))->toBeTrue();
+    expect(str_contains((string) ($first['actions'][0]['path'] ?? ''), '/api/v1/app/auth/candidate/matches'))->toBeTrue();
 
     expect((int) $res->json('meta.unreadCount'))->toBeGreaterThanOrEqual(1);
 });
@@ -57,7 +57,7 @@ it('embeds live contact-request status and timestamps on notification cards', fu
     ]);
     $a->notify(new ContactRequestReceivedNotification($row));
 
-    $res = $this->withToken($tokenA)->getJson('/api/v1/auth/notifications')->assertStatus(200);
+    $res = $this->withToken($tokenA)->getJson('/api/v1/app/auth/notifications')->assertStatus(200);
     $items = (array) $res->json('data');
     expect($items)->not->toBeEmpty();
 
@@ -81,7 +81,7 @@ it('returns aggregate unread counts from the notifications summary endpoint', fu
     app(MatchNotificationService::class)->notifyBothUsersOfMatch($a, $b, (string) Str::uuid(), 70);
 
     $this->withToken($tokenA)
-        ->getJson('/api/v1/auth/notifications/summary')
+        ->getJson('/api/v1/app/auth/notifications/summary')
         ->assertStatus(200)
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.unreadCount', fn($c) => (int) $c >= 1);
@@ -94,10 +94,10 @@ it('omits read notifications when clients request unread-only feeds', function (
     $nid = (string) $a->notifications()->orderByDesc('created_at')->value('id');
     expect($nid)->not->toBe('');
     $this->withToken($tokenA)
-        ->patchJson('/api/v1/auth/notifications/' . $nid . '/read')
+        ->patchJson('/api/v1/app/auth/notifications/' . $nid . '/read')
         ->assertStatus(200);
 
-    $unread = $this->withToken($tokenA)->getJson('/api/v1/auth/notifications?unreadOnly=1')->json('data');
+    $unread = $this->withToken($tokenA)->getJson('/api/v1/app/auth/notifications?unreadOnly=1')->json('data');
     expect($unread)->toBeArray();
 
     foreach ($unread as $item) {
@@ -120,12 +120,12 @@ it('supports marking one notification as read and clearing every unread item at 
     expect($ids)->toHaveCount(2);
 
     $this->withToken($tokenA)
-        ->patchJson('/api/v1/auth/notifications/' . $ids[0] . '/read')
+        ->patchJson('/api/v1/app/auth/notifications/' . $ids[0] . '/read')
         ->assertStatus(200);
 
     expect($a->notifications()->whereKey($ids[0])->value('read_at'))->not->toBeNull();
 
-    $this->withToken($tokenA)->postJson('/api/v1/auth/notifications/read-all')->assertStatus(200);
+    $this->withToken($tokenA)->postJson('/api/v1/app/auth/notifications/read-all')->assertStatus(200);
 
     $unread = $a
         ->notifications()
@@ -144,12 +144,12 @@ it('returns forbidden when a user tries to mark another member\'s notification a
     expect($idOnB)->not->toBe('');
 
     $this->withToken($tokenA)
-        ->patchJson('/api/v1/auth/notifications/' . $idOnB . '/read')
+        ->patchJson('/api/v1/app/auth/notifications/' . $idOnB . '/read')
         ->assertStatus(403)
         ->assertJsonPath('success', false);
 
     $this->withToken($tokenB)
-        ->patchJson('/api/v1/auth/notifications/' . $idOnB . '/read')
+        ->patchJson('/api/v1/app/auth/notifications/' . $idOnB . '/read')
         ->assertStatus(200);
 });
 
@@ -159,7 +159,7 @@ it('hydrates a single feed item via the notification show endpoint', function ()
     $nid = (string) $a->notifications()->where('data->kind', 'new_match')->orderByDesc('created_at')->value('id');
 
     $this->withToken($tokenA)
-        ->getJson('/api/v1/auth/notifications/' . $nid)
+        ->getJson('/api/v1/app/auth/notifications/' . $nid)
         ->assertStatus(200)
         ->assertJsonPath('data.kind', 'new_match')
         ->assertJsonPath('data.id', $nid);
@@ -198,7 +198,7 @@ function memberNotificationsTwoCandidatesWithTokens(): array
     $emailB = 'notif-b-' . uniqid('', true) . '@example.com';
 
     test()
-        ->postJson('/api/v1/auth/register', [
+        ->postJson('/api/v1/app/auth/register', [
             'name' => 'Notif A',
             'email' => $emailA,
             'password' => MEMBER_NOTIFICATIONS_TEST_PW,
@@ -207,7 +207,7 @@ function memberNotificationsTwoCandidatesWithTokens(): array
         ->assertStatus(201);
 
     test()
-        ->postJson('/api/v1/auth/register', [
+        ->postJson('/api/v1/app/auth/register', [
             'name' => 'Notif B',
             'email' => $emailB,
             'password' => MEMBER_NOTIFICATIONS_TEST_PW,
@@ -259,7 +259,7 @@ function memberNotificationsSubscribeToTalash(User $user): void
 }
 function memberNotificationsLoginToken(string $email): string
 {
-    $login = test()->postJson('/api/v1/auth/login', [
+    $login = test()->postJson('/api/v1/app/auth/login', [
         'username' => $email,
         'password' => MEMBER_NOTIFICATIONS_TEST_PW,
     ]);

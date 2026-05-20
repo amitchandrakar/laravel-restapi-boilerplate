@@ -15,7 +15,7 @@ it('sets the owning candidate\'s active profile photo from their gallery UUID', 
     insertPhoto($candidate->id, $uuidB, false);
 
     $this->actingAs($candidate, 'sanctum')
-        ->patchJson("/api/v1/auth/candidate/{$candidate->uuid}/photos/{$uuidB}")
+        ->patchJson("/api/v1/app/auth/candidate/{$candidate->uuid}/photos/{$uuidB}")
         ->assertStatus(200)
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.uuid', $uuidB)
@@ -31,7 +31,7 @@ it('returns not found when selecting a profile photo UUID that cannot be resolve
     $unknown = (string) Str::uuid();
 
     $this->actingAs($candidate, 'sanctum')
-        ->patchJson("/api/v1/auth/candidate/{$candidate->uuid}/photos/{$unknown}")
+        ->patchJson("/api/v1/app/auth/candidate/{$candidate->uuid}/photos/{$unknown}")
         ->assertStatus(404);
 });
 
@@ -42,7 +42,7 @@ it('supports soft deleting the authenticated candidate\'s profile photo', functi
     insertPhoto($candidate->id, $uuid, false);
 
     $this->actingAs($candidate, 'sanctum')
-        ->deleteJson("/api/v1/auth/candidate/{$candidate->uuid}/photos/{$uuid}")
+        ->deleteJson("/api/v1/app/auth/candidate/{$candidate->uuid}/photos/{$uuid}")
         ->assertStatus(200)
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.uuid', $uuid);
@@ -60,7 +60,7 @@ it('returns not found when deleting photo rows owned by someone else', function 
     insertPhoto($b->id, $uuid, false);
 
     $this->actingAs($a, 'sanctum')
-        ->deleteJson("/api/v1/auth/candidate/{$a->uuid}/photos/{$uuid}")
+        ->deleteJson("/api/v1/app/auth/candidate/{$a->uuid}/photos/{$uuid}")
         ->assertStatus(404);
 });
 
@@ -70,8 +70,8 @@ it('requires authentication before mutating candidate profile photos', function 
     $uuid = (string) Str::uuid();
     insertPhoto($candidate->id, $uuid, false);
 
-    $this->patchJson("/api/v1/auth/candidate/{$candidate->uuid}/photos/{$uuid}")->assertStatus(401);
-    $this->deleteJson("/api/v1/auth/candidate/{$candidate->uuid}/photos/{$uuid}")->assertStatus(401);
+    $this->patchJson("/api/v1/app/auth/candidate/{$candidate->uuid}/photos/{$uuid}")->assertStatus(401);
+    $this->deleteJson("/api/v1/app/auth/candidate/{$candidate->uuid}/photos/{$uuid}")->assertStatus(401);
 });
 
 it('returns forbidden when callers without the candidate role mutate profile photos', function () {
@@ -82,7 +82,7 @@ it('returns forbidden when callers without the candidate role mutate profile pho
     insertPhoto($candidate->id, $uuid, false);
 
     $this->actingAs($admin, 'sanctum')
-        ->patchJson("/api/v1/auth/candidate/{$candidate->uuid}/photos/{$uuid}")
+        ->patchJson("/api/v1/app/auth/candidate/{$candidate->uuid}/photos/{$uuid}")
         ->assertStatus(403);
 });
 
@@ -94,7 +94,7 @@ it('returns forbidden when a candidate tries to manage another member\'s gallery
     insertPhoto($b->id, $uuid, false);
 
     $this->actingAs($a, 'sanctum')
-        ->patchJson("/api/v1/auth/candidate/{$b->uuid}/photos/{$uuid}")
+        ->patchJson("/api/v1/app/auth/candidate/{$b->uuid}/photos/{$uuid}")
         ->assertStatus(403);
 });
 function insertPhoto(int $userId, string $uuid, bool $isProfile): void

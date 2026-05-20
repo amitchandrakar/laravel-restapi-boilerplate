@@ -15,7 +15,7 @@ it('persists profile uploads with resized variants for authenticated candidates'
     $candidate = $this->createUserWithRole('candidate', 'img-upload-1@example.com');
     $file = UploadedFile::fake()->image('photo.jpg', 640, 480);
 
-    $response = $this->actingAs($candidate, 'sanctum')->post('/api/v1/auth/candidate/profile/photos/upload', [
+    $response = $this->actingAs($candidate, 'sanctum')->post('/api/v1/app/auth/candidate/profile/photos/upload', [
         'image' => $file,
     ]);
 
@@ -48,14 +48,14 @@ it('returns validation errors on the sixth concurrent profile upload', function 
 
     for ($i = 0; $i < 5; $i++) {
         $this->actingAs($candidate, 'sanctum')
-            ->post('/api/v1/auth/candidate/profile/photos/upload', [
+            ->post('/api/v1/app/auth/candidate/profile/photos/upload', [
                 'image' => UploadedFile::fake()->image("p{$i}.jpg", 200, 200),
             ])
             ->assertStatus(200);
     }
 
     $this->actingAs($candidate, 'sanctum')
-        ->post('/api/v1/auth/candidate/profile/photos/upload', [
+        ->post('/api/v1/app/auth/candidate/profile/photos/upload', [
             'image' => UploadedFile::fake()->image('extra.jpg', 200, 200),
         ])
         ->assertStatus(422);
@@ -66,7 +66,7 @@ it('rejects profile uploads when the MIME type is not an image', function () {
     $candidate = $this->createUserWithRole('candidate', 'img-upload-bad@example.com');
 
     $this->actingAs($candidate, 'sanctum')
-        ->post('/api/v1/auth/candidate/profile/photos/upload', [
+        ->post('/api/v1/app/auth/candidate/profile/photos/upload', [
             'image' => UploadedFile::fake()->create('notes.txt', 100, 'text/plain'),
         ])
         ->assertStatus(422);
@@ -77,7 +77,7 @@ it('returns forbidden when non-candidate accounts attempt profile uploads', func
     $admin = $this->createUserWithRole('admin', 'img-upload-admin@example.com');
 
     $this->actingAs($admin, 'sanctum')
-        ->post('/api/v1/auth/candidate/profile/photos/upload', [
+        ->post('/api/v1/app/auth/candidate/profile/photos/upload', [
             'image' => UploadedFile::fake()->image('x.jpg', 100, 100),
         ])
         ->assertStatus(403);

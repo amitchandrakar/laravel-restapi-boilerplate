@@ -32,7 +32,7 @@ it('activates subscriptions and permissions after a successful payment confirmat
     $packageUuid = (string) Package::query()->where('code', 'TALASH_BASIC')->value('uuid');
     $email = 'confirm-reg-' . uniqid('', true) . '@example.com';
 
-    $reg = $this->postJson('/api/v1/auth/register-candidate', [
+    $reg = $this->postJson('/api/v1/app/auth/register-candidate', [
         'first_name' => 'Confirm',
         'last_name' => 'Chandrakar',
         'email' => $email,
@@ -47,7 +47,7 @@ it('activates subscriptions and permissions after a successful payment confirmat
     $token = (string) $reg->json('data.token');
 
     $this->postJson(
-        '/api/v1/auth/payment/registration/confirm',
+        '/api/v1/app/auth/payment/registration/confirm',
         [
             'razorpay_order_id' => 'order_confirm_test_1',
             'razorpay_payment_id' => 'pay_confirm_test_1',
@@ -82,7 +82,7 @@ it('rejects payment confirmations that fail signature validation', function () {
     $packageUuid = (string) Package::query()->where('code', 'TALASH_BASIC')->value('uuid');
     $email = 'bad-sig-' . uniqid('', true) . '@example.com';
 
-    $reg = $this->postJson('/api/v1/auth/register-candidate', [
+    $reg = $this->postJson('/api/v1/app/auth/register-candidate', [
         'first_name' => 'Bad',
         'last_name' => 'Chandrakar',
         'email' => $email,
@@ -96,7 +96,7 @@ it('rejects payment confirmations that fail signature validation', function () {
     $token = (string) $reg->json('data.token');
 
     $this->postJson(
-        '/api/v1/auth/payment/registration/confirm',
+        '/api/v1/app/auth/payment/registration/confirm',
         [
             'razorpay_order_id' => 'order_bad_sig_1',
             'razorpay_payment_id' => 'pay_x',
@@ -122,7 +122,7 @@ it('returns HTTP 409 when clients attempt duplicate payment confirmations', func
     $packageUuid = (string) Package::query()->where('code', 'TALASH_BASIC')->value('uuid');
     $email = 'double-' . uniqid('', true) . '@example.com';
 
-    $reg = $this->postJson('/api/v1/auth/register-candidate', [
+    $reg = $this->postJson('/api/v1/app/auth/register-candidate', [
         'first_name' => 'Dbl',
         'last_name' => 'Chandrakar',
         'email' => $email,
@@ -141,6 +141,6 @@ it('returns HTTP 409 when clients attempt duplicate payment confirmations', func
         'razorpay_signature' => 'sig',
     ];
 
-    $this->postJson('/api/v1/auth/payment/registration/confirm', $body, $headers)->assertStatus(200);
-    $this->postJson('/api/v1/auth/payment/registration/confirm', $body, $headers)->assertStatus(409);
+    $this->postJson('/api/v1/app/auth/payment/registration/confirm', $body, $headers)->assertStatus(200);
+    $this->postJson('/api/v1/app/auth/payment/registration/confirm', $body, $headers)->assertStatus(409);
 });

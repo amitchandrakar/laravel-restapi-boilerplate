@@ -13,7 +13,7 @@ it('matches the canonical shape for public candidate profile options', function 
     $this->seed(MasterDegreesOccupationsSeeder::class);
     $this->seed(ChhattisgarhMasterGeoSeeder::class);
 
-    $response = $this->getJson('/api/v1/public/candidate-profile-options')
+    $response = $this->getJson('/api/v1/app/public/candidate-profile-options')
         ->assertStatus(200)
         ->assertJsonPath('success', true);
 

@@ -2,10 +2,10 @@
 
 Members can reset their password in two ways:
 
-1. **Guest flow** — after **`POST /api/v1/auth/forgot-password`**, the user receives an email with a reset link; the client submits the **email**, **plain token** from that flow, and the **new password** to **`POST /api/v1/auth/reset-password`** (no Bearer token).
-2. **Authenticated flow** — while logged in, the same **`POST /api/v1/auth/reset-password`** accepts **`Authorization: Bearer <token>`** plus **current password** and **new password** (tracked session must be active; see below).
+1. **Guest flow** — after **`POST /api/v1/app/auth/forgot-password`**, the user receives an email with a reset link; the client submits the **email**, **plain token** from that flow, and the **new password** to **`POST /api/v1/app/auth/reset-password`** (no Bearer token).
+2. **Authenticated flow** — while logged in, the same **`POST /api/v1/app/auth/reset-password`** accepts **`Authorization: Bearer <token>`** plus **current password** and **new password** (tracked session must be active; see below).
 
-For “change password” from settings without reusing the reset endpoint, **`POST /api/v1/auth/change-password`** remains available (requires Bearer + tracked session only; same validation semantics as the authenticated reset branch).
+For “change password” from settings without reusing the reset endpoint, **`POST /api/v1/app/auth/change-password`** remains available (requires Bearer + tracked session only; same validation semantics as the authenticated reset branch).
 
 Responses use the standard API envelope (`success`, `statusCode`, `message`, `data`, `error`, `meta`). See [`API_DOCUMENTATION_INTRO.md`](API_DOCUMENTATION_INTRO.md).
 
@@ -15,14 +15,14 @@ Responses use the standard API envelope (`success`, `statusCode`, `message`, `da
 
 | Endpoint            | Path                                |
 | ------------------- | ----------------------------------- |
-| Request reset email | `POST /api/v1/auth/forgot-password` |
-| Apply new password  | `POST /api/v1/auth/reset-password`  |
+| Request reset email | `POST /api/v1/app/auth/forgot-password` |
+| Apply new password  | `POST /api/v1/app/auth/reset-password`  |
 
 ---
 
 ## 1. Forgot password (email + token issuance)
 
-**`POST /api/v1/auth/forgot-password`**
+**`POST /api/v1/app/auth/forgot-password`**
 
 **Authentication:** none.
 
@@ -50,7 +50,7 @@ Responses use the standard API envelope (`success`, `statusCode`, `message`, `da
 
 ## 2. Reset password (guest or authenticated)
 
-**`POST /api/v1/auth/reset-password`**
+**`POST /api/v1/app/auth/reset-password`**
 
 **Middleware:** `optional.sanctum`, `tracked.session`
 
@@ -109,7 +109,7 @@ Do not send `email` / `token` for this branch; they are not required when the us
 
 ## Related: change password (authenticated only)
 
-**`POST /api/v1/auth/change-password`**
+**`POST /api/v1/app/auth/change-password`**
 
 - **Middleware:** `auth:sanctum`, `tracked.session`
 - **Body:** `current_password`, `password`, `password_confirmation` (same rules as authenticated reset).

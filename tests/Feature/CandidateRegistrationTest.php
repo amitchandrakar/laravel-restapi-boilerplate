@@ -17,7 +17,7 @@ beforeEach(function () {
 });
 
 it('returns selectable packages and surname options for registration', function () {
-    $response = $this->getJson('/api/v1/auth/registration');
+    $response = $this->getJson('/api/v1/app/auth/registration');
     $response
         ->assertStatus(200)
         ->assertJsonPath('success', true)
@@ -38,7 +38,7 @@ it('creates users with active subscriptions and package permissions from candida
 
     $email = 'candidate-reg-' . uniqid('', true) . '@example.com';
 
-    $response = $this->postJson('/api/v1/auth/register-candidate', [
+    $response = $this->postJson('/api/v1/app/auth/register-candidate', [
         'first_name' => 'Test',
         'last_name' => 'Chandrakar',
         'email' => $email,
@@ -71,7 +71,7 @@ it('creates users with active subscriptions and package permissions from candida
 });
 
 it('returns validation errors for unknown package UUIDs during registration', function () {
-    $response = $this->postJson('/api/v1/auth/register-candidate', [
+    $response = $this->postJson('/api/v1/app/auth/register-candidate', [
         'first_name' => 'Test',
         'last_name' => 'Chandrakar',
         'email' => 'bad-pkg-' . uniqid('', true) . '@example.com',
@@ -89,7 +89,7 @@ it('returns validation errors for unknown package UUIDs during registration', fu
 it('returns validation errors when surname is not in the community allow list', function () {
     $packageUuid = (string) Package::query()->where('code', 'PARICHAY_FREE')->value('uuid');
 
-    $response = $this->postJson('/api/v1/auth/register-candidate', [
+    $response = $this->postJson('/api/v1/app/auth/register-candidate', [
         'first_name' => 'Test',
         'last_name' => 'UnknownSurnameXYZ',
         'email' => 'bad-surname-' . uniqid('', true) . '@example.com',
@@ -108,7 +108,7 @@ it('supports email-free registration when phone credentials are supplied and log
     $packageUuid = (string) Package::query()->where('code', 'PARICHAY_FREE')->value('uuid');
     $phone = '98765' . substr((string) time(), -5);
 
-    $response = $this->postJson('/api/v1/auth/register-candidate', [
+    $response = $this->postJson('/api/v1/app/auth/register-candidate', [
         'first_name' => 'No',
         'last_name' => 'Chandrakar',
         'gender' => 'female',
@@ -125,7 +125,7 @@ it('supports email-free registration when phone credentials are supplied and log
     expect($user)->not->toBeNull();
     expect($user->email)->toBeNull();
 
-    $this->postJson('/api/v1/auth/login', [
+    $this->postJson('/api/v1/app/auth/login', [
         'username' => $phone,
         'password' => AUTH_CANDIDATE_REGISTRATION_PW,
     ])
@@ -137,7 +137,7 @@ it('returns validation errors when registering a duplicate email address', funct
     $packageUuid = (string) Package::query()->where('code', 'PARICHAY_FREE')->value('uuid');
     $email = 'dup-' . uniqid('', true) . '@example.com';
 
-    $this->postJson('/api/v1/auth/register-candidate', [
+    $this->postJson('/api/v1/app/auth/register-candidate', [
         'first_name' => 'A',
         'last_name' => 'Verma',
         'email' => $email,
@@ -149,7 +149,7 @@ it('returns validation errors when registering a duplicate email address', funct
         'package_uuid' => $packageUuid,
     ])->assertStatus(201);
 
-    $this->postJson('/api/v1/auth/register-candidate', [
+    $this->postJson('/api/v1/app/auth/register-candidate', [
         'first_name' => 'B',
         'last_name' => 'Verma',
         'email' => $email,
@@ -168,7 +168,7 @@ it('omits inactive catalog packages from registration option responses', functio
         ->where('id', $inactiveId)
         ->update(['is_active' => false]);
 
-    $uuids = collect($this->getJson('/api/v1/auth/registration')->json('data.packages'))
+    $uuids = collect($this->getJson('/api/v1/app/auth/registration')->json('data.packages'))
         ->pluck('uuid')
         ->all();
 

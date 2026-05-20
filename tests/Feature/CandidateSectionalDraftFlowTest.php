@@ -117,14 +117,14 @@ it('supports self-service basics saves plus authenticated profile-progress polli
     $candidate = $this->createUserWithRole('candidate', 'candidate-self-sections@example.com');
 
     $this->actingAs($candidate, 'sanctum')
-        ->patchJson('/api/v1/auth/candidate/profile/basics', [
+        ->patchJson('/api/v1/app/auth/candidate/profile/basics', [
             'email' => 'candidate-self-sections@example.com',
             'phone' => '9999900000',
         ])
         ->assertStatus(200);
 
     $this->actingAs($candidate, 'sanctum')
-        ->getJson('/api/v1/auth/candidate/profile/progress')
+        ->getJson('/api/v1/app/auth/candidate/profile/progress')
         ->assertStatus(200)
         ->assertJsonPath('data.profileStatus', 'draft');
 });

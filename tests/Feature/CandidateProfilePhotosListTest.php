@@ -25,7 +25,7 @@ it('returns authenticated candidates their profile photo gallery JSON', function
     ]);
 
     $this->actingAs($candidate, 'sanctum')
-        ->getJson('/api/v1/auth/candidate/' . $candidate->uuid . '/photos')
+        ->getJson('/api/v1/app/auth/candidate/' . $candidate->uuid . '/photos')
         ->assertStatus(200)
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.0.url', 'https://example.com/md.jpg')
@@ -38,7 +38,7 @@ it('returns unauthorized when guests list candidate photo galleries', function (
     $this->seed(RbacSeeder::class);
     $candidate = $this->createUserWithRole('candidate', 'photos-list-guest@example.com');
 
-    $this->getJson('/api/v1/auth/candidate/' . $candidate->uuid . '/photos')->assertStatus(401);
+    $this->getJson('/api/v1/app/auth/candidate/' . $candidate->uuid . '/photos')->assertStatus(401);
 });
 
 it('returns forbidden when non-candidate roles list candidate photo galleries', function () {
@@ -47,7 +47,7 @@ it('returns forbidden when non-candidate roles list candidate photo galleries', 
     $candidate = $this->createUserWithRole('candidate', 'photos-list-target@example.com');
 
     $this->actingAs($admin, 'sanctum')
-        ->getJson('/api/v1/auth/candidate/' . $candidate->uuid . '/photos')
+        ->getJson('/api/v1/app/auth/candidate/' . $candidate->uuid . '/photos')
         ->assertStatus(403);
 });
 
@@ -57,6 +57,6 @@ it('returns forbidden when a candidate lists another member\'s gallery', functio
     $b = $this->createUserWithRole('candidate', 'photos-list-b@example.com');
 
     $this->actingAs($a, 'sanctum')
-        ->getJson('/api/v1/auth/candidate/' . $b->uuid . '/photos')
+        ->getJson('/api/v1/app/auth/candidate/' . $b->uuid . '/photos')
         ->assertStatus(403);
 });
