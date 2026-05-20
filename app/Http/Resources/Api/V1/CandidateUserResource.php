@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api\V1;
 
-use App\Models\User;
 use App\Services\UserPartnerPreferredLocationService;
 use App\Support\UserProfilePhotos;
 use Illuminate\Http\Request;
@@ -25,20 +24,24 @@ class CandidateUserResource extends JsonResource
         $profilePhotoFromGallery = collect($photos)->first(
             static fn(array $photo): bool => (bool) data_get($photo, 'isProfilePhoto', false)
         );
+
         if (!is_array($profilePhotoFromGallery)) {
             $profilePhotoFromGallery = $photos[0] ?? null;
         }
         $photoUrl = data_get($user, 'profile_photo_url');
+
         if (!is_string($photoUrl) || $photoUrl === '') {
             $photoUrl = is_array($profilePhotoFromGallery)
                 ? (string) data_get($profilePhotoFromGallery, 'url', '')
                 : '';
         }
+
         if ($photoUrl === '') {
             $photoUrl = $defaultPhotoUrl;
         }
 
         $profileIconUrl = is_array($profilePhotoFromGallery) ? data_get($profilePhotoFromGallery, 'iconUrl') : null;
+
         if (!is_string($profileIconUrl) || $profileIconUrl === '') {
             $profileIconUrl = null;
         }
@@ -315,6 +318,7 @@ class CandidateUserResource extends JsonResource
 
     /**
      * @param  mixed  $value  JSON column from the query builder (string or array depending on driver)
+     *
      * @return list<string>
      */
     private static function decodeStoredStringList(mixed $value): array
@@ -322,9 +326,11 @@ class CandidateUserResource extends JsonResource
         if ($value === null || $value === '') {
             return [];
         }
+
         if (is_array($value)) {
             return array_values(array_map(static fn($v): string => (string) $v, $value));
         }
+
         if (is_string($value)) {
             $decoded = json_decode($value, true);
 
@@ -336,6 +342,7 @@ class CandidateUserResource extends JsonResource
 
     /**
      * @param  mixed  $value  JSON column from the query builder (string or array depending on driver)
+     *
      * @return list<int>
      */
     private static function decodeStoredIdList(mixed $value): array
@@ -343,9 +350,11 @@ class CandidateUserResource extends JsonResource
         if ($value === null || $value === '') {
             return [];
         }
+
         if (is_array($value)) {
             return array_values(array_map(static fn($id): int => (int) $id, $value));
         }
+
         if (is_string($value)) {
             $decoded = json_decode($value, true);
 

@@ -19,11 +19,13 @@ class OptionalSanctumAuthentication
     public function handle(Request $request, Closure $next): Response
     {
         $token = $request->bearerToken();
+
         if ($token === null || $token === '') {
             return $next($request);
         }
 
         $accessToken = PersonalAccessToken::findToken($token);
+
         if ($accessToken === null) {
             return response()->json(
                 [
@@ -35,6 +37,7 @@ class OptionalSanctumAuthentication
         }
 
         $expiresAt = $accessToken->expires_at ?? null;
+
         if ($expiresAt !== null && $expiresAt->isPast()) {
             return response()->json(
                 [
@@ -46,6 +49,7 @@ class OptionalSanctumAuthentication
         }
 
         $user = $accessToken->tokenable;
+
         if ($user instanceof User) {
             $user->withAccessToken($accessToken);
         }

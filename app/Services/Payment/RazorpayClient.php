@@ -6,7 +6,6 @@ namespace App\Services\Payment;
 
 use Razorpay\Api\Api;
 use Razorpay\Api\Errors\SignatureVerificationError;
-use Razorpay\Api\Order;
 
 class RazorpayClient
 {
@@ -21,6 +20,7 @@ class RazorpayClient
 
     /**
      * @param  array<string, string>  $notes
+     *
      * @return array<string, mixed>
      */
     public function createOrder(int $amountPaise, string $currency, string $receipt, array $notes = []): array
@@ -53,6 +53,7 @@ class RazorpayClient
     public function verifyWebhookSignature(string $rawBody, string $signatureHeader): bool
     {
         $secret = (string) config('services.razorpay.webhook_secret', '');
+
         if ($secret === '') {
             return false;
         }

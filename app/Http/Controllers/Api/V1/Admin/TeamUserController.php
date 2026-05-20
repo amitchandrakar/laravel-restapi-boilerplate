@@ -71,6 +71,7 @@ class TeamUserController extends Controller
             return $this->forbiddenResponse();
         }
         $teamUser = User::query()->teamUsers()->where('id', $user->id)->first();
+
         if (!$teamUser instanceof User) {
             return $this->notFoundResponse('Team user not found');
         }
@@ -92,6 +93,7 @@ class TeamUserController extends Controller
             return $this->forbiddenResponse();
         }
         $teamUser = User::query()->teamUsers()->where('id', $user->id)->first();
+
         if (!$teamUser instanceof User) {
             return $this->notFoundResponse('Team user not found');
         }
@@ -125,6 +127,7 @@ class TeamUserController extends Controller
             return $this->forbiddenResponse();
         }
         $teamUser = User::query()->teamUsers()->where('id', $user->id)->first();
+
         if (!$teamUser instanceof User) {
             return $this->notFoundResponse('Team user not found');
         }

@@ -23,23 +23,50 @@ All contributions must follow these core principles:
 
 ## Coding Standards
 
-We follow the **PSR-12** coding standard.
+We follow **PSR-12** formatting with additional static analysis and documentation rules.
 
-### Quality Tools
+### Quality tools (run before every PR)
 
-Before submitting a pull request, please run the following checks:
+| Command | Tool | Purpose |
+|---------|------|---------|
+| `composer format` | [Pint](https://laravel.com/docs/pint) | Auto-format PHP (`app/`, `tests/`, etc.) |
+| `composer lint` | Pint `--test` | CI-safe format check |
+| `composer phpcs` | PHPCS + Slevomat | Unused imports/variables, native type hints, doc spacing |
+| `composer phpcs:fix` | PHPCBF | Auto-fix a subset of PHPCS issues |
+| `composer analyse` | PHPStan 8 + Larastan + strict-rules | Types, dead paths, stricter comparisons |
+| `composer test` | Pest | Behaviour |
+| `composer quality` | All of the above (except format) | Full local gate |
 
-- **Styling**: `./vendor/bin/pint`
-- **Formatting**: `npm run format` (Prettier)
-- **Static Analysis**: `./vendor/bin/phpstan analyse`
-- **Testing**: `composer test` (runs [Pest](https://pestphp.com); configuration in [`tests/Pest.php`](tests/Pest.php)). Prefer `it()` specs whose titles read as full sentences after Pest prints the leading `it ` (e.g. start with _allows_, _returns_, _rejects_), shared setup in `beforeEach` / `describe`, and `expect()` for assertions that are not fluent `TestResponse` chains.
+Configuration lives in:
 
-Our **pre-commit hook** will automatically run these checks for you. Ensure your commit passes all local checks before pushing.
+- [`pint.json`](pint.json) — spacing, imports, blank lines before control flow
+- [`phpcs.xml`](phpcs.xml) — Slevomat rules on `app/`
+- [`phpstan.neon`](phpstan.neon) — level 8 + [`phpstan-baseline.neon`](phpstan-baseline.neon) for legacy debt
+- [`tests/Pest.php`](tests/Pest.php) — Pest + Laravel test case
+
+### Documentation expectations
+
+- **Public methods** on controllers, services, jobs, and other API surface should have a one-line PHPDoc summary.
+- Use **native PHP types** on parameters and return types; PHPCS enforces missing hints on non-trivial methods.
+- Prefer `expect()` / fluent HTTP assertions in tests; Pest `it()` titles should read as full sentences after Pest prints the leading `it ` (e.g. start with _allows_, _returns_, _rejects_).
+
+### Incremental strictness
+
+- Do **not** add new entries to `phpstan-baseline.neon` without a follow-up issue to fix them.
+- **Phase 2** (planned): enable `shipmonk/dead-code-detector` in PHPStan, analyse `tests/` at level 6+, and tighten boolean/loose-comparison strict rules.
+- **Phase 3**: require traversable PHPDoc shapes (`array<string, mixed>`) on complex return types.
+
+### Frontend / misc formatting
+
+- `npm run format` — Prettier for JS/JSON/CSS where applicable.
+
+Our **pre-commit hook** runs Prettier, Pint, PHPCS, PHPStan, and tests. Ensure your commit passes locally before pushing.
 
 ## Pull Request Process
 
 1.  Create a new feature branch from `main`.
-2.  Ensure your code is well-tested (100% feature coverage for new endpoints).
-3.  Update the `CHANGELOG.md` under the `[Unreleased]` section.
-4.  If adding a new module, provide documentation in `docs/api-modules`.
-5.  Submit a descriptive Pull Request for review.
+2.  Run `composer quality` (and `composer format` if Pint changed files).
+3.  Ensure your code is well-tested (100% feature coverage for new endpoints).
+4.  Update the `CHANGELOG.md` under the `[Unreleased]` section.
+5.  If adding a new module, provide documentation in `docs/api-modules`.
+6.  Submit a descriptive Pull Request for review.

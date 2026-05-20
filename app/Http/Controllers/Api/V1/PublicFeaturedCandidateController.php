@@ -53,16 +53,19 @@ class PublicFeaturedCandidateController extends Controller
     private function resolveViewerFromBearerTokenOrNull(Request $request): ?User
     {
         $token = (string) ($request->bearerToken() ?? '');
+
         if ($token === '') {
             return null;
         }
 
         $accessToken = PersonalAccessToken::findToken($token);
+
         if ($accessToken === null) {
             // Keep this endpoint public even when token is invalid.
             return null;
         }
         $user = $accessToken->tokenable;
+
         if (!$user instanceof User) {
             return null;
         }

@@ -282,6 +282,7 @@ class ReportService
         if (!empty($filters['from'])) {
             $query->where('us.login_at', '>=', (string) $filters['from']);
         }
+
         if (!empty($filters['to'])) {
             $query->where('us.login_at', '<=', (string) $filters['to']);
         }
@@ -317,12 +318,15 @@ class ReportService
         if (!empty($filters['userId'])) {
             $query->where('ual.user_id', (int) $filters['userId']);
         }
+
         if (!empty($filters['activityType'])) {
             $query->where('ual.activity_type', (string) $filters['activityType']);
         }
+
         if (!empty($filters['from'])) {
             $query->where('ual.created_at', '>=', (string) $filters['from']);
         }
+
         if (!empty($filters['to'])) {
             $query->where('ual.created_at', '<=', (string) $filters['to']);
         }
@@ -361,12 +365,15 @@ class ReportService
         if (!empty($filters['actorUserId'])) {
             $query->where('al.actor_user_id', (int) $filters['actorUserId']);
         }
+
         if (!empty($filters['action'])) {
             $query->where('al.action', (string) $filters['action']);
         }
+
         if (!empty($filters['from'])) {
             $query->where('al.created_at', '>=', (string) $filters['from']);
         }
+
         if (!empty($filters['to'])) {
             $query->where('al.created_at', '<=', (string) $filters['to']);
         }

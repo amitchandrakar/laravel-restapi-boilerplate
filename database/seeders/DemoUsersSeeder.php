@@ -499,6 +499,7 @@ class DemoUsersSeeder extends Seeder
 
         foreach ($profiles as $index => $row) {
             $email = $row['user']['email'];
+
             if (User::withTrashed()->where('email', $email)->exists()) {
                 continue;
             }
@@ -601,6 +602,7 @@ class DemoUsersSeeder extends Seeder
             $this->attachSubscription($userId, $packageCode);
 
             $published = $user->fresh();
+
             if ($published instanceof User) {
                 $this->finalizePublishedCandidate($published, $index, $countryId, $stateId, $cityMumbaiId);
                 $this->packagePermissionService->syncCandidatePermissions($published->fresh());
@@ -706,6 +708,7 @@ class DemoUsersSeeder extends Seeder
     {
         $now = now();
         $packageId = (int) DB::table('packages')->where('code', $packageCode)->value('id');
+
         if ($packageId === 0) {
             return;
         }
@@ -734,12 +737,15 @@ class DemoUsersSeeder extends Seeder
     ): void {
         $now = now();
         $birthColumns = [];
+
         if ($countryId > 0) {
             $birthColumns['birth_country_id'] = $countryId;
         }
+
         if ($stateId > 0) {
             $birthColumns['birth_state_id'] = $stateId;
         }
+
         if ($birthCityId > 0) {
             $birthColumns['birth_city_id'] = $birthCityId;
         }
@@ -787,6 +793,7 @@ class DemoUsersSeeder extends Seeder
     private function resolveOccupationId(string $occupationLabel): ?int
     {
         $trimmed = trim($occupationLabel);
+
         if ($trimmed === '') {
             return null;
         }
@@ -813,6 +820,7 @@ class DemoUsersSeeder extends Seeder
             $max = $row->max_amount !== null ? (float) $row->max_amount : null;
             $aboveMin = $min === null || $annualIncomeInr >= $min;
             $belowMax = $max === null || $annualIncomeInr <= $max;
+
             if ($aboveMin && $belowMax) {
                 return (int) $row->id;
             }

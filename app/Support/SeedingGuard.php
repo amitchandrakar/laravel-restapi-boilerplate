@@ -32,6 +32,7 @@ final class SeedingGuard
      * @template T
      *
      * @param  callable(): T  $callback
+     *
      * @return T
      */
     public static function run(callable $callback): mixed

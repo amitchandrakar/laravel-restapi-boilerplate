@@ -6,8 +6,6 @@ namespace App\Services;
 
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Pagination\LengthAwarePaginator as Paginator;
-use Laravel\Scout\Builder;
 
 class CandidateAlgoliaBrowseService
 {
@@ -15,6 +13,7 @@ class CandidateAlgoliaBrowseService
 
     /**
      * @param  array<string, mixed>  $filters
+     *
      * @return LengthAwarePaginator<int, array<string, mixed>>
      */
     public function paginateBrowse(User $viewer, int $perPage, int $page, array $filters = []): LengthAwarePaginator
@@ -26,6 +25,7 @@ class CandidateAlgoliaBrowseService
         $options = [
             'filters' => $built['filters'],
         ];
+
         if ($built['numericFilters'] !== []) {
             $options['numericFilters'] = $built['numericFilters'];
         }

@@ -86,6 +86,7 @@ class CandidateProfileSectionService
             };
 
             $completed = collect((array) $user->completed_sections_json)->push($section)->unique()->values()->all();
+
             if ($section === self::SECTION_PERSONAL_DETAILS) {
                 $completed = collect($completed)->push(self::SECTION_BASICS)->unique()->values()->all();
             }
@@ -154,6 +155,7 @@ class CandidateProfileSectionService
     public function publish(User $user): array
     {
         $progress = $this->progress($user);
+
         if ($progress['readyToPublish'] !== true) {
             return ['published' => false, 'missingSections' => $progress['missingSections']];
         }
@@ -190,17 +192,21 @@ class CandidateProfileSectionService
             'birth_city_id',
         ];
         $columns = [];
+
         foreach ($allowed as $key) {
             if (!array_key_exists($key, $payload)) {
                 continue;
             }
             $value = $payload[$key];
+
             if ($value === null || $value === '') {
                 continue;
             }
+
             if (!Schema::hasColumn('users', $key)) {
                 continue;
             }
+
             if ($key === 'date_of_birth' && $value instanceof \DateTimeInterface) {
                 $value = $value->format('Y-m-d');
             }
@@ -241,9 +247,11 @@ class CandidateProfileSectionService
                 continue;
             }
             $value = $payload[$key];
+
             if ($value === null || $value === '') {
                 continue;
             }
+
             if (!Schema::hasColumn('users', $key)) {
                 continue;
             }
@@ -255,9 +263,11 @@ class CandidateProfileSectionService
                 continue;
             }
             $value = $payload[$key];
+
             if ($value === null || $value === '') {
                 continue;
             }
+
             if (!Schema::hasColumn('users', $key)) {
                 continue;
             }
@@ -271,10 +281,15 @@ class CandidateProfileSectionService
 
     private function saveUsersData(User $user, array $payload): void
     {
-        $columns = collect($payload)
-            ->reject(static fn($value) => $value === null)
-            ->filter(static fn($value, $key) => is_string($key) && Schema::hasColumn('users', $key))
-            ->all();
+        $columns = [];
+
+        foreach ($payload as $key => $value) {
+            if ($value === null || !is_string($key) || !Schema::hasColumn('users', $key)) {
+                continue;
+            }
+
+            $columns[$key] = $value;
+        }
 
         if ($columns !== []) {
             $user->update($columns);
@@ -285,6 +300,7 @@ class CandidateProfileSectionService
     private function savePhotos(User $user, array $photos): void
     {
         DB::table('user_images')->where('user_id', $user->id)->where('image_type', 'profile')->delete();
+
         foreach (array_slice($photos, 0, 5) as $index => $url) {
             $storagePath = !str_contains($url, '://') ? $url : null;
             $imageUrl =
@@ -326,11 +342,13 @@ class CandidateProfileSectionService
             return;
         }
         $siblings = $payload['siblings'];
+
         if (!is_array($siblings)) {
             return;
         }
 
         DB::table('user_siblings_details')->where('user_id', $user->id)->delete();
+
         foreach (array_values(array_slice($siblings, 0, 20)) as $index => $row) {
             if (!is_array($row)) {
                 continue;
@@ -372,6 +390,7 @@ class CandidateProfileSectionService
         }
 
         DB::table('user_education_details')->where('user_id', $user->id)->delete();
+
         foreach ($payload['qualifications'] as $qualification) {
             $degreeId = data_get($qualification, 'degree_id');
             $degreeId = $degreeId !== null && $degreeId !== '' ? (int) $degreeId : null;
@@ -430,6 +449,7 @@ class CandidateProfileSectionService
                 continue;
             }
             $v = $payload[$key];
+
             if ($key === 'preferred_min_age' || $key === 'preferred_max_age') {
                 $row[$key] = $v === null || $v === '' ? null : (int) $v;
 
@@ -445,6 +465,7 @@ class CandidateProfileSectionService
 
         if (array_key_exists('preferred_degree_ids', $payload) && Schema::hasColumn($table, 'preferred_degree_ids')) {
             $ids = $payload['preferred_degree_ids'];
+
             if (is_array($ids)) {
                 $row['preferred_degree_ids'] = json_encode(
                     array_values(array_map(static fn($id): int => (int) $id, $ids))
@@ -459,6 +480,7 @@ class CandidateProfileSectionService
             Schema::hasColumn($table, 'preferred_community_ids')
         ) {
             $ids = $payload['preferred_community_ids'];
+
             if (is_array($ids)) {
                 $row['preferred_community_ids'] = json_encode(
                     array_values(array_map(static fn($id): int => (int) $id, $ids))
@@ -481,6 +503,7 @@ class CandidateProfileSectionService
                 continue;
             }
             $v = $payload[$key];
+
             if (is_array($v)) {
                 $row[$key] = json_encode(array_values($v));
             } elseif ($v === null) {
@@ -542,22 +565,26 @@ class CandidateProfileSectionService
         $arrayKeys = ['interests', 'movie_genres', 'hobbies', 'likes', 'dislikes'];
 
         $columns = [];
+
         foreach ($scalarKeys as $key) {
             if (!array_key_exists($key, $payload) || !Schema::hasColumn('users', $key)) {
                 continue;
             }
             $columns[$key] = $payload[$key];
         }
+
         foreach ($arrayKeys as $key) {
             if (!array_key_exists($key, $payload) || !Schema::hasColumn('users', $key)) {
                 continue;
             }
             $v = $payload[$key];
+
             if ($v === null) {
                 $columns[$key] = null;
 
                 continue;
             }
+
             if (is_array($v)) {
                 $columns[$key] = array_values(array_map(static fn($s): string => (string) $s, $v));
             }

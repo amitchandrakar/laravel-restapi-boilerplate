@@ -62,9 +62,11 @@ it('embeds live contact-request status and timestamps on notification cards', fu
     expect($items)->not->toBeEmpty();
 
     $found = null;
+
     foreach ($items as $item) {
         if (($item['kind'] ?? null) === 'contact_request_received') {
             $found = $item;
+
             break;
         }
     }
@@ -97,6 +99,7 @@ it('omits read notifications when clients request unread-only feeds', function (
 
     $unread = $this->withToken($tokenA)->getJson('/api/v1/auth/notifications?unreadOnly=1')->json('data');
     expect($unread)->toBeArray();
+
     foreach ($unread as $item) {
         expect($item['id'] ?? null)->not->toBe($nid);
     }

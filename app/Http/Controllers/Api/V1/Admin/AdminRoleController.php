@@ -158,6 +158,7 @@ class AdminRoleController extends Controller
         }
 
         $oldValues = $role->only(['name', 'title', 'description', 'is_system', 'is_default_registration']);
+
         try {
             $this->adminRoleService->delete($role);
         } catch (\InvalidArgumentException $e) {

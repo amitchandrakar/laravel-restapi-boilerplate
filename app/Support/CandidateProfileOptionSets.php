@@ -11,6 +11,7 @@ final class CandidateProfileOptionSets
 {
     /**
      * @param  list<string>  $values
+     *
      * @return list<array{value: string, label: string}>
      */
     private static function asValueLabel(array $values): array
@@ -26,6 +27,7 @@ final class CandidateProfileOptionSets
     public static function heights(): array
     {
         $out = [];
+
         for ($totalInches = 48; $totalInches <= 96; $totalInches++) {
             $feet = intdiv($totalInches, 12);
             $inches = $totalInches % 12;

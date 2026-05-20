@@ -11,6 +11,7 @@ class SocialLoginSettingsService
 {
     /**
      * @param  array<string, mixed>  $data
+     *
      * @return array<string, mixed>
      */
     public function update(array $data): array
@@ -70,8 +71,10 @@ class SocialLoginSettingsService
     {
         $rows = DB::table('settings')->where('group_key', 'social_login')->get();
         $indexed = [];
+
         foreach ($rows as $row) {
             $indexed[(string) $row->setting_key] = (string) ($row->setting_value ?? '');
+
             if ((string) $row->value_type === 'boolean') {
                 $indexed[(string) $row->setting_key] = (string) $row->setting_value === '1';
             }

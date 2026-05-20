@@ -36,6 +36,7 @@ class DemoAuthUsersSeeder extends Seeder
     private function upsertUser(string $email, string $firstName, string $lastName, string $status): User
     {
         $user = User::withTrashed()->where('email', $email)->first();
+
         if ($user === null) {
             /** @var User $user */
             $user = User::query()->create([
@@ -67,6 +68,7 @@ class DemoAuthUsersSeeder extends Seeder
     private function assignRoleIfExists(User $user, string $roleName, string $guard): void
     {
         $role = Role::query()->where('name', $roleName)->where('guard_name', $guard)->first();
+
         if (!$role instanceof Role) {
             return;
         }

@@ -7,7 +7,6 @@ namespace App\Console\Commands;
 use App\Models\User;
 use App\Support\ScoutConfig;
 use Illuminate\Console\Command;
-use Illuminate\Support\Collection;
 
 class SyncPublishedCandidatesToAlgolia extends Command
 {
@@ -40,6 +39,7 @@ class SyncPublishedCandidatesToAlgolia extends Command
         $query->orderBy('id')->chunkById($chunk, function ($users) use ($bar): void {
             /** @var Collection<int, User> $users */
             $searchable = $users->filter(static fn(User $user): bool => $user->shouldBeSearchable());
+
             if ($searchable->isNotEmpty()) {
                 $searchable->searchable();
             }

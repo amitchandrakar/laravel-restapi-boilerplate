@@ -23,6 +23,7 @@ class RbacSeeder extends Seeder
     {
         $moduleRows = $this->moduleDefinitions();
         $moduleIds = [];
+
         foreach ($moduleRows as $row) {
             $module = Module::query()->updateOrCreate(
                 ['code' => $row['code']],
@@ -38,12 +39,14 @@ class RbacSeeder extends Seeder
         }
 
         $permissionRows = $this->permissionDefinitions();
+
         foreach ($permissionRows as $row) {
             $moduleId = $moduleIds[$row['module_code']] ?? null;
             $perm = Permission::query()->firstOrNew([
                 'name' => $row['name'],
                 'guard_name' => self::GUARD,
             ]);
+
             if ($perm->uuid === null) {
                 $perm->uuid = (string) Str::uuid();
             }

@@ -110,6 +110,7 @@ class PackagePermissionService
         foreach ($candidateUserIds as $userId) {
             /** @var User|null $user */
             $user = User::query()->find((int) $userId);
+
             if ($user instanceof User) {
                 $this->syncCandidatePermissions($user);
             }

@@ -43,6 +43,7 @@ final class UserImageUploadService
         $quality = config('user_images.quality');
 
         $tmpPath = $file->getRealPath();
+
         if ($tmpPath === false || !is_readable($tmpPath)) {
             throw ValidationException::withMessages([
                 'image' => ['The image could not be read.'],
@@ -57,6 +58,7 @@ final class UserImageUploadService
                 ->where('is_active', true)
                 ->whereNull('deleted_at')
                 ->count();
+
             if ($count >= $max) {
                 throw ValidationException::withMessages([
                     'image' => ["You can upload at most {$max} images."],
@@ -143,6 +145,7 @@ final class UserImageUploadService
             ->where('is_active', true)
             ->whereNull('deleted_at')
             ->max('sort_order');
+
         if ($max === null) {
             return 0;
         }

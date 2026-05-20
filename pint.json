@@ -15,7 +15,19 @@
         "blank_line_after_namespace": true,
         "blank_line_after_opening_tag": true,
         "blank_line_before_statement": {
-            "statements": ["return"]
+            "statements": [
+                "return",
+                "throw",
+                "try",
+                "if",
+                "switch",
+                "foreach",
+                "for",
+                "while",
+                "do",
+                "break",
+                "continue"
+            ]
         },
         "cast_spaces": true,
         "class_attributes_separation": {
@@ -72,6 +84,7 @@
         "phpdoc_no_package": true,
         "phpdoc_no_useless_inheritdoc": true,
         "phpdoc_scalar": true,
+        "phpdoc_separation": false,
         "phpdoc_single_line_var_spacing": true,
         "phpdoc_summary": false,
         "phpdoc_to_comment": false,
@@ -96,5 +109,5 @@
         "unary_operator_spaces": true,
         "whitespace_after_comma_in_array": true
     },
-    "exclude": ["vendor", "storage", "bootstrap/cache"]
+    "exclude": ["vendor", "storage", "bootstrap/cache", ".phpcs-cache"]
 }

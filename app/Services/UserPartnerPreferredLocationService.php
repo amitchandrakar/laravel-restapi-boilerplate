@@ -28,6 +28,7 @@ class UserPartnerPreferredLocationService
             if (is_int($entry)) {
                 $cityId = $entry;
                 $city = DB::table('cities')->where('id', $cityId)->first();
+
                 if ($city === null) {
                     continue;
                 }

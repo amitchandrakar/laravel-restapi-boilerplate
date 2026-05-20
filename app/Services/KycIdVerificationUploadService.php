@@ -28,6 +28,7 @@ final class KycIdVerificationUploadService
         }
 
         $tmpPath = $file->getRealPath();
+
         if ($tmpPath === false || !is_readable($tmpPath)) {
             throw ValidationException::withMessages([
                 'image' => ['The image could not be read.'],
@@ -54,6 +55,7 @@ final class KycIdVerificationUploadService
         Storage::disk($disk)->put($storageKey, $binary, ['visibility' => $visibility]);
 
         $publicUrl = UserImageStorageUrl::resolvePublicHttpUrl($storageKey);
+
         if ($publicUrl === null || $publicUrl === '') {
             throw ValidationException::withMessages([
                 'image' => ['Could not resolve public URL for upload.'],
@@ -74,6 +76,7 @@ final class KycIdVerificationUploadService
 
         $folder = (string) config('kyc_id_verification.folder', 'id_verification');
         $prefix = $userId . '/' . $folder . '/';
+
         if (!str_starts_with($relativeKey, $prefix)) {
             return;
         }

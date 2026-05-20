@@ -28,6 +28,7 @@ class TeamUserService
 
             /** @var User $user */
             $user = User::query()->create($payload);
+
             if ($role instanceof Role) {
                 $this->applyTeamRole($user, $role);
             }

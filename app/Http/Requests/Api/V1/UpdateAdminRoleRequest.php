@@ -6,7 +6,6 @@ namespace App\Http\Requests\Api\V1;
 
 use App\Http\Requests\Api\ApiFormRequest;
 use App\Models\Role;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Validation\Rule;
 
@@ -41,6 +40,7 @@ class UpdateAdminRoleRequest extends ApiFormRequest
         $validator->after(function (Validator $validator): void {
             /** @var Role|null $role */
             $role = $this->route('role');
+
             if (!$role instanceof Role) {
                 return;
             }

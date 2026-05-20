@@ -44,6 +44,7 @@ class ApiResponseBuilder
     public static function baseMeta(?array $extra = null): array
     {
         $requestId = request()->attributes->get('request_id');
+
         if ($requestId === null) {
             $requestId = 'req_' . Str::ulid();
         }
@@ -84,6 +85,7 @@ class ApiResponseBuilder
         if ($paginator instanceof JsonResource) {
             $paginator = $paginator->resource;
         }
+
         if (!$paginator instanceof LengthAwarePaginator) {
             throw new \InvalidArgumentException('Pagination data not found.');
         }
@@ -152,6 +154,7 @@ class ApiResponseBuilder
             'details' => $details ?? $message,
             'field' => null,
         ];
+
         if ($fields !== null) {
             $error['fields'] = $fields;
         }
@@ -165,11 +168,13 @@ class ApiResponseBuilder
      * Transform Laravel validation errors to { field, message }[].
      *
      * @param  array<string, array<int, string>|string>  $errors
+     *
      * @return array<int, array{field: string, message: string}>
      */
     public static function normalizeValidationFields(array $errors): array
     {
         $normalized = [];
+
         foreach ($errors as $field => $messages) {
             if (is_array($messages)) {
                 $message = $messages[0] ?? 'Invalid';

@@ -7,14 +7,128 @@ parameters:
 			path: app/Console/Commands/MakeApiModule.php
 
 		-
+			message: '#^Call to method count\(\) on an unknown class App\\Console\\Commands\\Collection\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Console/Commands/SyncPublishedCandidatesToAlgolia.php
+
+		-
+			message: '#^Call to method filter\(\) on an unknown class App\\Console\\Commands\\Collection\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Console/Commands/SyncPublishedCandidatesToAlgolia.php
+
+		-
+			message: '#^Casting to int something that''s already int\<0, max\>\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Console/Commands/SyncPublishedCandidatesToAlgolia.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:candidates\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Console/Commands/SyncPublishedCandidatesToAlgolia.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:count\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Console/Commands/SyncPublishedCandidatesToAlgolia.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:orderBy\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Console/Commands/SyncPublishedCandidatesToAlgolia.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:whereNotNull\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Console/Commands/SyncPublishedCandidatesToAlgolia.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:whereNull\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Console/Commands/SyncPublishedCandidatesToAlgolia.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$users contains unknown class App\\Console\\Commands\\Collection\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Console/Commands/SyncPublishedCandidatesToAlgolia.php
+
+		-
+			message: '#^PHPDoc tag @var with type App\\Console\\Commands\\Collection\<int, App\\Models\\User\> is not subtype of native type Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\User\>\.$#'
+			identifier: varTag.nativeType
+			count: 1
+			path: app/Console/Commands/SyncPublishedCandidatesToAlgolia.php
+
+		-
 			message: '#^Method App\\Exceptions\\Handler\:\:modelNotFoundMessage\(\) has parameter \$exception with generic class Illuminate\\Database\\Eloquent\\ModelNotFoundException but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
 			path: app/Exceptions/Handler.php
 
 		-
+			message: '#^PHPDoc tag @var for property App\\Exceptions\\Handler\:\:\$levels contains unresolvable type\.$#'
+			identifier: property.unresolvableType
+			count: 1
+			path: app/Exceptions/Handler.php
+
+		-
+			message: '#^PHPDoc type array\<class\-string\<Throwable\>, mixed\> of property App\\Exceptions\\Handler\:\:\$levels is not the same as PHPDoc type array\<class\-string\<Throwable\>, ''alert''\|''critical''\|''debug''\|''emergency''\|''error''\|''info''\|''notice''\|''warning''\> of overridden property Illuminate\\Foundation\\Exceptions\\Handler\:\:\$levels\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Exceptions/Handler.php
+
+		-
+			message: '#^Property App\\Exceptions\\Handler\:\:\$levels type has no value type specified in iterable type array\<class\-string\<Throwable\>, mixed\>\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Exceptions/Handler.php
+
+		-
+			message: '#^Short ternary operator is not allowed\. Use null coalesce operator if applicable or consider using long ternary\.$#'
+			identifier: ternary.shortNotAllowed
+			count: 9
+			path: app/Exceptions/Handler.php
+
+		-
+			message: '#^Casting to bool something that''s already bool\.$#'
+			identifier: cast.useless
+			count: 4
+			path: app/Http/Controllers/Api/V1/Admin/AdminRoleController.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 8
+			path: app/Http/Controllers/Api/V1/Admin/AdminRoleController.php
+
+		-
 			message: '#^Cannot access property \$id on App\\Models\\User\|null\.$#'
 			identifier: property.nonObject
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/CandidateUserController.php
+
+		-
+			message: '#^Casting to bool something that''s already bool\.$#'
+			identifier: cast.useless
+			count: 4
+			path: app/Http/Controllers/Api/V1/Admin/CandidateUserController.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 29
+			path: app/Http/Controllers/Api/V1/Admin/CandidateUserController.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:candidates\(\)\.$#'
+			identifier: staticMethod.dynamicCall
 			count: 2
 			path: app/Http/Controllers/Api/V1/Admin/CandidateUserController.php
 
@@ -31,10 +145,64 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Admin/CandidateUserController.php
 
 		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/KycDocumentController.php
+
+		-
 			message: '#^Parameter \#3 \$payload of method App\\Services\\KycDocumentService\:\:reviewDocument\(\) expects array\{verification_status\: string, rejection_reason\?\: string\|null\}, array\<string, mixed\> given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/KycDocumentController.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 12
+			path: app/Http/Controllers/Api/V1/Admin/PackageController.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 12
+			path: app/Http/Controllers/Api/V1/Admin/PaymentController.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 6
+			path: app/Http/Controllers/Api/V1/Admin/ReportController.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/SeoSettingsController.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/SiteSettingsController.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/SocialLoginSettingsController.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 12
+			path: app/Http/Controllers/Api/V1/Admin/TeamUserController.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:teamUsers\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 3
+			path: app/Http/Controllers/Api/V1/Admin/TeamUserController.php
 
 		-
 			message: '#^Cannot access property \$id on App\\Models\\User\|null\.$#'
@@ -45,6 +213,24 @@ parameters:
 		-
 			message: '#^Cannot access property \$uuid on App\\Models\\User\|null\.$#'
 			identifier: property.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/V1/AuthController.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 5
+			path: app/Http/Controllers/Api/V1/AuthController.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 8
+			path: app/Http/Controllers/Api/V1/AuthController.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Laravel\\Sanctum\\PersonalAccessToken\>\:\:delete\(\)\.$#'
+			identifier: staticMethod.dynamicCall
 			count: 1
 			path: app/Http/Controllers/Api/V1/AuthController.php
 
@@ -79,6 +265,36 @@ parameters:
 			path: app/Http/Controllers/Api/V1/AuthController.php
 
 		-
+			message: '#^Call to method toIso8601String\(\) on an unknown class App\\Models\\Carbon\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/CandidateContactRequestController.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Http/Controllers/Api/V1/CandidateContactRequestController.php
+
+		-
+			message: '#^Casting to int something that''s already int\<0, max\>\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Http/Controllers/Api/V1/CandidateContactRequestController.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Http/Controllers/Api/V1/CandidateDiscoveryController.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:orderBy\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Http/Controllers/Api/V1/CandidateKycController.php
+
+		-
 			message: '#^Parameter \#2 \$payload of method App\\Services\\KycDocumentService\:\:upsertForCandidate\(\) expects array\{document_type\: string, document_number_masked\?\: string\|null, document_front_url\?\: string\|null, document_back_url\?\: string\|null, selfie_url\?\: string\|null\}, array\<string, mixed\> given\.$#'
 			identifier: argument.type
 			count: 1
@@ -88,6 +304,18 @@ parameters:
 			message: '#^Cannot access property \$id on App\\Models\\User\|null\.$#'
 			identifier: property.nonObject
 			count: 6
+			path: app/Http/Controllers/Api/V1/CandidateProfileController.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 12
+			path: app/Http/Controllers/Api/V1/CandidateProfileController.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 2
 			path: app/Http/Controllers/Api/V1/CandidateProfileController.php
 
 		-
@@ -101,6 +329,12 @@ parameters:
 			identifier: argument.templateType
 			count: 1
 			path: app/Http/Controllers/Api/V1/CandidateProfileController.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Contracts\\Auth\\Guard\:\:check\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Http/Controllers/Api/V1/Controller.php
 
 		-
 			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Controller\:\:paginatedList\(\) has parameter \$paginator with generic class Illuminate\\Pagination\\LengthAwarePaginator but does not specify its types\: TKey, TValue$#'
@@ -119,6 +353,66 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Http/Controllers/Api/V1/Controller.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Http\\Request\:\:validate\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Http/Controllers/Api/V1/MeDeviceController.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 4
+			path: app/Http/Controllers/Api/V1/MeKycController.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:orderBy\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Http/Controllers/Api/V1/MeKycController.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Http/Controllers/Api/V1/MemberNotificationController.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Notifications\\DatabaseNotification\>\:\:update\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Http/Controllers/Api/V1/MemberNotificationController.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Notifications\\DatabaseNotification\>\:\:whereIn\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Http/Controllers/Api/V1/MemberNotificationController.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Notifications\\DatabaseNotification\>\:\:whereNull\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Http/Controllers/Api/V1/MemberNotificationController.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Http/Controllers/Api/V1/PublicFeaturedCandidateController.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Http/Controllers/Api/V1/PublicFeaturedCandidateController.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Http/Controllers/Api/V1/RegistrationPaymentController.php
 
 		-
 			message: '#^Method App\\Http\\Controllers\\Api\\V1\\RegistrationPaymentController\:\:paginatedList\(\) has parameter \$paginator with generic class Illuminate\\Pagination\\LengthAwarePaginator but does not specify its types\: TKey, TValue$#'
@@ -157,7 +451,13 @@ parameters:
 			path: app/Http/Controllers/Api/V1/UserController.php
 
 		-
-			message: '#^PHPDoc type array of property App\\Http\\Middleware\\EncryptCookies\:\:\$except is not covariant with PHPDoc type array\<int, string\> of overridden property Illuminate\\Cookie\\Middleware\\EncryptCookies\:\:\$except\.$#'
+			message: '#^Short ternary operator is not allowed\. Use null coalesce operator if applicable or consider using long ternary\.$#'
+			identifier: ternary.shortNotAllowed
+			count: 1
+			path: app/Http/Middleware/AttachRequestId.php
+
+		-
+			message: '#^PHPDoc type array of property App\\Http\\Middleware\\EncryptCookies\:\:\$except is not the same as PHPDoc type array\<int, string\> of overridden property Illuminate\\Cookie\\Middleware\\EncryptCookies\:\:\$except\.$#'
 			identifier: property.phpDocType
 			count: 1
 			path: app/Http/Middleware/EncryptCookies.php
@@ -169,13 +469,61 @@ parameters:
 			path: app/Http/Middleware/EncryptCookies.php
 
 		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Http/Middleware/EnsureActiveTrackedSession.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Http/Middleware/EnsureActiveTrackedSession.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$access contains unknown class App\\Http\\Middleware\\PersonalAccessToken\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Middleware/EnsureActiveTrackedSession.php
+
+		-
+			message: '#^PHPDoc tag @var with type App\\Http\\Middleware\\PersonalAccessToken\|Laravel\\Sanctum\\TransientToken\|null is not subtype of type Laravel\\Sanctum\\PersonalAccessToken\.$#'
+			identifier: varTag.type
+			count: 1
+			path: app/Http/Middleware/EnsureActiveTrackedSession.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Http/Middleware/EnsureProfileUuidHeaderMatchesUser.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Http/Middleware/LogApiCalls.php
+
+		-
 			message: '#^Method App\\Http\\Middleware\\LogApiCalls\:\:summarizeBody\(\) should return array\<string, mixed\>\|string but returns array\<int\|string, mixed\>\.$#'
 			identifier: return.type
 			count: 1
 			path: app/Http/Middleware/LogApiCalls.php
 
 		-
-			message: '#^PHPDoc type array of property App\\Http\\Middleware\\TrimStrings\:\:\$except is not covariant with PHPDoc type array\<int, string\> of overridden property Illuminate\\Foundation\\Http\\Middleware\\TrimStrings\:\:\$except\.$#'
+			message: '#^Parameter \$request of method App\\Http\\Middleware\\NoCache\:\:handle\(\) has invalid type App\\Http\\Middleware\\Request\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Middleware/NoCache.php
+
+		-
+			message: '#^Parameter \$request of method App\\Http\\Middleware\\RedirectIfAuthenticated\:\:handle\(\) has invalid type App\\Http\\Middleware\\Request\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Middleware/RedirectIfAuthenticated.php
+
+		-
+			message: '#^PHPDoc type array of property App\\Http\\Middleware\\TrimStrings\:\:\$except is not the same as PHPDoc type array\<int, string\> of overridden property Illuminate\\Foundation\\Http\\Middleware\\TrimStrings\:\:\$except\.$#'
 			identifier: property.phpDocType
 			count: 1
 			path: app/Http/Middleware/TrimStrings.php
@@ -187,7 +535,7 @@ parameters:
 			path: app/Http/Middleware/TrimStrings.php
 
 		-
-			message: '#^PHPDoc type array of property App\\Http\\Middleware\\VerifyCsrfToken\:\:\$except is not covariant with PHPDoc type array\<int, string\> of overridden property Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken\:\:\$except\.$#'
+			message: '#^PHPDoc type array of property App\\Http\\Middleware\\VerifyCsrfToken\:\:\$except is not the same as PHPDoc type array\<int, string\> of overridden property Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken\:\:\$except\.$#'
 			identifier: property.phpDocType
 			count: 1
 			path: app/Http/Middleware/VerifyCsrfToken.php
@@ -265,6 +613,12 @@ parameters:
 			path: app/Http/Requests/Api/V1/Candidate/UploadCandidateProfileImageRequest.php
 
 		-
+			message: '#^Method App\\Http\\Requests\\Api\\V1\\CandidateRegistrationOptionsRequest\:\:rules\(\) has invalid return type App\\Http\\Requests\\Api\\V1\\ValidationRule\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Requests/Api/V1/CandidateRegistrationOptionsRequest.php
+
+		-
 			message: '#^Method App\\Http\\Requests\\Api\\V1\\ChangePasswordRequest\:\:rules\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -311,6 +665,12 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Http/Requests/Api/V1/Payment/ConfirmRegistrationPaymentRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\Api\\V1\\RegisterCandidateRequest\:\:rules\(\) has invalid return type App\\Http\\Requests\\Api\\V1\\ValidationRule\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Requests/Api/V1/RegisterCandidateRequest.php
 
 		-
 			message: '#^Method App\\Http\\Requests\\Api\\V1\\RegisterRequest\:\:rules\(\) return type has no value type specified in iterable type array\.$#'
@@ -361,10 +721,76 @@ parameters:
 			path: app/Http/Requests/Api/V1/ResetPasswordRequest.php
 
 		-
+			message: '#^Method App\\Http\\Requests\\Api\\V1\\StoreAdminRoleRequest\:\:rules\(\) has invalid return type App\\Http\\Requests\\Api\\V1\\ValidationRule\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Requests/Api/V1/StoreAdminRoleRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\Api\\V1\\StoreCandidateUserRequest\:\:rules\(\) has invalid return type App\\Http\\Requests\\Api\\V1\\ValidationRule\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Requests/Api/V1/StoreCandidateUserRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\Api\\V1\\StorePackageRequest\:\:rules\(\) has invalid return type App\\Http\\Requests\\Api\\V1\\ValidationRule\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Requests/Api/V1/StorePackageRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\Api\\V1\\StorePaymentRequest\:\:rules\(\) has invalid return type App\\Http\\Requests\\Api\\V1\\ValidationRule\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Requests/Api/V1/StorePaymentRequest.php
+
+		-
 			message: '#^Method App\\Http\\Requests\\Api\\V1\\StoreTeamUserRequest\:\:rules\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Http/Requests/Api/V1/StoreTeamUserRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\Api\\V1\\StoreUserRequest\:\:rules\(\) has invalid return type App\\Http\\Requests\\Api\\V1\\ValidationRule\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Requests/Api/V1/StoreUserRequest.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Http/Requests/Api/V1/UpdateAdminRoleRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\Api\\V1\\UpdateAdminRoleRequest\:\:rules\(\) has invalid return type App\\Http\\Requests\\Api\\V1\\ValidationRule\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Requests/Api/V1/UpdateAdminRoleRequest.php
+
+		-
+			message: '#^Access to property \$id on an unknown class App\\Http\\Requests\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Requests/Api/V1/UpdatePackageRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\Api\\V1\\UpdatePackageRequest\:\:rules\(\) has invalid return type App\\Http\\Requests\\Api\\V1\\ValidationRule\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Requests/Api/V1/UpdatePackageRequest.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$package contains unknown class App\\Http\\Requests\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Requests/Api/V1/UpdatePackageRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\Api\\V1\\UpdatePaymentRequest\:\:rules\(\) has invalid return type App\\Http\\Requests\\Api\\V1\\ValidationRule\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Requests/Api/V1/UpdatePaymentRequest.php
 
 		-
 			message: '#^Cannot access property \$id on App\\Models\\User\|null\.$#'
@@ -403,10 +829,808 @@ parameters:
 			path: app/Http/Requests/Api/V1/UpdateSocialLoginSettingsRequest.php
 
 		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Http/Requests/Api/V1/UpdateTeamUserRequest.php
+
+		-
 			message: '#^Method App\\Http\\Requests\\Api\\V1\\UpdateTeamUserRequest\:\:rules\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Http/Requests/Api/V1/UpdateTeamUserRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\Api\\V1\\UpdateUserRequest\:\:rules\(\) has invalid return type App\\Http\\Requests\\Api\\V1\\ValidationRule\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Requests/Api/V1/UpdateUserRequest.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminCandidateProfileDetailsResource.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$user contains unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminCandidateProfileDetailsResource.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\AdminCandidateProfileDetailsService\:\:buildForCandidate\(\) expects App\\Models\\User, App\\Http\\Resources\\Api\\V1\\User given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminCandidateProfileDetailsResource.php
+
+		-
+			message: '#^Access to property \$document_back_url on an unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminPendingKycDocumentResource.php
+
+		-
+			message: '#^Access to property \$document_front_url on an unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminPendingKycDocumentResource.php
+
+		-
+			message: '#^Access to property \$document_number_masked on an unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminPendingKycDocumentResource.php
+
+		-
+			message: '#^Access to property \$document_type on an unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminPendingKycDocumentResource.php
+
+		-
+			message: '#^Access to property \$selfie_url on an unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminPendingKycDocumentResource.php
+
+		-
+			message: '#^Access to property \$submitted_at on an unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminPendingKycDocumentResource.php
+
+		-
+			message: '#^Access to property \$user on an unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminPendingKycDocumentResource.php
+
+		-
+			message: '#^Access to property \$uuid on an unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminPendingKycDocumentResource.php
+
+		-
+			message: '#^Access to property \$verification_status on an unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminPendingKycDocumentResource.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$doc contains unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminPendingKycDocumentResource.php
+
+		-
+			message: '#^Access to property \$current_city on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/CandidateCardResource.php
+
+		-
+			message: '#^Access to property \$current_state on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/CandidateCardResource.php
+
+		-
+			message: '#^Access to property \$date_of_birth on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/CandidateCardResource.php
+
+		-
+			message: '#^Access to property \$first_name on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/CandidateCardResource.php
+
+		-
+			message: '#^Access to property \$last_name on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/CandidateCardResource.php
+
+		-
+			message: '#^Access to property \$occupation on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/CandidateCardResource.php
+
+		-
+			message: '#^Access to property \$uuid on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/CandidateCardResource.php
+
+		-
+			message: '#^Casting to bool something that''s already bool\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Http/Resources/Api/V1/CandidateCardResource.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$data contains unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/CandidateCardResource.php
+
+		-
+			message: '#^Access to property \$current_city on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/CandidateUserResource.php
+
+		-
+			message: '#^Access to property \$date_of_birth on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 6
+			path: app/Http/Resources/Api/V1/CandidateUserResource.php
+
+		-
+			message: '#^Access to property \$email on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/CandidateUserResource.php
+
+		-
+			message: '#^Access to property \$featured_at on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/CandidateUserResource.php
+
+		-
+			message: '#^Access to property \$first_name on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/CandidateUserResource.php
+
+		-
+			message: '#^Access to property \$gender on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/CandidateUserResource.php
+
+		-
+			message: '#^Access to property \$height on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/CandidateUserResource.php
+
+		-
+			message: '#^Access to property \$id on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 6
+			path: app/Http/Resources/Api/V1/CandidateUserResource.php
+
+		-
+			message: '#^Access to property \$is_featured on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/CandidateUserResource.php
+
+		-
+			message: '#^Access to property \$last_name on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/CandidateUserResource.php
+
+		-
+			message: '#^Access to property \$occupation on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/CandidateUserResource.php
+
+		-
+			message: '#^Access to property \$phone on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/CandidateUserResource.php
+
+		-
+			message: '#^Access to property \$published_at on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/CandidateUserResource.php
+
+		-
+			message: '#^Access to property \$role_id on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/CandidateUserResource.php
+
+		-
+			message: '#^Access to property \$status on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/CandidateUserResource.php
+
+		-
+			message: '#^Access to property \$uuid on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/CandidateUserResource.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$user contains unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/CandidateUserResource.php
+
+		-
+			message: '#^Parameter \#1 \$user of static method App\\Support\\UserProfilePhotos\:\:listForUser\(\) expects App\\Models\\User, App\\Http\\Resources\\Api\\V1\\User given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Resources/Api/V1/CandidateUserResource.php
+
+		-
+			message: '#^Access to property \$document_back_url on an unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KycDocumentResource.php
+
+		-
+			message: '#^Access to property \$document_front_url on an unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KycDocumentResource.php
+
+		-
+			message: '#^Access to property \$document_number_masked on an unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KycDocumentResource.php
+
+		-
+			message: '#^Access to property \$document_type on an unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KycDocumentResource.php
+
+		-
+			message: '#^Access to property \$rejection_reason on an unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KycDocumentResource.php
+
+		-
+			message: '#^Access to property \$selfie_url on an unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KycDocumentResource.php
+
+		-
+			message: '#^Access to property \$submitted_at on an unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KycDocumentResource.php
+
+		-
+			message: '#^Access to property \$uuid on an unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KycDocumentResource.php
+
+		-
+			message: '#^Access to property \$verification_status on an unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KycDocumentResource.php
+
+		-
+			message: '#^Access to property \$verified_at on an unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KycDocumentResource.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$doc contains unknown class App\\Http\\Resources\\Api\\V1\\UserVerificationDocument\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KycDocumentResource.php
+
+		-
+			message: '#^Access to property \$code on an unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^Access to property \$created_at on an unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^Access to property \$created_by on an unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^Access to property \$currency on an unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^Access to property \$description on an unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^Access to property \$discounted_price on an unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^Access to property \$duration_unit on an unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^Access to property \$id on an unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^Access to property \$is_active on an unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^Access to property \$is_default_registration on an unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^Access to property \$is_popular on an unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^Access to property \$monthly_price on an unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^Access to property \$name on an unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^Access to property \$price on an unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^Access to property \$sort_order on an unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^Access to property \$updated_at on an unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^Access to property \$updated_by on an unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^Access to property \$uuid on an unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^Access to property \$yearly_price on an unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^Call to method permissions\(\) on an unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$package contains unknown class App\\Http\\Resources\\Api\\V1\\Package\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PackageResource.php
+
+		-
+			message: '#^Access to property \$amount on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PaymentResource.php
+
+		-
+			message: '#^Access to property \$created_at on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PaymentResource.php
+
+		-
+			message: '#^Access to property \$currency on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PaymentResource.php
+
+		-
+			message: '#^Access to property \$failed_reason on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PaymentResource.php
+
+		-
+			message: '#^Access to property \$gateway_name on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PaymentResource.php
+
+		-
+			message: '#^Access to property \$gateway_order_id on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PaymentResource.php
+
+		-
+			message: '#^Access to property \$gateway_payment_id on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PaymentResource.php
+
+		-
+			message: '#^Access to property \$gateway_reference_id on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PaymentResource.php
+
+		-
+			message: '#^Access to property \$id on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PaymentResource.php
+
+		-
+			message: '#^Access to property \$package_id on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PaymentResource.php
+
+		-
+			message: '#^Access to property \$paid_at on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PaymentResource.php
+
+		-
+			message: '#^Access to property \$payment_method on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PaymentResource.php
+
+		-
+			message: '#^Access to property \$payment_status on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PaymentResource.php
+
+		-
+			message: '#^Access to property \$raw_response_json on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PaymentResource.php
+
+		-
+			message: '#^Access to property \$subscription_id on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PaymentResource.php
+
+		-
+			message: '#^Access to property \$updated_at on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PaymentResource.php
+
+		-
+			message: '#^Access to property \$user_id on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PaymentResource.php
+
+		-
+			message: '#^Access to property \$uuid on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PaymentResource.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$payment contains unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PaymentResource.php
+
+		-
+			message: '#^Access to property \$current_city on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PublicFeaturedCandidateResource.php
+
+		-
+			message: '#^Access to property \$current_state on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PublicFeaturedCandidateResource.php
+
+		-
+			message: '#^Access to property \$date_of_birth on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 4
+			path: app/Http/Resources/Api/V1/PublicFeaturedCandidateResource.php
+
+		-
+			message: '#^Access to property \$first_name on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PublicFeaturedCandidateResource.php
+
+		-
+			message: '#^Access to property \$id on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 3
+			path: app/Http/Resources/Api/V1/PublicFeaturedCandidateResource.php
+
+		-
+			message: '#^Access to property \$last_name on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PublicFeaturedCandidateResource.php
+
+		-
+			message: '#^Access to property \$uuid on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PublicFeaturedCandidateResource.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$user contains unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PublicFeaturedCandidateResource.php
+
+		-
+			message: '#^Access to property \$current_city on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TeamUserResource.php
+
+		-
+			message: '#^Access to property \$department on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TeamUserResource.php
+
+		-
+			message: '#^Access to property \$email on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TeamUserResource.php
+
+		-
+			message: '#^Access to property \$first_name on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TeamUserResource.php
+
+		-
+			message: '#^Access to property \$gender on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TeamUserResource.php
+
+		-
+			message: '#^Access to property \$id on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TeamUserResource.php
+
+		-
+			message: '#^Access to property \$job_title on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TeamUserResource.php
+
+		-
+			message: '#^Access to property \$last_name on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TeamUserResource.php
+
+		-
+			message: '#^Access to property \$phone on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TeamUserResource.php
+
+		-
+			message: '#^Access to property \$profile_photo_url on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TeamUserResource.php
+
+		-
+			message: '#^Access to property \$role_id on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TeamUserResource.php
+
+		-
+			message: '#^Access to property \$status on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TeamUserResource.php
+
+		-
+			message: '#^Access to property \$uuid on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TeamUserResource.php
+
+		-
+			message: '#^Call to method getAllPermissions\(\) on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TeamUserResource.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$user contains unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TeamUserResource.php
+
+		-
+			message: '#^Access to property \$email on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to property \$first_name on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to property \$id on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to property \$last_name on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to property \$phone on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to property \$status on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to property \$uuid on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$user contains unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Parameter \$models of method App\\Jobs\\Scout\\MakeSearchableOnLowQueue\:\:__construct\(\) has invalid type App\\Jobs\\Scout\\Model\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Jobs/Scout/MakeSearchableOnLowQueue.php
+
+		-
+			message: '#^Type App\\Jobs\\Scout\\Model in generic type Illuminate\\Database\\Eloquent\\Collection\<int, App\\Jobs\\Scout\\Model\> in PHPDoc tag @param for parameter \$models is not subtype of template type TModel of Illuminate\\Database\\Eloquent\\Model of class Illuminate\\Database\\Eloquent\\Collection\.$#'
+			identifier: generics.notSubtype
+			count: 1
+			path: app/Jobs/Scout/MakeSearchableOnLowQueue.php
+
+		-
+			message: '#^Parameter \$models of method App\\Jobs\\Scout\\RemoveFromSearchOnLowQueue\:\:__construct\(\) has invalid type App\\Jobs\\Scout\\Model\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Jobs/Scout/RemoveFromSearchOnLowQueue.php
+
+		-
+			message: '#^Type App\\Jobs\\Scout\\Model in generic type Illuminate\\Database\\Eloquent\\Collection\<int, App\\Jobs\\Scout\\Model\> in PHPDoc tag @param for parameter \$models is not subtype of template type TModel of Illuminate\\Database\\Eloquent\\Model of class Illuminate\\Database\\Eloquent\\Collection\.$#'
+			identifier: generics.notSubtype
+			count: 1
+			path: app/Jobs/Scout/RemoveFromSearchOnLowQueue.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:role\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Listeners/PackageCreatedListener.php
+
+		-
+			message: '#^Iterating over an object of an unknown class App\\Listeners\\Collection\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Listeners/UserLifecycleListener.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$admins contains unknown class App\\Listeners\\Collection\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Listeners/UserLifecycleListener.php
+
+		-
+			message: '#^PHPDoc tag @var with type App\\Listeners\\Collection\<int, App\\Models\\User\> is not subtype of type Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\User\>\.$#'
+			identifier: varTag.type
+			count: 1
+			path: app/Listeners/UserLifecycleListener.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<static\(App\\Models\\ContactRequest\)\>\:\:exists\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Models/ContactRequest.php
 
 		-
 			message: '#^Method App\\Models\\ContactRequest\:\:fromUser\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
@@ -417,6 +1641,24 @@ parameters:
 		-
 			message: '#^Method App\\Models\\ContactRequest\:\:toUser\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
+			count: 1
+			path: app/Models/ContactRequest.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Models\\ContactRequest\:\:\$created_at contains unknown class App\\Models\\Carbon\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ContactRequest.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Models\\ContactRequest\:\:\$responded_at contains unknown class App\\Models\\Carbon\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ContactRequest.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Models\\ContactRequest\:\:\$updated_at contains unknown class App\\Models\\Carbon\.$#'
+			identifier: class.notFound
 			count: 1
 			path: app/Models/ContactRequest.php
 
@@ -449,6 +1691,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/Module.php
+
+		-
+			message: '#^Casting to float something that''s already float\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Models/Package.php
 
 		-
 			message: '#^Method App\\Models\\Package\:\:creator\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
@@ -511,6 +1759,18 @@ parameters:
 			path: app/Models/Subscription.php
 
 		-
+			message: '#^Call to function array_filter\(\) requires parameter \#2 to be passed to avoid loose comparison semantics\.$#'
+			identifier: arrayFilter.strict
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 20
+			path: app/Models/User.php
+
+		-
 			message: '#^Method App\\Models\\User\:\:primaryRole\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -543,6 +1803,18 @@ parameters:
 		-
 			message: '#^Method App\\Models\\User\:\:verificationDocuments\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Models\\User\:\:\$date_of_birth contains unknown class App\\Models\\Carbon\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Parameter \#1 \$time of static method Carbon\\Carbon\:\:parse\(\) expects Carbon\\Month\|Carbon\\WeekDay\|DateTimeInterface\|float\|int\|string\|null, App\\Models\\Carbon given\.$#'
+			identifier: argument.type
 			count: 1
 			path: app/Models/User.php
 
@@ -607,10 +1879,22 @@ parameters:
 			path: app/Notifications/PackageCreatedNotification.php
 
 		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Notifications/PaymentFailedNotification.php
+
+		-
 			message: '#^Method App\\Notifications\\PaymentFailedNotification\:\:via\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Notifications/PaymentFailedNotification.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Notifications/PaymentSucceededNotification.php
 
 		-
 			message: '#^Method App\\Notifications\\PaymentSucceededNotification\:\:via\(\) return type has no value type specified in iterable type array\.$#'
@@ -643,6 +1927,78 @@ parameters:
 			path: app/Notifications/UserLifecycleNotification.php
 
 		-
+			message: '#^Casting to int something that''s already int\<0, max\>\.$#'
+			identifier: cast.useless
+			count: 3
+			path: app/Observers/SubscriptionObserver.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Observers/UserObserver.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Policies/ContactRequestPolicy.php
+
+		-
+			message: '#^Casting to int something that''s already int\<0, max\>\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Policies/ContactRequestPolicy.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 4
+			path: app/Policies/UserPolicy.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Policies/UserVerificationDocumentPolicy.php
+
+		-
+			message: '#^Casting to int something that''s already int\<0, max\>\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Policies/UserVerificationDocumentPolicy.php
+
+		-
+			message: '#^Short ternary operator is not allowed\. Use null coalesce operator if applicable or consider using long ternary\.$#'
+			identifier: ternary.shortNotAllowed
+			count: 2
+			path: app/Providers/AppServiceProvider.php
+
+		-
+			message: '#^PHPDoc type array\<class\-string, array\<int, class\-string\>\> of property App\\Providers\\EventServiceProvider\:\:\$listen is not the same as PHPDoc type array\<string, array\<int, string\>\> of overridden property Illuminate\\Foundation\\Support\\Providers\\EventServiceProvider\:\:\$listen\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Providers/EventServiceProvider.php
+
+		-
+			message: '#^Access to property \$age on an unknown class App\\Models\\Carbon\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/AdminCandidateProfileDetailsService.php
+
+		-
+			message: '#^Casting to bool something that''s already bool\.$#'
+			identifier: cast.useless
+			count: 5
+			path: app/Services/AdminCandidateProfileDetailsService.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 8
+			path: app/Services/AdminCandidateProfileDetailsService.php
+
+		-
 			message: '#^Method App\\Services\\AdminCandidateProfileDetailsService\:\:orderedNames\(\) has parameter \$map with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
 			identifier: missingType.generics
 			count: 1
@@ -667,6 +2023,48 @@ parameters:
 			path: app/Services/AdminCandidateProfileDetailsService.php
 
 		-
+			message: '#^Casting to bool something that''s already bool\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Services/AdminRoleService.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Services/AdminRoleService.php
+
+		-
+			message: '#^Casting to int something that''s already int\<0, max\>\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Services/AdminRoleService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Role\>\:\:orderBy\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/AdminRoleService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:count\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/AdminRoleService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:orderBy\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/AdminRoleService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:with\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/AdminRoleService.php
+
+		-
 			message: '#^Method App\\Services\\AdminRoleService\:\:index\(\) should return list\<array\<string, mixed\>\> but returns array\<int, array\<string, mixed\>\>\.$#'
 			identifier: return.type
 			count: 1
@@ -677,6 +2075,84 @@ parameters:
 			identifier: return.type
 			count: 1
 			path: app/Services/AdminRoleService.php
+
+		-
+			message: '#^Casting to bool something that''s already bool\.$#'
+			identifier: cast.useless
+			count: 3
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Casting to float something that''s already float\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 6
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Casting to int something that''s already int\<0, max\>\.$#'
+			identifier: cast.useless
+			count: 3
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 14
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Package\>\:\:orderBy\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 2
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Payment\>\:\:orderByDesc\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 2
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Payment\>\:\:whereNotNull\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Subscription\>\:\:orderByDesc\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 2
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:first\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:where\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Laravel\\Sanctum\\PersonalAccessToken\>\:\:delete\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 2
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Laravel\\Sanctum\\PersonalAccessToken\>\:\:where\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/AuthService.php
 
 		-
 			message: '#^Method App\\Services\\AuthService\:\:login\(\) has parameter \$credentials with no value type specified in iterable type array\.$#'
@@ -703,6 +2179,150 @@ parameters:
 			path: app/Services/AuthService.php
 
 		-
+			message: '#^PHPDoc tag @var with type mixed is not subtype of type Laravel\\Sanctum\\PersonalAccessToken\.$#'
+			identifier: varTag.type
+			count: 3
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Call to method getCollection\(\) on an unknown class App\\Services\\Paginator\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/CandidateAlgoliaBrowseService.php
+
+		-
+			message: '#^Call to method options\(\) on an unknown class App\\Services\\Builder\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/CandidateAlgoliaBrowseService.php
+
+		-
+			message: '#^Call to method orderBy\(\) on an unknown class App\\Services\\Builder\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/CandidateAlgoliaBrowseService.php
+
+		-
+			message: '#^Call to method paginate\(\) on an unknown class App\\Services\\Builder\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/CandidateAlgoliaBrowseService.php
+
+		-
+			message: '#^Call to method setCollection\(\) on an unknown class App\\Services\\Paginator\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/CandidateAlgoliaBrowseService.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Services/CandidateAlgoliaBrowseService.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Services/CandidateAlgoliaBrowseService.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$builder contains unknown class App\\Services\\Builder\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/CandidateAlgoliaBrowseService.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$paginator contains unknown class App\\Services\\Paginator\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/CandidateAlgoliaBrowseService.php
+
+		-
+			message: '#^PHPDoc tag @var with type App\\Services\\Builder\<App\\Models\\User\> is not subtype of type Laravel\\Scout\\Builder\<App\\Models\\User\>\.$#'
+			identifier: varTag.type
+			count: 1
+			path: app/Services/CandidateAlgoliaBrowseService.php
+
+		-
+			message: '#^PHPDoc tag @var with type Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\<int, array\<string, mixed\>\> is not subtype of type App\\Services\\Paginator\<int, App\\Models\\User\>\.$#'
+			identifier: varTag.type
+			count: 1
+			path: app/Services/CandidateAlgoliaBrowseService.php
+
+		-
+			message: '#^Call to method getCollection\(\) on an unknown class App\\Services\\Paginator\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/CandidateBrowseService.php
+
+		-
+			message: '#^Call to method setCollection\(\) on an unknown class App\\Services\\Paginator\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/CandidateBrowseService.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Services/CandidateBrowseService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:candidates\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/CandidateBrowseService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:orderByDesc\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 2
+			path: app/Services/CandidateBrowseService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:whereNotNull\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/CandidateBrowseService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:whereNull\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/CandidateBrowseService.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$paginator contains unknown class App\\Services\\Paginator\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/CandidateBrowseService.php
+
+		-
+			message: '#^PHPDoc tag @var with type App\\Services\\Paginator\<int, App\\Models\\User\> is not subtype of type Illuminate\\Pagination\\LengthAwarePaginator\<int, App\\Models\\User\>\.$#'
+			identifier: varTag.type
+			count: 1
+			path: app/Services/CandidateBrowseService.php
+
+		-
+			message: '#^PHPDoc tag @var with type Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\<int, array\<string, mixed\>\> is not subtype of type App\\Services\\Paginator\<int, App\\Models\\User\>\.$#'
+			identifier: varTag.type
+			count: 1
+			path: app/Services/CandidateBrowseService.php
+
+		-
+			message: '#^Access to property \$id on an unknown class App\\Services\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/CandidateCardDataService.php
+
+		-
+			message: '#^Method App\\Services\\CandidateCardDataService\:\:buildCardPayloads\(\) has invalid return type App\\Services\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/CandidateCardDataService.php
+
+		-
 			message: '#^Parameter \#1 \$userIds of method App\\Services\\CandidateCardDataService\:\:educationSummaryByUserId\(\) expects list\<int\>, array\<int\> given\.$#'
 			identifier: argument.type
 			count: 1
@@ -727,10 +2347,88 @@ parameters:
 			path: app/Services/CandidateCardDataService.php
 
 		-
+			message: '#^Parameter \$users of method App\\Services\\CandidateCardDataService\:\:buildCardPayloads\(\) has invalid type App\\Services\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/CandidateCardDataService.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 3
+			path: app/Services/CandidateDiscoveryFilterApplier.php
+
+		-
 			message: '#^Method App\\Services\\CandidateDiscoveryFilterApplier\:\:apply\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
 			path: app/Services/CandidateDiscoveryFilterApplier.php
+
+		-
+			message: '#^Call to method getCollection\(\) on an unknown class App\\Services\\Paginator\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/CandidateFavoriteService.php
+
+		-
+			message: '#^Call to method setCollection\(\) on an unknown class App\\Services\\Paginator\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/CandidateFavoriteService.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 3
+			path: app/Services/CandidateFavoriteService.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Services/CandidateFavoriteService.php
+
+		-
+			message: '#^Dynamic call to static method App\\Models\\Favorite\:\:restore\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/CandidateFavoriteService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Favorite\>\:\:orderByDesc\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/CandidateFavoriteService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Favorite\>\:\:whereNull\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/CandidateFavoriteService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:whereNull\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/CandidateFavoriteService.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$paginator contains unknown class App\\Services\\Paginator\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/CandidateFavoriteService.php
+
+		-
+			message: '#^PHPDoc tag @var with type App\\Services\\Paginator\<int, App\\Models\\Favorite\> is not subtype of type Illuminate\\Pagination\\LengthAwarePaginator\<int, App\\Models\\Favorite\>\.$#'
+			identifier: varTag.type
+			count: 1
+			path: app/Services/CandidateFavoriteService.php
+
+		-
+			message: '#^PHPDoc tag @var with type Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\<int, array\<string, mixed\>\> is not subtype of type App\\Services\\Paginator\<int, App\\Models\\Favorite\>\.$#'
+			identifier: varTag.type
+			count: 1
+			path: app/Services/CandidateFavoriteService.php
 
 		-
 			message: '#^Access to an undefined property object\:\:\$match_reason_json\.$#'
@@ -753,6 +2451,30 @@ parameters:
 		-
 			message: '#^Access to an undefined property object\:\:\$matched_user_id\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Services/CandidateMatchService.php
+
+		-
+			message: '#^Access to property \$age on an unknown class App\\Models\\Carbon\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/CandidateMatchService.php
+
+		-
+			message: '#^Casting to bool something that''s already bool\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Services/CandidateMatchService.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Services/CandidateMatchService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:whereIn\(\)\.$#'
+			identifier: staticMethod.dynamicCall
 			count: 1
 			path: app/Services/CandidateMatchService.php
 
@@ -787,6 +2509,12 @@ parameters:
 			path: app/Services/CandidateMatchService.php
 
 		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Services/CandidateProfileSectionService.php
+
+		-
 			message: '#^Method App\\Services\\CandidateProfileSectionService\:\:saveCareerEducation\(\) has parameter \$payload with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -817,6 +2545,12 @@ parameters:
 			path: app/Services/CandidateProfileSectionService.php
 
 		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:candidates\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/CandidateUserService.php
+
+		-
 			message: '#^Method App\\Services\\CandidateUserService\:\:create\(\) has parameter \$data with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -835,10 +2569,88 @@ parameters:
 			path: app/Services/CandidateUserService.php
 
 		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Services/ContactRequestService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\ContactRequest\>\:\:exists\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/ContactRequestService.php
+
+		-
+			message: '#^Property App\\Models\\ContactRequest\:\:\$responded_at \(App\\Models\\Carbon\|null\) does not accept Illuminate\\Support\\Carbon\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Services/ContactRequestService.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Services/FeaturedCandidateService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:candidates\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/FeaturedCandidateService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:orderByDesc\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 2
+			path: app/Services/FeaturedCandidateService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:whereNotNull\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/FeaturedCandidateService.php
+
+		-
 			message: '#^Method App\\Services\\FeaturedCandidateService\:\:setFeatured\(\) should return App\\Models\\User but returns App\\Models\\User\|null\.$#'
 			identifier: return.type
 			count: 1
 			path: app/Services/FeaturedCandidateService.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 5
+			path: app/Services/KycDocumentService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:candidates\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/KycDocumentService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:select\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/KycDocumentService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\UserVerificationDocument\>\:\:orderBy\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/KycDocumentService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\UserVerificationDocument\>\:\:orderByDesc\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/KycDocumentService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\UserVerificationDocument\>\:\:whereIn\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/KycDocumentService.php
 
 		-
 			message: '#^Method App\\Services\\KycDocumentService\:\:reviewDocument\(\) should return App\\Models\\UserVerificationDocument but returns App\\Models\\UserVerificationDocument\|null\.$#'
@@ -853,6 +2665,132 @@ parameters:
 			path: app/Services/KycDocumentService.php
 
 		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Services/MemberDashboardStatsService.php
+
+		-
+			message: '#^Casting to int something that''s already int\<0, max\>\.$#'
+			identifier: cast.useless
+			count: 7
+			path: app/Services/MemberDashboardStatsService.php
+
+		-
+			message: '#^Call to method toIso8601String\(\) on an unknown class App\\Models\\Carbon\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/MemberNotificationFeedService.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 3
+			path: app/Services/MemberNotificationFeedService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\ContactRequest\>\:\:whereIn\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/MemberNotificationFeedService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:whereIn\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/MemberNotificationFeedService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Notifications\\DatabaseNotification\>\:\:count\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/MemberNotificationFeedService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Notifications\\DatabaseNotification\>\:\:first\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/MemberNotificationFeedService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Notifications\\DatabaseNotification\>\:\:orderByDesc\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/MemberNotificationFeedService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Notifications\\DatabaseNotification\>\:\:paginate\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/MemberNotificationFeedService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Notifications\\DatabaseNotification\>\:\:whereIn\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 2
+			path: app/Services/MemberNotificationFeedService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Notifications\\DatabaseNotification\>\:\:whereKey\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/MemberNotificationFeedService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Notifications\\DatabaseNotification\>\:\:whereNull\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 2
+			path: app/Services/MemberNotificationFeedService.php
+
+		-
+			message: '#^PHPDoc tag @var with type mixed is not subtype of type array\.$#'
+			identifier: varTag.type
+			count: 3
+			path: app/Services/MemberNotificationFeedService.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Services/PackagePermissionService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Permission\>\:\:orderBy\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/PackagePermissionService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Permission\>\:\:whereIn\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/PackagePermissionService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:pluck\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/PackagePermissionService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:whereIn\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/PackagePermissionService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Package\>\:\:orderBy\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/PackageService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Package\>\:\:orderByDesc\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/PackageService.php
+
+		-
 			message: '#^Method App\\Services\\PackageService\:\:paginatePackages\(\) return type with generic interface Illuminate\\Contracts\\Pagination\\LengthAwarePaginator does not specify its types\: TKey, TValue$#'
 			identifier: missingType.generics
 			count: 1
@@ -863,6 +2801,36 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Services/PackageService.php
+
+		-
+			message: '#^Call to method toArray\(\) on an unknown class App\\Services\\Payment\\Order\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/Payment/RazorpayClient.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$order contains unknown class App\\Services\\Payment\\Order\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/Payment/RazorpayClient.php
+
+		-
+			message: '#^PHPDoc tag @var with type App\\Services\\Payment\\Order is not subtype of type array\<string, mixed\>\.$#'
+			identifier: varTag.type
+			count: 1
+			path: app/Services/Payment/RazorpayClient.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 4
+			path: app/Services/Payment/RegistrationPaymentService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Payment\>\:\:lockForUpdate\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 2
+			path: app/Services/Payment/RegistrationPaymentService.php
 
 		-
 			message: '#^Method App\\Services\\Payment\\RegistrationPaymentService\:\:finalizeFailed\(\) has parameter \$raw with no value type specified in iterable type array\.$#'
@@ -883,6 +2851,18 @@ parameters:
 			path: app/Services/Payment/RegistrationPaymentService.php
 
 		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 3
+			path: app/Services/PaymentService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Payment\>\:\:orderByDesc\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/PaymentService.php
+
+		-
 			message: '#^Method App\\Services\\PaymentService\:\:paginatePayments\(\) return type with generic interface Illuminate\\Contracts\\Pagination\\LengthAwarePaginator does not specify its types\: TKey, TValue$#'
 			identifier: missingType.generics
 			count: 1
@@ -895,10 +2875,28 @@ parameters:
 			path: app/Services/PaymentService.php
 
 		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Services/ProfileViewService.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 3
+			path: app/Services/ReferralService.php
+
+		-
 			message: '#^Method App\\Services\\ReferralService\:\:referralPayloadForUser\(\) should return array\{code\: string, shareUrl\: string\|null, rewardSummary\: array\{successfulReferrals\: int, rewardMonthsEarned\: int\}, entries\: list\<array\{id\: string, name\: string, invitedAt\: string, status\: string\}\>\} but returns array\{code\: string, shareUrl\: non\-falsy\-string\|null, rewardSummary\: array\{successfulReferrals\: int\<0, max\>, rewardMonthsEarned\: int\<0, max\>\}, entries\: array\<int, array\{id\: string, name\: string, invitedAt\: string, status\: string\}\>\}\.$#'
 			identifier: return.type
 			count: 1
 			path: app/Services/ReferralService.php
+
+		-
+			message: '#^Casting to int something that''s already int\<0, max\>\.$#'
+			identifier: cast.useless
+			count: 17
+			path: app/Services/ReportService.php
 
 		-
 			message: '#^Method App\\Services\\ReportService\:\:activeUsers\(\) return type with generic class Illuminate\\Pagination\\LengthAwarePaginator does not specify its types\: TKey, TValue$#'
@@ -917,6 +2915,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Services/ReportService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:teamUsers\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/TeamUserService.php
 
 		-
 			message: '#^Method App\\Services\\TeamUserService\:\:create\(\) has parameter \$data with no value type specified in iterable type array\.$#'
@@ -955,6 +2959,36 @@ parameters:
 			path: app/Services/TeamUserService.php
 
 		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Services/UserImageManageService.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Services/UserImageManageService.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Services/UserImageUploadService.php
+
+		-
+			message: '#^Casting to int something that''s already int\<0, max\>\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Services/UserImageUploadService.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 3
+			path: app/Services/UserPartnerPreferredLocationService.php
+
+		-
 			message: '#^Method App\\Services\\UserService\:\:createUser\(\) has parameter \$data with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -971,6 +3005,12 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Services/UserService.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Support/ApiResponseBuilder.php
 
 		-
 			message: '#^Method App\\Support\\ApiResponseBuilder\:\:baseMeta\(\) has parameter \$extra with no value type specified in iterable type array\.$#'
@@ -1049,6 +3089,12 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: app/Support/GdWebpEncoder.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Support/UserProfilePhotos.php
 
 		-
 			message: '#^Method App\\Support\\UserProfilePhotos\:\:listForUser\(\) should return list\<array\{id\: int, uuid\: string, type\: string, url\: string, thumbnailUrl\: string\|null, originalUrl\: string\|null, iconUrl\: string\|null, imageStoragePath\: string\|null, \.\.\.\}\> but returns array\<int, array\{id\: int, uuid\: string, type\: string, url\: string, thumbnailUrl\: string\|null, originalUrl\: string\|null, iconUrl\: string\|null, imageStoragePath\: string\|null, \.\.\.\}\>\.$#'

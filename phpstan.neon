@@ -1,5 +1,6 @@
 includes:
     - ./vendor/larastan/larastan/extension.neon
+    - ./vendor/phpstan/phpstan-strict-rules/rules.neon
     - phpstan-baseline.neon
 
 parameters:
@@ -10,12 +11,22 @@ parameters:
     paths:
         - app
 
-    # Optional legacy excludes to avoid failures if files are absent.
+    # Level (0-9) — remaining legacy issues in phpstan-baseline.neon
+    level: 8
+
+    reportUnmatchedIgnoredErrors: false
+
+    strictRules:
+        # Laravel codebases often rely on empty() for collections/strings
+        disallowedEmpty: false
+        requireParentConstructorCall: false
+        # Enable in a follow-up pass after cleaning phpstan-baseline.neon
+        booleansInConditions: false
+        booleansInLoopConditions: false
+        disallowedLooseComparison: false
+
     excludePaths:
         - app/Http/Controllers/Api/V1/Auth/ForgotPasswordController.php (?)
         - app/Http/Controllers/Api/V1/Auth/LoginController.php (?)
         - app/Http/Controllers/Api/V1/Auth/RegisterController.php (?)
         - app/Http/Controllers/Api/V1/Auth/ResetPasswordController.php (?)
-
-    # Level (0-9) — app-plan §21 target; remaining issues in phpstan-baseline.neon
-    level: 8

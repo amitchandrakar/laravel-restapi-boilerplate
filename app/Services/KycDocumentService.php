@@ -31,6 +31,7 @@ class KycDocumentService
     public function upsertForCandidate(User $user, array $payload): UserVerificationDocument
     {
         $type = (string) $payload['document_type'];
+
         if (!in_array($type, self::allowedDocumentTypes(), true)) {
             throw ValidationException::withMessages([
                 'document_type' => ['Invalid document type for this endpoint.'],
@@ -43,6 +44,7 @@ class KycDocumentService
             ->first();
 
         $previousUrls = null;
+
         if ($existing instanceof UserVerificationDocument) {
             $previousUrls = [
                 'document_front_url' => $existing->document_front_url,
@@ -53,11 +55,13 @@ class KycDocumentService
 
         if ($existing instanceof UserVerificationDocument) {
             $status = (string) $existing->verification_status;
+
             if ($status === 'pending') {
                 throw ValidationException::withMessages([
                     'document_type' => ['This document is under review and cannot be changed yet.'],
                 ]);
             }
+
             if ($status === 'approved') {
                 throw ValidationException::withMessages([
                     'document_type' => ['Approved documents cannot be changed.'],
@@ -132,6 +136,7 @@ class KycDocumentService
         }
 
         $newStatus = (string) $payload['verification_status'];
+
         if (!in_array($newStatus, ['approved', 'rejected', 'resubmission_required'], true)) {
             throw ValidationException::withMessages([
                 'verification_status' => ['Invalid status.'],
@@ -141,6 +146,7 @@ class KycDocumentService
         $document->verification_status = $newStatus;
         $document->verified_by = $reviewerUserId;
         $document->verified_at = now()->toDateTimeString();
+
         if ($newStatus === 'rejected') {
             $document->rejection_reason = (string) ($payload['rejection_reason'] ?? '');
         } else {
@@ -164,6 +170,7 @@ class KycDocumentService
         foreach (['document_front_url', 'document_back_url', 'selfie_url'] as $field) {
             $old = $previous[$field] ?? null;
             $next = $new[$field] ?? null;
+
             if (!is_string($old) || $old === '' || $old === $next) {
                 continue;
             }

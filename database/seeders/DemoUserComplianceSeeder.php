@@ -18,23 +18,28 @@ class DemoUserComplianceSeeder extends Seeder
             ->where('is_active', true)
             ->where('is_default_registration', true)
             ->value('id');
+
         if ($defaultPackageId === 0) {
             $defaultPackageId = (int) DB::table('packages')
                 ->where('is_active', true)
                 ->orderBy('sort_order')
                 ->value('id');
         }
+
         if ($defaultPackageId === 0) {
             return;
         }
 
         $users = DB::table('users')->select('id')->get();
+
         foreach ($users as $user) {
             $userId = (int) $user->id;
 
             $hasSubscription = DB::table('subscriptions')->where('user_id', $userId)->exists();
+
             if (!$hasSubscription) {
                 $subscriptionId = $this->ensureSubscription($userId, $defaultPackageId, $now);
+
                 if ($subscriptionId > 0) {
                     $this->ensureMembershipHistory($userId, $defaultPackageId, $subscriptionId, $now);
                 }

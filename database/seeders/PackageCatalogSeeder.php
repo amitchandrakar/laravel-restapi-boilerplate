@@ -139,6 +139,7 @@ class PackageCatalogSeeder extends Seeder
             ->all();
 
         DB::table('package_permissions')->where('package_id', $packageId)->delete();
+
         foreach ($permissionIds as $permissionId) {
             DB::table('package_permissions')->insert([
                 'package_id' => $packageId,

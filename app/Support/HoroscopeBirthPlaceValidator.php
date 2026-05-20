@@ -14,6 +14,7 @@ final class HoroscopeBirthPlaceValidator
      * Validation rules for horoscope payload keys.
      *
      * @param  string|null  $dotPrefix  e.g. `horoscope` for nested admin full-profile payloads (becomes `horoscope.date_of_birth`, …).
+     *
      * @return array<string, array<int, mixed|string|\Illuminate\Contracts\Validation\Rule>>
      */
     public static function rules(?string $dotPrefix = null): array
@@ -80,6 +81,7 @@ final class HoroscopeBirthPlaceValidator
 
         if ($stateId !== null && $countryId !== null) {
             $actual = DB::table('states')->where('id', $stateId)->value('country_id');
+
             if ($actual === null || (int) $actual !== $countryId) {
                 $validator
                     ->errors()
@@ -89,6 +91,7 @@ final class HoroscopeBirthPlaceValidator
 
         if ($cityId !== null && $stateId !== null) {
             $actual = DB::table('cities')->where('id', $cityId)->value('state_id');
+
             if ($actual === null || (int) $actual !== $stateId) {
                 $validator->errors()->add($k('city_id'), 'The selected city does not belong to the selected state.');
             }

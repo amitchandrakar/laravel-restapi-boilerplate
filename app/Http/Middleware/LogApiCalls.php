@@ -89,12 +89,14 @@ class LogApiCalls
 
     /**
      * @param  array<int|string, mixed>  $data
+     *
      * @return array<int|string, mixed>
      */
     private function maskSensitive(array $data): array
     {
         foreach ($data as $key => $value) {
             $keyName = is_string($key) ? $key : (string) $key;
+
             if (in_array(strtolower($keyName), self::SENSITIVE_KEYS, true)) {
                 $data[$key] = '***';
 
@@ -124,6 +126,7 @@ class LogApiCalls
     {
         if (method_exists($e, 'getStatusCode')) {
             $status = $e->getStatusCode();
+
             if (is_int($status)) {
                 return $status;
             }
@@ -139,6 +142,7 @@ class LogApiCalls
     {
         $contentType = (string) $response->headers->get('Content-Type', '');
         $raw = $response->getContent();
+
         if (!is_string($raw) || $raw === '') {
             return [
                 'content_type' => $contentType,
@@ -160,6 +164,7 @@ class LogApiCalls
     private function summarizeBody(string $raw): array|string
     {
         $decoded = json_decode($raw, true);
+
         if (is_array($decoded)) {
             return $this->maskSensitive($decoded);
         }

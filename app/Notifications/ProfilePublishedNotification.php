@@ -27,6 +27,7 @@ class ProfilePublishedNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         $publishedAtStr = null;
+
         if ($this->user->published_at !== null) {
             $publishedAtStr = Carbon::parse($this->user->published_at)->toIso8601String();
         }

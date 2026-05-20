@@ -20,6 +20,7 @@ class CandidateUserService
     public function create(array $data): User
     {
         unset($data['password_confirmation']);
+
         if (isset($data['name'])) {
             $parts = preg_split('/\s+/', trim((string) $data['name']), 2, PREG_SPLIT_NO_EMPTY);
             $data['first_name'] = $parts[0] ?? '';
@@ -28,6 +29,7 @@ class CandidateUserService
         }
 
         $password = $data['password'] ?? null;
+
         if ($password === null || $password === '') {
             $data['password'] = Str::password(24);
         }
@@ -40,9 +42,11 @@ class CandidateUserService
     public function update(User $user, array $data): User
     {
         unset($data['password_confirmation']);
+
         if (array_key_exists('password', $data) && ($data['password'] === null || $data['password'] === '')) {
             unset($data['password']);
         }
+
         if (isset($data['name'])) {
             $parts = preg_split('/\s+/', trim((string) $data['name']), 2, PREG_SPLIT_NO_EMPTY);
             $data['first_name'] = $parts[0] ?? '';

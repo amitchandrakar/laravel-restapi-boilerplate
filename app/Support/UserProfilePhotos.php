@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Http\Resources\Api\V1\CandidateUserResource;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -55,6 +54,7 @@ final class UserProfilePhotos
         $storagePath = data_get($row, 'image_storage_path');
 
         $mdRelative = is_string($storagePath) && $storagePath !== '' ? $storagePath : null;
+
         if ($mdRelative === null && $imageUrlRaw !== '' && !str_contains($imageUrlRaw, '://')) {
             $mdRelative = $imageUrlRaw;
         }

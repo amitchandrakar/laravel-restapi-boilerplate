@@ -25,6 +25,7 @@ class ChhattisgarhMasterGeoSeeder extends Seeder
             ]
         );
         $countryId = (int) DB::table('countries')->where('iso2', 'IN')->value('id');
+
         if ($countryId === 0) {
             return;
         }
@@ -39,12 +40,14 @@ class ChhattisgarhMasterGeoSeeder extends Seeder
             ]
         );
         $stateId = (int) DB::table('states')->where('country_id', $countryId)->where('code', 'CG')->value('id');
+
         if ($stateId === 0) {
             return;
         }
 
         /** @var array<int, string> $cities */
         $cities = json_decode((string) file_get_contents(database_path('seeders/data/chhattisgarh_cities.json')), true);
+
         foreach ($cities as $cityName) {
             DB::table('cities')->updateOrInsert(
                 ['state_id' => $stateId, 'name' => $cityName],

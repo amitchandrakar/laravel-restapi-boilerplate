@@ -72,6 +72,7 @@ it('notifies recipients on submit but only alerts senders after acceptance', fun
         ->first();
     expect($received)->not->toBeNull();
     $payload = $received->data;
+
     if (is_string($payload)) {
         $payload = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
     }
@@ -115,6 +116,7 @@ it('notifies recipients on submit but only alerts senders after acceptance', fun
         ->first();
     expect($acceptedN)->not->toBeNull();
     $fromPayload = $acceptedN->data;
+
     if (is_string($fromPayload)) {
         $fromPayload = json_decode($fromPayload, true, 512, JSON_THROW_ON_ERROR);
     }

@@ -18,29 +18,36 @@ class SaveCandidateLocationFamilyRootsRequest extends ApiFormRequest
             'maternal_city' => 'maternal_city_id',
         ];
         $merge = [];
+
         foreach ($legacyToId as $legacy => $canonical) {
             if ($this->filled($legacy) && !$this->filled($canonical)) {
                 $merge[$canonical] = $this->input($legacy);
             }
         }
+
         foreach (['maternal_country_id', 'maternal_state_id', 'maternal_city_id'] as $key) {
             if (!$this->has($key)) {
                 continue;
             }
             $v = $this->input($key);
+
             if ($v === null || $v === '') {
                 continue;
             }
+
             if (is_numeric($v)) {
                 $merge[$key] = (int) $v;
             }
         }
+
         if ($this->filled('maternal_village') && !$this->filled('maternal_village_name')) {
             $v = $this->input('maternal_village');
+
             if (!is_numeric($v)) {
                 $merge['maternal_village_name'] = is_string($v) ? $v : (string) $v;
             }
         }
+
         if ($merge !== []) {
             $this->merge($merge);
         }

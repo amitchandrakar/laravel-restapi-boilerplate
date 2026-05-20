@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<ruleset name="CommunityConnectAPI">
+    <description>Documentation and hygiene rules for application PHP (see CONTRIBUTING.md).</description>
+
+    <file>app</file>
+
+    <arg name="basepath" value="."/>
+    <arg name="cache" value=".phpcs-cache"/>
+    <arg name="extensions" value="php"/>
+    <arg value="sp"/>
+    <arg value="s"/>
+    <arg value="n"/>
+
+    <config name="installed_paths" value="vendor/slevomat/coding-standard"/>
+
+    <rule ref="SlevomatCodingStandard.Namespaces.UnusedUses"/>
+
+    <rule ref="SlevomatCodingStandard.Commenting.DocCommentSpacing">
+        <!-- Align with Pint phpdoc_separation (@template vs @param blocks) -->
+        <properties>
+            <property name="linesCountBetweenDifferentAnnotationsTypes" value="1"/>
+        </properties>
+    </rule>
+    <rule ref="SlevomatCodingStandard.Commenting.UselessInheritDocComment"/>
+
+    <rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint">
+        <exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingTraversableTypeHintSpecification"/>
+        <exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.UselessAnnotation"/>
+    </rule>
+    <rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint">
+        <exclude name="SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingTraversableTypeHintSpecification"/>
+        <exclude name="SlevomatCodingStandard.TypeHints.ParameterTypeHint.UselessAnnotation"/>
+        <exclude-pattern>*/Exceptions/*</exclude-pattern>
+    </rule>
+    <rule ref="SlevomatCodingStandard.TypeHints.DeclareStrictTypes">
+        <!-- Match Pint declare_equal_normalize (strict_types=1) -->
+        <properties>
+            <property name="spacesCountAroundEqualsSign" value="0"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Functions.UnusedParameter">
+        <properties>
+            <property name="allowedParameterPatterns" type="array">
+                <element value="/^_/"/>
+                <element value="/^ability$/"/>
+            </property>
+        </properties>
+        <!-- Laravel requires these parameters on hooks even when unused -->
+        <exclude-pattern>*/Notifications/*</exclude-pattern>
+        <exclude-pattern>*/Policies/*</exclude-pattern>
+        <exclude-pattern>*/Http/Middleware/*</exclude-pattern>
+        <exclude-pattern>*/Http/Resources/*</exclude-pattern>
+        <exclude-pattern>*/Exceptions/Handler.php</exclude-pattern>
+        <exclude-pattern>*/Observers/*</exclude-pattern>
+    </rule>
+    <rule ref="SlevomatCodingStandard.Variables.UnusedVariable"/>
+</ruleset>

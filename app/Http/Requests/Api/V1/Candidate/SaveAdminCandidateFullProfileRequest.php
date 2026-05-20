@@ -13,8 +13,10 @@ class SaveAdminCandidateFullProfileRequest extends ApiFormRequest
     protected function prepareForValidation(): void
     {
         $horoscope = $this->input('horoscope');
+
         if (is_array($horoscope) && isset($horoscope['time_of_birth']) && is_string($horoscope['time_of_birth'])) {
             $t = trim($horoscope['time_of_birth']);
+
             if ($t !== '' && preg_match('/^\d{2}:\d{2}$/', $t)) {
                 $horoscope['time_of_birth'] = $t . ':00';
                 $this->merge(['horoscope' => $horoscope]);
@@ -22,6 +24,7 @@ class SaveAdminCandidateFullProfileRequest extends ApiFormRequest
         }
 
         $loc = $this->input('location_family_roots');
+
         if (!is_array($loc)) {
             return;
         }
@@ -30,6 +33,7 @@ class SaveAdminCandidateFullProfileRequest extends ApiFormRequest
             'maternal_state' => 'maternal_state_id',
             'maternal_city' => 'maternal_city_id',
         ];
+
         foreach ($legacyToId as $legacy => $canonical) {
             if (
                 array_key_exists($legacy, $loc) &&
@@ -40,6 +44,7 @@ class SaveAdminCandidateFullProfileRequest extends ApiFormRequest
                 $loc[$canonical] = $loc[$legacy];
             }
         }
+
         if (
             array_key_exists('maternal_village', $loc) &&
             $loc['maternal_village'] !== null &&
@@ -52,14 +57,17 @@ class SaveAdminCandidateFullProfileRequest extends ApiFormRequest
             $v = $loc['maternal_village'];
             $loc['maternal_village_name'] = is_string($v) ? $v : (string) $v;
         }
+
         foreach (['maternal_country_id', 'maternal_state_id', 'maternal_city_id'] as $key) {
             if (!array_key_exists($key, $loc)) {
                 continue;
             }
             $v = $loc[$key];
+
             if ($v === null || $v === '') {
                 continue;
             }
+
             if (is_numeric($v)) {
                 $loc[$key] = (int) $v;
             }
@@ -106,13 +114,16 @@ class SaveAdminCandidateFullProfileRequest extends ApiFormRequest
                 return;
             }
             $horoscope = $this->input('horoscope');
+
             if (is_array($horoscope) && $horoscope !== []) {
                 HoroscopeBirthPlaceValidator::validateConsistency($validator, $horoscope, 'horoscope');
             }
+
             if ($validator->errors()->isNotEmpty()) {
                 return;
             }
             $location = $this->input('location_family_roots');
+
             if (is_array($location) && $location !== []) {
                 HoroscopeBirthPlaceValidator::validateGeoIdConsistency(
                     $validator,

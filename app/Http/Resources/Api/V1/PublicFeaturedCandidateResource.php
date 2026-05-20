@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api\V1;
 
-use App\Models\User;
 use App\Support\UserImageStorageUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -37,6 +36,7 @@ class PublicFeaturedCandidateResource extends JsonResource
                 ->orderBy('sort_order')
                 ->value('image_url');
         }
+
         if (!is_string($photoUrl) || $photoUrl === '') {
             $photoUrl = $defaultPhotoUrl;
         } else {
@@ -50,6 +50,7 @@ class PublicFeaturedCandidateResource extends JsonResource
 
         $matchPercentage = null;
         $scoreByUserId = $request->attributes->get('matchScoreByUserId');
+
         if (is_array($scoreByUserId)) {
             $raw = $scoreByUserId[(int) $user->id] ?? null;
             $matchPercentage = $raw === null ? null : max(0, min(100, (int) $raw));

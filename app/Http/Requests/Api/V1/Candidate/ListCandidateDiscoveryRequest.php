@@ -36,6 +36,7 @@ class ListCandidateDiscoveryRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->mergeOptionalScalars();
+
         foreach (['education', 'occupation', 'community'] as $key) {
             $this->mergeOptionalIdList($key);
         }
@@ -44,28 +45,33 @@ class ListCandidateDiscoveryRequest extends FormRequest
     private function mergeOptionalScalars(): void
     {
         $gender = $this->input('gender');
+
         if (is_string($gender) && trim($gender) === '') {
             $this->merge(['gender' => null]);
         }
 
         $city = $this->input('city');
+
         if (is_string($city) && trim($city) === '') {
             $this->merge(['city' => null]);
         }
 
         foreach (['city_id', 'min_age', 'max_age'] as $key) {
             $v = $this->input($key);
+
             if ($v === '' || $v === null) {
                 $this->merge([$key => null]);
 
                 continue;
             }
+
             if (!is_numeric($v)) {
                 $this->merge([$key => null]);
 
                 continue;
             }
             $n = (int) $v;
+
             if ($n <= 0) {
                 $this->merge([$key => null]);
 
@@ -75,6 +81,7 @@ class ListCandidateDiscoveryRequest extends FormRequest
         }
 
         $perPage = $this->input('perPage');
+
         if ($perPage === '' || $perPage === null || !is_numeric($perPage)) {
             $this->merge(['perPage' => 15]);
         } else {
@@ -82,6 +89,7 @@ class ListCandidateDiscoveryRequest extends FormRequest
         }
 
         $page = $this->input('page');
+
         if ($page === '' || $page === null || !is_numeric($page)) {
             $this->merge(['page' => 1]);
         } else {
@@ -96,6 +104,7 @@ class ListCandidateDiscoveryRequest extends FormRequest
     private function mergeOptionalIdList(string $key): void
     {
         $raw = $this->input($key);
+
         if ($raw === null || $raw === '') {
             $this->merge([$key => null]);
 
@@ -103,19 +112,23 @@ class ListCandidateDiscoveryRequest extends FormRequest
         }
 
         $tokens = [];
+
         if (is_array($raw)) {
             foreach ($raw as $item) {
                 if ($item === null || $item === '') {
                     continue;
                 }
+
                 if (is_int($item)) {
                     $tokens[] = $item;
 
                     continue;
                 }
+
                 if (is_string($item)) {
                     foreach (explode(',', $item) as $piece) {
                         $piece = trim($piece);
+
                         if ($piece !== '') {
                             $tokens[] = $piece;
                         }
@@ -127,6 +140,7 @@ class ListCandidateDiscoveryRequest extends FormRequest
         } elseif (is_string($raw)) {
             foreach (explode(',', $raw) as $piece) {
                 $piece = trim($piece);
+
                 if ($piece !== '') {
                     $tokens[] = $piece;
                 }
@@ -138,6 +152,7 @@ class ListCandidateDiscoveryRequest extends FormRequest
         }
 
         $ids = [];
+
         foreach ($tokens as $token) {
             if (is_int($token)) {
                 if ($token > 0) {
@@ -146,8 +161,10 @@ class ListCandidateDiscoveryRequest extends FormRequest
 
                 continue;
             }
+
             if (filter_var($token, FILTER_VALIDATE_INT) !== false) {
                 $v = (int) $token;
+
                 if ($v > 0) {
                     $ids[] = $v;
                 }
@@ -163,6 +180,7 @@ class ListCandidateDiscoveryRequest extends FormRequest
         $validator->after(function (Validator $v): void {
             $min = $this->input('min_age');
             $max = $this->input('max_age');
+
             if ($min !== null && $max !== null && (int) $max < (int) $min) {
                 $v->errors()->add('max_age', 'The max age must be greater than or equal to min age.');
             }
@@ -193,6 +211,7 @@ class ListCandidateDiscoveryRequest extends FormRequest
                 if ($v === null || $v === '') {
                     return false;
                 }
+
                 if (is_array($v) && $v === []) {
                     return false;
                 }

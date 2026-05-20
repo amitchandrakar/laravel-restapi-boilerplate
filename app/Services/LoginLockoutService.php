@@ -21,6 +21,7 @@ final class LoginLockoutService
     public function isLockedForIdentifier(string $identifier): bool
     {
         $normalized = $this->normalizeIdentifier($identifier);
+
         if ($normalized === '') {
             return false;
         }
@@ -46,6 +47,7 @@ final class LoginLockoutService
     public function recordFailedAttemptForIdentifier(string $identifier): void
     {
         $normalized = $this->normalizeIdentifier($identifier);
+
         if ($normalized === '') {
             return;
         }

@@ -26,6 +26,7 @@ class CandidateDiscoveryController extends Controller
     public function browse(ListCandidateDiscoveryRequest $request): JsonResponse
     {
         $user = $request->user();
+
         if ($user === null || !$user->hasRole('candidate')) {
             return $this->forbiddenResponse('Only candidates can browse profiles.');
         }
@@ -43,6 +44,7 @@ class CandidateDiscoveryController extends Controller
     public function favorites(ListCandidateDiscoveryRequest $request): JsonResponse
     {
         $user = $request->user();
+
         if ($user === null || !$user->hasRole('candidate')) {
             return $this->forbiddenResponse('Only candidates can view favorites.');
         }
@@ -59,6 +61,7 @@ class CandidateDiscoveryController extends Controller
     public function toggleFavorite(ToggleCandidateFavoriteRequest $request, User $user): JsonResponse
     {
         $viewer = $request->user();
+
         if ($viewer === null || !$viewer->hasRole('candidate')) {
             return $this->forbiddenResponse('Only candidates can manage favorites.');
         }
@@ -78,6 +81,7 @@ class CandidateDiscoveryController extends Controller
     public function matches(ListCandidateDiscoveryRequest $request): JsonResponse
     {
         $user = $request->user();
+
         if ($user === null || !$user->hasRole('candidate')) {
             return $this->forbiddenResponse('Only candidates can view matches.');
         }

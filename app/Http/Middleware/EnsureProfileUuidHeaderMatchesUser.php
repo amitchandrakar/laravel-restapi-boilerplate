@@ -15,11 +15,13 @@ class EnsureProfileUuidHeaderMatchesUser
     public function handle(Request $request, Closure $next): Response
     {
         $header = $request->header('X-User-Profile-Uuid');
+
         if ($header === null || $header === '') {
             return $next($request);
         }
 
         $user = $request->user();
+
         if (!$user instanceof User) {
             return $next($request);
         }

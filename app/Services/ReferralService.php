@@ -13,6 +13,7 @@ class ReferralService
     public function ensureReferralCode(User $user): string
     {
         $existing = (string) ($user->referral_code ?? '');
+
         if ($existing !== '') {
             return $existing;
         }
@@ -21,6 +22,7 @@ class ReferralService
         $base = strtoupper(trim((string) ($user->last_name ?? 'USER')));
         $base = preg_replace('/[^A-Z0-9]+/', '-', $base) ?? 'USER';
         $base = trim($base, '-');
+
         if ($base === '') {
             $base = 'USER';
         }
@@ -78,6 +80,7 @@ class ReferralService
             ->all();
 
         $successful = 0;
+
         foreach ($entries as $e) {
             if ($e['status'] === 'rewardEligible') {
                 $successful++;

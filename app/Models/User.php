@@ -14,7 +14,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasPermissions;
@@ -84,14 +83,24 @@ class User extends BaseModel implements Authenticatable, AuthorizableContract
         ];
     }
 
-    public function scopeCandidates($query)
+    /**
+     * @param  Builder<User>  $query
+     *
+     * @return Builder<User>
+     */
+    public function scopeCandidates(Builder $query): Builder
     {
         return $query->whereHas('primaryRole', static function (Builder $builder): void {
             $builder->where('name', 'candidate');
         });
     }
 
-    public function scopeTeamUsers($query)
+    /**
+     * @param  Builder<User>  $query
+     *
+     * @return Builder<User>
+     */
+    public function scopeTeamUsers(Builder $query): Builder
     {
         return $query->whereHas('primaryRole', static function (Builder $builder): void {
             $builder->where('name', '!=', 'candidate');

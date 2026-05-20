@@ -19,6 +19,7 @@ class CandidateContactRequestController extends Controller
     public function store(StoreContactRequestRequest $request): JsonResponse
     {
         $from = $request->user();
+
         if ($from === null || !$from->hasRole('candidate')) {
             return $this->forbiddenResponse('Only candidates can send contact requests.');
         }
@@ -29,6 +30,7 @@ class CandidateContactRequestController extends Controller
         // }
 
         $to = User::query()->where('uuid', $request->validated('candidateUuid'))->first();
+
         if ($to === null) {
             throw ValidationException::withMessages([
                 'candidateUuid' => ['Candidate not found.'],
@@ -56,6 +58,7 @@ class CandidateContactRequestController extends Controller
     public function respond(RespondContactRequestRequest $request, ContactRequest $contactRequest): JsonResponse
     {
         $user = $request->user();
+
         if ($user === null || !$user->hasRole('candidate')) {
             return $this->forbiddenResponse('Only candidates can respond to contact requests.');
         }

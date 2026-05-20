@@ -9,7 +9,6 @@ use App\Support\ApiResponseBuilder;
 use App\Support\SanctumPlainTokenHasher;
 use Closure;
 use Illuminate\Http\Request;
-use Laravel\Sanctum\PersonalAccessToken;
 use Laravel\Sanctum\TransientToken;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -20,18 +19,21 @@ class EnsureActiveTrackedSession
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
+
         if ($user === null) {
             return $next($request);
         }
 
         /** @var PersonalAccessToken|TransientToken|null $access */
         $access = $user->currentAccessToken();
+
         if ($access === null || $access instanceof TransientToken) {
             return $next($request);
         }
 
         $plain = (string) ($request->bearerToken() ?? '');
         $hash = SanctumPlainTokenHasher::hashPlainTextToken($plain);
+
         if ($hash === '' || !$this->userActionLogService->hasActiveUserSession((int) $user->id, $hash)) {
             return ApiResponseBuilder::error(
                 'Session is no longer active. Please sign in again.',

@@ -29,9 +29,11 @@ class MeKycController extends Controller
     public function documents(Request $request): JsonResponse
     {
         $user = $request->user();
+
         if ($user === null) {
             return $this->errorResponse('Unauthenticated', 401);
         }
+
         if (!$user->hasRole('candidate')) {
             return $this->forbiddenResponse();
         }
@@ -47,9 +49,11 @@ class MeKycController extends Controller
     public function uploadSessions(Request $request): JsonResponse
     {
         $user = $request->user();
+
         if ($user === null) {
             return $this->errorResponse('Unauthenticated', 401);
         }
+
         if (!$user->hasRole('candidate')) {
             return $this->forbiddenResponse();
         }
@@ -78,9 +82,11 @@ class MeKycController extends Controller
     public function upload(KycMultipartUploadRequest $request): JsonResponse
     {
         $user = $request->user();
+
         if ($user === null) {
             return $this->errorResponse('Unauthenticated', 401);
         }
+
         if (!$user->hasRole('candidate')) {
             return $this->forbiddenResponse();
         }
@@ -89,6 +95,7 @@ class MeKycController extends Controller
         $key = $this->sessionCacheKey((int) $user->id, $sessionId);
         /** @var array<string, mixed>|null $payload */
         $payload = Cache::get($key);
+
         if (!is_array($payload)) {
             return $this->errorResponse('Invalid or expired session_id', 422);
         }
@@ -121,9 +128,11 @@ class MeKycController extends Controller
     public function submit(KycSubmitRequest $request): JsonResponse
     {
         $user = $request->user();
+
         if ($user === null) {
             return $this->errorResponse('Unauthenticated', 401);
         }
+
         if (!$user->hasRole('candidate')) {
             return $this->forbiddenResponse();
         }
@@ -132,6 +141,7 @@ class MeKycController extends Controller
         $key = $this->sessionCacheKey((int) $user->id, $sessionId);
         /** @var array<string, mixed>|null $payload */
         $payload = Cache::get($key);
+
         if (!is_array($payload)) {
             return $this->errorResponse('Invalid or expired session_id', 422);
         }

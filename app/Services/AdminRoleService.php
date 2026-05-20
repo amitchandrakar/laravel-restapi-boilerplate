@@ -125,15 +125,19 @@ class AdminRoleService
             }
 
             $payload = [];
+
             if (!$role->is_system && array_key_exists('name', $data)) {
                 $payload['name'] = (string) $data['name'];
             }
+
             if (array_key_exists('title', $data)) {
                 $payload['title'] = $data['title'];
             }
+
             if (array_key_exists('description', $data)) {
                 $payload['description'] = $data['description'];
             }
+
             if (array_key_exists('is_default_registration', $data)) {
                 $payload['is_default_registration'] = (bool) $data['is_default_registration'];
             }

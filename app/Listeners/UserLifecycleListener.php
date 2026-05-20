@@ -9,7 +9,6 @@ use App\Models\Role;
 use App\Models\User;
 use App\Notifications\UserLifecycleNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Database\Eloquent\Collection;
 
 class UserLifecycleListener implements ShouldQueue
 {
@@ -17,6 +16,7 @@ class UserLifecycleListener implements ShouldQueue
     {
         $guard = (string) config('auth.defaults.guard', 'web');
         $adminRole = Role::query()->where('name', 'admin')->where('guard_name', $guard)->first();
+
         if (!$adminRole instanceof Role) {
             return;
         }
@@ -27,6 +27,7 @@ class UserLifecycleListener implements ShouldQueue
                 $query->where('id', $adminRole->id);
             })
             ->get();
+
         foreach ($admins as $admin) {
             $admin->notify(new UserLifecycleNotification($event->user, $event->action));
         }

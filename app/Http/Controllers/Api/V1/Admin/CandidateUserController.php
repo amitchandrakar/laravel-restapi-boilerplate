@@ -95,6 +95,7 @@ class CandidateUserController extends Controller
         //     return $this->forbiddenResponse();
         // }
         $candidate = $this->findCandidateByUuid($user);
+
         if (!$candidate instanceof User) {
             return $this->notFoundResponse('Candidate not found');
         }
@@ -112,10 +113,12 @@ class CandidateUserController extends Controller
     public function profileDetails(Request $request, string $user): JsonResponse
     {
         $candidate = $this->findCandidateByUuid($user);
+
         if (!$candidate instanceof User) {
             return $this->notFoundResponse('Candidate not found');
         }
-        if (!$this->actorMayViewCandidateProfileDetails($request, $candidate)) {
+
+        if (!$this->actorMayViewCandidateProfileDetails($request)) {
             return $this->forbiddenResponse();
         }
         LogUserActivityJob::dispatch(
@@ -127,6 +130,7 @@ class CandidateUserController extends Controller
         );
 
         $actor = $request->user();
+
         if ($actor instanceof User) {
             $this->profileViewService->recordCandidatePeerView($actor, $candidate);
         }
@@ -143,6 +147,7 @@ class CandidateUserController extends Controller
             return $this->forbiddenResponse();
         }
         $candidate = $this->findCandidateByUuid($user);
+
         if (!$candidate instanceof User) {
             return $this->notFoundResponse('Candidate not found');
         }
@@ -175,6 +180,7 @@ class CandidateUserController extends Controller
             return $this->forbiddenResponse();
         }
         $candidate = $this->findCandidateByUuid($user);
+
         if (!$candidate instanceof User) {
             return $this->notFoundResponse('Candidate not found');
         }
@@ -293,17 +299,20 @@ class CandidateUserController extends Controller
     public function savePreferences(string $user, SaveCandidatePreferencesRequest $request): JsonResponse
     {
         $candidate = $this->findCandidateByUuid($user);
+
         if (!$candidate instanceof User) {
             return $this->notFoundResponse('Candidate not found');
         }
 
         $actor = $request->user();
+
         if (!$actor instanceof User) {
             return $this->forbiddenResponse();
         }
 
         $isAdminEditor = $actor->can('admin.candidates.edit');
         $isSelfCandidate = $actor->hasRole('candidate') && (int) $actor->id === (int) $candidate->id;
+
         if (!$isAdminEditor && !$isSelfCandidate) {
             return $this->forbiddenResponse();
         }
@@ -311,15 +320,19 @@ class CandidateUserController extends Controller
         $payload = $request->validated();
 
         $updates = [];
+
         if (array_key_exists('phoneAlertsEnabled', $payload)) {
             $updates['phone_alerts_enabled'] = (bool) $payload['phoneAlertsEnabled'];
         }
+
         if (array_key_exists('emailNotificationsEnabled', $payload)) {
             $updates['email_notifications_enabled'] = (bool) $payload['emailNotificationsEnabled'];
         }
+
         if (array_key_exists('showOnlineStatus', $payload)) {
             $updates['show_online_status'] = (bool) $payload['showOnlineStatus'];
         }
+
         if (array_key_exists('hidePhoneNumber', $payload)) {
             $updates['hide_phone_number'] = (bool) $payload['hidePhoneNumber'];
         }
@@ -351,6 +364,7 @@ class CandidateUserController extends Controller
             return $this->forbiddenResponse();
         }
         $candidate = $this->findCandidateByUuid($user);
+
         if (!$candidate instanceof User) {
             return $this->notFoundResponse('Candidate not found');
         }
@@ -370,10 +384,12 @@ class CandidateUserController extends Controller
             return $this->forbiddenResponse();
         }
         $candidate = $this->findCandidateByUuid($user);
+
         if (!$candidate instanceof User) {
             return $this->notFoundResponse('Candidate not found');
         }
         $result = $sectionService->publish($candidate);
+
         if ($result['published'] !== true) {
             return $this->validationErrorResponse(
                 collect($result['missingSections'])
@@ -392,11 +408,13 @@ class CandidateUserController extends Controller
             return $this->forbiddenResponse();
         }
         $candidate = $this->findCandidateByUuid($user);
+
         if (!$candidate instanceof User) {
             return $this->notFoundResponse('Candidate not found');
         }
 
         $isFeatured = (bool) $request->validated('isFeatured');
+
         try {
             $updated = $this->featuredCandidateService->setFeatured(
                 $candidate,
@@ -433,6 +451,7 @@ class CandidateUserController extends Controller
             return $this->forbiddenResponse();
         }
         $candidate = $this->findCandidateByUuid($user);
+
         if (!$candidate instanceof User) {
             return $this->notFoundResponse('Candidate not found');
         }
@@ -528,9 +547,11 @@ class CandidateUserController extends Controller
             return $this->forbiddenResponse();
         }
         $candidate = $this->findCandidateByUuid($user);
+
         if (!$candidate instanceof User) {
             return $this->notFoundResponse('Candidate not found');
         }
+
         if (!$this->actorMayEditThisCandidateProfile($request, $candidate)) {
             return $this->forbiddenResponse('You can only edit your own candidate profile.');
         }
@@ -568,12 +589,14 @@ class CandidateUserController extends Controller
      * Staff with `admin.candidates.view` may read any candidate; any user with the `candidate` role may read
      * any candidate's profile details (read-only payload for in-app profile viewing).
      */
-    private function actorMayViewCandidateProfileDetails(Request $request, User $candidate): bool
+    private function actorMayViewCandidateProfileDetails(Request $request): bool
     {
         $actor = $request->user();
+
         if (!$actor instanceof User) {
             return false;
         }
+
         if ($actor->can('admin.candidates.view')) {
             return true;
         }
@@ -587,9 +610,11 @@ class CandidateUserController extends Controller
     private function actorMayEditThisCandidateProfile(Request $request, User $candidate): bool
     {
         $actor = $request->user();
+
         if (!$actor instanceof User) {
             return false;
         }
+
         if ((int) $actor->id === (int) $candidate->id) {
             return true;
         }

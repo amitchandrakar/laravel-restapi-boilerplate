@@ -64,6 +64,7 @@ class CandidateProfileController extends Controller
         }
 
         $data = $this->userImageManage->setProfilePhoto($candidate, $imageUuid);
+
         if ($data === null) {
             return $this->notFoundResponse('Photo not found');
         }
@@ -97,6 +98,7 @@ class CandidateProfileController extends Controller
         }
 
         $data = $this->userImageManage->softDeletePhoto($candidate, $imageUuid);
+
         if ($data === null) {
             return $this->notFoundResponse('Photo not found');
         }
@@ -126,6 +128,7 @@ class CandidateProfileController extends Controller
     public function uploadPhoto(UploadCandidateProfileImageRequest $request): JsonResponse
     {
         $user = $request->user();
+
         if (!$user?->hasRole('candidate')) {
             return $this->forbiddenResponse();
         }
@@ -231,6 +234,7 @@ class CandidateProfileController extends Controller
     private function saveSection(FormRequest $request, string $section): JsonResponse
     {
         $user = $request->user();
+
         if (!$user?->hasRole('candidate')) {
             return $this->forbiddenResponse();
         }
@@ -265,12 +269,15 @@ class CandidateProfileController extends Controller
         string $selfOnlyMessage = 'You can only manage your own profile photos.'
     ): ?JsonResponse {
         $auth = $request->user();
+
         if (!$auth?->hasRole('candidate')) {
             return $this->forbiddenResponse();
         }
+
         if (!$candidate->hasRole('candidate')) {
             return $this->notFoundResponse('Candidate not found');
         }
+
         if ((string) $auth->uuid !== (string) $candidate->uuid) {
             return $this->forbiddenResponse($selfOnlyMessage);
         }

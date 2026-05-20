@@ -44,9 +44,11 @@ trait ApiResponse
         string $message = 'Success'
     ): JsonResponse {
         $resource = $paginator;
+
         if ($paginator instanceof JsonResource) {
             $paginator = $paginator->resource;
         }
+
         if (!$paginator instanceof LengthAwarePaginator) {
             throw new \InvalidArgumentException('Pagination data not found.');
         }
@@ -135,6 +137,7 @@ trait ApiResponse
         if ($data instanceof JsonResource) {
             return $data->resolve();
         }
+
         if ($data instanceof LengthAwarePaginator) {
             return $data->items();
         }
@@ -152,10 +155,12 @@ trait ApiResponse
     ): JsonResponse {
         $response->header('X-API-Deprecation', 'true');
         $response->header('X-API-Deprecated-Version', $version);
+
         if ($sunsetDate) {
             $response->header('X-API-Sunset-Date', $sunsetDate);
         }
         $message = config("api.deprecation.{$version}.message");
+
         if ($message) {
             $response->header('X-API-Deprecation-Message', $message);
         }

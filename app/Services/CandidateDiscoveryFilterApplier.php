@@ -33,17 +33,21 @@ final class CandidateDiscoveryFilterApplier
 
         $minAge = $filters['min_age'] ?? null;
         $maxAge = $filters['max_age'] ?? null;
+
         if ($minAge !== null || $maxAge !== null) {
             $query->whereNotNull("{$userTable}.date_of_birth");
         }
+
         if ($minAge !== null) {
             $query->where("{$userTable}.date_of_birth", '<=', Carbon::now()->subYears((int) $minAge)->toDateString());
         }
+
         if ($maxAge !== null) {
             $query->where("{$userTable}.date_of_birth", '>=', Carbon::now()->subYears((int) $maxAge)->toDateString());
         }
 
         $communityIds = $filters['community'] ?? null;
+
         if (is_array($communityIds) && $communityIds !== []) {
             $communityIds = array_values(array_unique(array_map('intval', $communityIds)));
             $names = DB::table('surnames')->whereIn('id', $communityIds)->pluck('name');
@@ -52,23 +56,28 @@ final class CandidateDiscoveryFilterApplier
                 ->filter()
                 ->values()
                 ->all();
+
             if ($normalized !== []) {
                 $query->whereIn(DB::raw("LOWER(TRIM({$userTable}.last_name))"), $normalized);
             }
         }
 
         $cityName = $filters['city'] ?? null;
+
         if (($filters['city_id'] ?? null) !== null) {
             $resolved = DB::table('cities')->where('id', (int) $filters['city_id'])->value('name');
+
             if (is_string($resolved) && $resolved !== '') {
                 $cityName = $resolved;
             }
         }
+
         if (is_string($cityName) && trim($cityName) !== '') {
             $query->whereRaw("LOWER(TRIM({$userTable}.current_city)) = ?", [mb_strtolower(trim($cityName))]);
         }
 
         $educationIds = $filters['education'] ?? null;
+
         if (is_array($educationIds) && $educationIds !== []) {
             $educationIds = array_values(array_unique(array_map('intval', $educationIds)));
             $query->whereExists(static function ($sub) use ($educationIds, $userTable): void {
@@ -80,6 +89,7 @@ final class CandidateDiscoveryFilterApplier
         }
 
         $occupationIds = $filters['occupation'] ?? null;
+
         if (is_array($occupationIds) && $occupationIds !== []) {
             $occupationIds = array_values(array_unique(array_map('intval', $occupationIds)));
             $names = DB::table('occupations')->whereIn('id', $occupationIds)->pluck('name');
@@ -88,6 +98,7 @@ final class CandidateDiscoveryFilterApplier
                 ->filter()
                 ->values()
                 ->all();
+
             if ($normalized !== []) {
                 $query->whereIn(DB::raw("LOWER(TRIM({$userTable}.occupation))"), $normalized);
             }

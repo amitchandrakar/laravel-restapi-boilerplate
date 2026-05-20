@@ -128,6 +128,7 @@ class UserActionLogService
     public function hasActiveUserSession(int $userId, string $sessionTokenHash): bool
     {
         $sessionTokenHash = trim($sessionTokenHash);
+
         if ($sessionTokenHash === '') {
             return false;
         }

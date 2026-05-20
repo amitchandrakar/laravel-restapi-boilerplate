@@ -21,6 +21,7 @@ class ProfileViewService
         if (!$viewer->hasRole('candidate') || !$viewed->hasRole('candidate')) {
             return;
         }
+
         if ((int) $viewer->id === (int) $viewed->id) {
             return;
         }
@@ -37,6 +38,7 @@ class ProfileViewService
         ]);
 
         $cacheKey = 'profile_viewed_notify:' . $viewed->id . ':' . $viewer->id;
+
         if (!Cache::add($cacheKey, 1, $now->copy()->addHours(24))) {
             return;
         }

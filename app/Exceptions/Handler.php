@@ -19,7 +19,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
-use Psr\Log\LogLevel;
 use Spatie\Permission\Exceptions\UnauthorizedException as SpatieUnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -60,7 +59,7 @@ class Handler extends ExceptionHandler
      */
     public function register(): void
     {
-        $this->reportable(function (Throwable $e) {
+        $this->reportable(function (Throwable $e): void {
             if (app()->bound('sentry') && $this->shouldReport($e)) {
                 app('sentry')->captureException($e);
             }
@@ -96,6 +95,7 @@ class Handler extends ExceptionHandler
 
         if ($exception instanceof NotFoundHttpException) {
             $previous = $exception->getPrevious();
+
             if ($previous instanceof ModelNotFoundException) {
                 $message = $this->modelNotFoundMessage($previous);
 

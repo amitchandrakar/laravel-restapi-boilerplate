@@ -113,6 +113,7 @@ it('stores partner preference arrays as JSON on the candidate record', function 
         if (is_array($raw)) {
             return $raw;
         }
+
         if (is_string($raw)) {
             $j = json_decode($raw, true);
 

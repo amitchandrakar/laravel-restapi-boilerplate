@@ -30,6 +30,7 @@ class DemoMasterDataSeeder extends Seeder
         }
 
         $languages = [['name' => 'English', 'code' => 'en'], ['name' => 'Hindi', 'code' => 'hi']];
+
         foreach ($languages as $lang) {
             if (DB::table('languages')->where('code', $lang['code'])->doesntExist()) {
                 DB::table('languages')->insert([
@@ -48,6 +49,7 @@ class DemoMasterDataSeeder extends Seeder
             ['name' => 'MBA', 'degree_type' => 'postgraduate', 'sort_order' => 30],
             ['name' => 'MBBS', 'degree_type' => 'undergraduate', 'sort_order' => 40],
         ];
+
         foreach ($degrees as $deg) {
             if (DB::table('degrees')->where('name', $deg['name'])->doesntExist()) {
                 DB::table('degrees')->insert([
@@ -68,6 +70,7 @@ class DemoMasterDataSeeder extends Seeder
             ['name' => 'Architect', 'category' => 'Design', 'sort_order' => 40],
             ['name' => 'Teacher', 'category' => 'Education', 'sort_order' => 50],
         ];
+
         foreach ($occupations as $occ) {
             if (DB::table('occupations')->where('name', $occ['name'])->doesntExist()) {
                 DB::table('occupations')->insert([
@@ -82,6 +85,7 @@ class DemoMasterDataSeeder extends Seeder
         }
 
         $surnames = ['Chandrakar', 'Verma', 'Bais', 'Kashyap', 'Chandrawanshi', 'Kaushik', 'Deshmukh'];
+
         foreach ($surnames as $surname) {
             if (DB::table('surnames')->where('name', $surname)->doesntExist()) {
                 DB::table('surnames')->insert([
@@ -99,6 +103,7 @@ class DemoMasterDataSeeder extends Seeder
             ['name' => '10–20 LPA', 'min_amount' => 1000000, 'max_amount' => 2000000, 'sort_order' => 3],
             ['name' => '20 LPA+', 'min_amount' => 2000000, 'max_amount' => null, 'sort_order' => 4],
         ];
+
         foreach ($incomeRanges as $range) {
             if (DB::table('income_ranges')->where('name', $range['name'])->doesntExist()) {
                 DB::table('income_ranges')->insert([

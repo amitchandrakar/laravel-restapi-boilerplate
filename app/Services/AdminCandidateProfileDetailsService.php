@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Http\Resources\Api\V1\CandidateUserResource;
 use App\Models\ContactRequest;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -31,15 +30,18 @@ class AdminCandidateProfileDetailsService
         $profilePhotoFromGallery = collect($photos)->first(
             static fn(array $photo): bool => (bool) data_get($photo, 'isProfilePhoto', false)
         );
+
         if (!is_array($profilePhotoFromGallery)) {
             $profilePhotoFromGallery = $photos[0] ?? null;
         }
         $photoUrl = data_get($user, 'profile_photo_url');
+
         if (!is_string($photoUrl) || $photoUrl === '') {
             $photoUrl = is_array($profilePhotoFromGallery)
                 ? (string) data_get($profilePhotoFromGallery, 'url', '')
                 : '';
         }
+
         if ($photoUrl === '') {
             $photoUrl = $defaultPhotoUrl;
         }
@@ -94,7 +96,6 @@ class AdminCandidateProfileDetailsService
 
         $maps = $this->loadMasterMaps(
             $user,
-            $partner,
             $educationRows,
             $partnerDegreeIds,
             $partnerLocationIds,
@@ -417,6 +418,7 @@ class AdminCandidateProfileDetailsService
      * @param  list<int>  $partnerDegreeIds
      * @param  list<int>  $partnerLocationIds
      * @param  list<int>  $partnerCommunityIds
+     *
      * @return array{
      *     countries: Collection<(int|string), \stdClass>,
      *     states: Collection<(int|string), \stdClass>,
@@ -428,7 +430,6 @@ class AdminCandidateProfileDetailsService
      */
     private function loadMasterMaps(
         User $user,
-        ?object $partner,
         Collection $educationRows,
         array $partnerDegreeIds,
         array $partnerLocationIds,
@@ -458,12 +459,15 @@ class AdminCandidateProfileDetailsService
         foreach ($educationRows as $row) {
             $push($degreeIds, data_get($row, 'degree_id'));
         }
+
         foreach ($partnerDegreeIds as $id) {
             $push($degreeIds, $id);
         }
+
         foreach ($partnerLocationIds as $id) {
             $push($cityIds, $id);
         }
+
         foreach ($partnerCommunityIds as $id) {
             $push($surnameIds, $id);
         }
@@ -488,6 +492,7 @@ class AdminCandidateProfileDetailsService
     /**
      * @param  list<int>  $ids
      * @param  list<string>  $columns
+     *
      * @return Collection<(int|string), \stdClass>
      */
     private function fetchMap(string $table, array $ids, array $columns): Collection
@@ -504,11 +509,13 @@ class AdminCandidateProfileDetailsService
      *
      * @param  array<string, string>  $fkKeys  logical key => user column
      * @param  array<string, string|null>  $legacyKeys  logical key => user legacy text column or null
+     *
      * @return array{country: ?string, state: ?string, city: ?string}
      */
     private function resolveGeoChain(User $user, array $maps, array $fkKeys, array $legacyKeys): array
     {
         $out = [];
+
         foreach (['country', 'state', 'city'] as $level) {
             $fkCol = $fkKeys[$level];
             $id = data_get($user, $fkCol);
@@ -531,14 +538,17 @@ class AdminCandidateProfileDetailsService
         };
         /** @var Collection<int, object> $collection */
         $collection = $maps[$tableKey];
+
         if ($id !== null && (int) $id > 0) {
             $row = $collection->get((int) $id);
+
             if ($row !== null) {
                 $name = data_get($row, 'name');
 
                 return is_string($name) ? $name : (is_scalar($name) ? (string) $name : null);
             }
         }
+
         if ($legacyText !== null && is_string($legacyText) && trim($legacyText) !== '') {
             return $legacyText;
         }
@@ -548,11 +558,13 @@ class AdminCandidateProfileDetailsService
 
     /**
      * @param  list<int>  $ids
+     *
      * @return list<?string>
      */
     private function orderedNames(array $ids, Collection $map, string $nameKey): array
     {
         $names = [];
+
         foreach ($ids as $id) {
             $row = $map->get((int) $id);
             $names[] = $row !== null ? data_get($row, $nameKey) : null;
@@ -569,9 +581,11 @@ class AdminCandidateProfileDetailsService
         if ($value === null || $value === '') {
             return [];
         }
+
         if (is_array($value)) {
             return array_values(array_map(static fn($id): int => (int) $id, $value));
         }
+
         if (is_string($value)) {
             $decoded = json_decode($value, true);
 
@@ -589,9 +603,11 @@ class AdminCandidateProfileDetailsService
         if ($value === null || $value === '') {
             return [];
         }
+
         if (is_array($value)) {
             return array_values(array_map(static fn($v): string => (string) $v, $value));
         }
+
         if (is_string($value)) {
             $decoded = json_decode($value, true);
 
@@ -606,12 +622,15 @@ class AdminCandidateProfileDetailsService
         if ($viewer === null) {
             return $profile->phone;
         }
+
         if ((int) $viewer->id === (int) $profile->id) {
             return $profile->phone;
         }
+
         if ($viewer->can('admin.candidates.view')) {
             return $profile->phone;
         }
+
         if ($viewer->hasRole('candidate') && !ContactRequest::existsAccepted((int) $viewer->id, (int) $profile->id)) {
             return null;
         }

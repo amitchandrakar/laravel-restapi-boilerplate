@@ -7,7 +7,6 @@ namespace App\Services;
 use App\Models\User;
 use App\Support\ScoutConfig;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Pagination\LengthAwarePaginator as Paginator;
 
 class CandidateBrowseService
 {
@@ -18,6 +17,7 @@ class CandidateBrowseService
 
     /**
      * @param  array<string, mixed>  $filters
+     *
      * @return LengthAwarePaginator<int, array<string, mixed>>
      */
     public function paginateBrowse(User $viewer, int $perPage, array $filters = [], int $page = 1): LengthAwarePaginator
@@ -31,6 +31,7 @@ class CandidateBrowseService
 
     /**
      * @param  array<string, mixed>  $filters
+     *
      * @return LengthAwarePaginator<int, array<string, mixed>>
      */
     private function paginateBrowseFromDatabase(User $viewer, int $perPage, array $filters): LengthAwarePaginator

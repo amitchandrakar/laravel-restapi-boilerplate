@@ -28,6 +28,9 @@ jobs:
             - name: Check code formatting (Laravel Pint)
               run: ./vendor/bin/pint --test
 
+            - name: Run code standards (PHPCS)
+              run: ./vendor/bin/phpcs
+
             - name: Run static analysis (Larastan)
               run: ./vendor/bin/phpstan analyse --no-progress --memory-limit=2G
 

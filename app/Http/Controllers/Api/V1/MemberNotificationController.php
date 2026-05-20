@@ -23,6 +23,7 @@ class MemberNotificationController extends Controller
     public function index(ListMemberNotificationsRequest $request): JsonResponse
     {
         $user = $request->user();
+
         if (!$user instanceof User) {
             return $this->errorResponse('Unauthenticated', 401, ApiResponseBuilder::ERROR_UNAUTHORIZED);
         }
@@ -46,6 +47,7 @@ class MemberNotificationController extends Controller
     public function summary(Request $request): JsonResponse
     {
         $user = $request->user();
+
         if (!$user instanceof User) {
             return $this->errorResponse('Unauthenticated', 401, ApiResponseBuilder::ERROR_UNAUTHORIZED);
         }
@@ -64,11 +66,13 @@ class MemberNotificationController extends Controller
     public function show(Request $request, string $notificationId): JsonResponse
     {
         $user = $request->user();
+
         if (!$user instanceof User) {
             return $this->errorResponse('Unauthenticated', 401, ApiResponseBuilder::ERROR_UNAUTHORIZED);
         }
 
         $item = $this->feedService->findFeedItemForUser($user, $notificationId);
+
         if ($item === null) {
             return $this->notFoundResponse('Notification not found');
         }
@@ -79,14 +83,17 @@ class MemberNotificationController extends Controller
     public function markRead(Request $request, string $notificationId): JsonResponse
     {
         $user = $request->user();
+
         if (!$user instanceof User) {
             return $this->errorResponse('Unauthenticated', 401, ApiResponseBuilder::ERROR_UNAUTHORIZED);
         }
 
         $resolved = $this->resolveNotificationForUser($user, $notificationId);
+
         if ($resolved === null) {
             return $this->notFoundResponse('Notification not found');
         }
+
         if ($resolved === false) {
             return $this->forbiddenResponse('You cannot modify this notification.');
         }
@@ -99,6 +106,7 @@ class MemberNotificationController extends Controller
     public function markAllRead(Request $request): JsonResponse
     {
         $user = $request->user();
+
         if (!$user instanceof User) {
             return $this->errorResponse('Unauthenticated', 401, ApiResponseBuilder::ERROR_UNAUTHORIZED);
         }
@@ -119,12 +127,15 @@ class MemberNotificationController extends Controller
     {
         /** @var DatabaseNotification|null $notification */
         $notification = DatabaseNotification::query()->find($notificationId);
+
         if (!$notification instanceof DatabaseNotification) {
             return null;
         }
+
         if ((int) $notification->notifiable_id !== (int) $user->id) {
             return false;
         }
+
         if ($notification->notifiable_type !== User::class) {
             return false;
         }

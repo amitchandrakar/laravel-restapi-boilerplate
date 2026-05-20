@@ -36,7 +36,18 @@ if [ $STATUS -ne 0 ]; then
     exit 1
 fi
 
-# 4. Check Static Analysis (Larastan)
+# 4. Check code standards (PHPCS)
+echo "Running PHPCS..."
+composer phpcs
+STATUS=$?
+
+if [ $STATUS -ne 0 ]; then
+    echo "[ERROR] PHPCS check failed!"
+    echo "💡 Run: composer phpcs:fix (auto-fix) or fix violations manually."
+    exit 1
+fi
+
+# 5. Check Static Analysis (Larastan)
 echo "Running Larastan (Static Analysis)..."
 composer analyse
 STATUS=$?
@@ -47,7 +58,7 @@ if [ $STATUS -ne 0 ]; then
     exit 1
 fi
 
-# 5. Check Tests (exclude @group manual - run those separately)
+# 6. Check Tests (exclude @group manual - run those separately)
 echo "Running Tests..."
 php artisan test --exclude-group=manual
 STATUS=$?

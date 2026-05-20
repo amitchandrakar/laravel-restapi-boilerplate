@@ -71,6 +71,7 @@ class ContactRequestService
             if ($decision === 'accepted') {
                 $request->loadMissing('fromUser');
                 $from = $request->fromUser;
+
                 if ($from instanceof User) {
                     $from->notify(new ContactRequestAcceptedNotification($request));
                 }

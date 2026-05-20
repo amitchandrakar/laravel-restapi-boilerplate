@@ -43,6 +43,8 @@ class AuthController extends Controller
      */
     public function registrationOptions(CandidateRegistrationOptionsRequest $request): JsonResponse
     {
+        $request->validated();
+
         return $this->successResponse(
             $this->authService->registrationOptions(),
             'Registration options fetched successfully'
@@ -90,6 +92,7 @@ class AuthController extends Controller
             'permissions' => $user->getAllPermissions()->pluck('name')->values()->all(),
             'session_token_hash' => $tokenHash,
         ];
+
         if ($result['payment'] !== null) {
             $loginPayload['payment'] = $result['payment'];
         }
@@ -104,6 +107,7 @@ class AuthController extends Controller
     private function validateRequestedUserId(Request $request): ?JsonResponse
     {
         $requested = $request->input('user_id') ?? $request->input('userId');
+
         if ($requested === null) {
             return null;
         }
@@ -111,6 +115,7 @@ class AuthController extends Controller
         $matches = is_numeric($requested)
             ? (int) $requested === (int) $user->id
             : (string) $requested === (string) $user->uuid;
+
         if (!$matches) {
             return $this->errorResponse('Forbidden', 403);
         }
@@ -195,6 +200,7 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         $forbidden = $this->validateRequestedUserId($request);
+
         if ($forbidden !== null) {
             return $forbidden;
         }
@@ -234,6 +240,7 @@ class AuthController extends Controller
         $userId = (int) $user->id;
         $bearer = $request->bearerToken();
         $oldHash = SanctumPlainTokenHasher::hashPlainTextToken((string) ($bearer ?? ''));
+
         if ($oldHash !== '') {
             EndUserSessionJob::dispatchSync($userId, $oldHash);
         }
@@ -259,6 +266,7 @@ class AuthController extends Controller
     public function updateProfile(UpdateProfileRequest $request): JsonResponse
     {
         $forbidden = $this->validateRequestedUserId($request);
+
         if ($forbidden !== null) {
             return $forbidden;
         }
@@ -267,15 +275,19 @@ class AuthController extends Controller
 
         // Map API payload keys (camelCase) to User model columns.
         $mapped = [];
+
         if (array_key_exists('firstName', $validated)) {
             $mapped['first_name'] = $validated['firstName'];
         }
+
         if (array_key_exists('lastName', $validated)) {
             $mapped['last_name'] = $validated['lastName'];
         }
+
         if (array_key_exists('email', $validated)) {
             $mapped['email'] = $validated['email'];
         }
+
         if (array_key_exists('phone', $validated)) {
             $mapped['phone'] = $validated['phone'];
         }
@@ -302,6 +314,7 @@ class AuthController extends Controller
     {
         /** @var User|null $user */
         $user = User::where('email', $request->input('email'))->first();
+
         if ($user) {
             $plainToken = Str::random(64);
             DB::table('password_reset_tokens')->updateOrInsert(
@@ -324,6 +337,7 @@ class AuthController extends Controller
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
         $authenticated = $request->user();
+
         if ($authenticated instanceof User) {
             $this->authService->changePassword(
                 $authenticated,
@@ -344,6 +358,7 @@ class AuthController extends Controller
         }
 
         $expiresMinutes = (int) config('auth.passwords.users.expire', 60);
+
         if ($row->created_at !== null && Carbon::parse($row->created_at)->addMinutes($expiresMinutes)->isPast()) {
             return $this->errorResponse('Invalid or expired reset token', 400);
         }

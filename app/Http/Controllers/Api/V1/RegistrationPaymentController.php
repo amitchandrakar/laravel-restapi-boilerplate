@@ -29,6 +29,7 @@ class RegistrationPaymentController extends Controller
     public function confirm(ConfirmRegistrationPaymentRequest $request): JsonResponse
     {
         $user = $request->user();
+
         if ($user === null) {
             return $this->errorResponse('Unauthenticated', 401);
         }
@@ -48,6 +49,7 @@ class RegistrationPaymentController extends Controller
         /** @var Subscription|null $subscription */
         $subscription = Subscription::query()->find($payment->subscription_id);
         $endsAt = null;
+
         if ($subscription !== null && $subscription->ends_at !== null) {
             $endsAt = Carbon::parse($subscription->ends_at)->toIso8601String();
         }
@@ -68,6 +70,7 @@ class RegistrationPaymentController extends Controller
     public function status(Request $request, string $paymentUuid): JsonResponse
     {
         $user = $request->user();
+
         if ($user === null) {
             return $this->errorResponse('Unauthenticated', 401);
         }
@@ -81,6 +84,7 @@ class RegistrationPaymentController extends Controller
     {
         $raw = $request->getContent();
         $signature = (string) $request->header('X-Razorpay-Signature', '');
+
         if ($signature === '' || !$this->razorpayClient->verifyWebhookSignature($raw, $signature)) {
             return $this->errorResponse('Invalid webhook signature', 401);
         }

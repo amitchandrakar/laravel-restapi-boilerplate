@@ -16,6 +16,7 @@ class RegisterRequest extends ApiFormRequest
 
         $first = trim((string) $this->input('first_name', ''));
         $last = trim((string) $this->input('last_name', ''));
+
         if ($first !== '' && $last !== '') {
             $this->merge([
                 'name' => $first . ' ' . $last,

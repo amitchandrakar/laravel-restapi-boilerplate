@@ -69,6 +69,7 @@ class DemoCandidateNotificationsSeeder extends Seeder
             ->where('data->kind', 'new_match')
             ->orderByDesc('created_at')
             ->first();
+
         if ($readTarget instanceof DatabaseNotification) {
             $readTarget->forceFill(['read_at' => now()])->save();
         }

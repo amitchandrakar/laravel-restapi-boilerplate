@@ -23,6 +23,7 @@ class DemoSubscriptionPaymentSeeder extends Seeder
 
         $userId = (int) DB::table('users')->where('email', $email)->value('id');
         $packageId = (int) DB::table('packages')->where('code', $packageCode)->value('id');
+
         if ($userId === 0 || $packageId === 0) {
             return;
         }
@@ -45,6 +46,7 @@ class DemoSubscriptionPaymentSeeder extends Seeder
             ->where('user_id', $userId)
             ->where('package_id', $packageId)
             ->value('id');
+
         if ($subscriptionId === 0) {
             return;
         }

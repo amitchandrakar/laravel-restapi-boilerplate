@@ -18,6 +18,7 @@ class AuthLoginResource extends JsonResource
     {
         $data = is_array($this->resource) ? $this->resource : [];
         $user = $data['user'] ?? null;
+
         if ($user instanceof JsonResource) {
             $user = $user->resolve();
         }

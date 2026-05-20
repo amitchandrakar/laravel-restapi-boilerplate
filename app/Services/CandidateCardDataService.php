@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\User;
 use App\Support\UserImageStorageUrl;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +20,7 @@ class CandidateCardDataService
 
     /**
      * @param  Collection<int, User>  $users
+     *
      * @return list<array{user: User, profileImageUrl: string, educationSummary: string, profileVerificationStatus: string, isFavorite?: bool}>
      */
     public function buildCardPayloads(Collection $users, int $viewerId, bool $includeFavoriteFlag): array
@@ -36,6 +36,7 @@ class CandidateCardDataService
         $favoriteMap = $includeFavoriteFlag ? $this->favoritedCandidateIdsForViewer($viewerId, $ids) : [];
 
         $out = [];
+
         foreach ($users as $user) {
             $id = (int) $user->id;
             $row = [
@@ -44,6 +45,7 @@ class CandidateCardDataService
                 'educationSummary' => $educationMap[$id] ?? '',
                 'profileVerificationStatus' => $verificationMap[$id] ?? 'not_submitted',
             ];
+
             if ($includeFavoriteFlag) {
                 $row['isFavorite'] = isset($favoriteMap[$id]);
             }
@@ -55,6 +57,7 @@ class CandidateCardDataService
 
     /**
      * @param  list<int>  $userIds
+     *
      * @return array<int, string> user_id => url
      */
     public function profileImageUrlByUserId(array $userIds): array
@@ -75,8 +78,10 @@ class CandidateCardDataService
             ->get();
 
         $byUser = [];
+
         foreach ($rows as $row) {
             $uid = (int) $row->user_id;
+
             if (!isset($byUser[$uid])) {
                 $stored = (string) $row->image_url;
                 $resolved =
@@ -87,6 +92,7 @@ class CandidateCardDataService
         }
 
         $map = [];
+
         foreach ($userIds as $uid) {
             $map[$uid] = $byUser[$uid] ?? $default;
         }
@@ -96,6 +102,7 @@ class CandidateCardDataService
 
     /**
      * @param  list<int>  $userIds
+     *
      * @return array<int, string> user_id => short summary
      */
     public function educationSummaryByUserId(array $userIds): array
@@ -115,8 +122,10 @@ class CandidateCardDataService
             ->get(['ued.user_id', 'd.name as degree_name', 'ued.field_of_study', 'ued.institution_name']);
 
         $map = [];
+
         foreach ($rows as $row) {
             $uid = (int) $row->user_id;
+
             if (isset($map[$uid])) {
                 continue;
             }
@@ -138,6 +147,7 @@ class CandidateCardDataService
 
     /**
      * @param  list<int>  $userIds
+     *
      * @return array<int, string>
      */
     public function profileVerificationStatusByUserId(array $userIds): array
@@ -153,24 +163,29 @@ class CandidateCardDataService
             ->get();
 
         $byUser = [];
+
         foreach ($rows as $row) {
             $uid = (int) $row->user_id;
             $byUser[$uid][] = (string) $row->verification_status;
         }
 
         $map = [];
+
         foreach ($userIds as $uid) {
             $statuses = $byUser[$uid] ?? [];
+
             if ($statuses === []) {
                 $map[$uid] = 'not_submitted';
 
                 continue;
             }
+
             if (in_array('rejected', $statuses, true)) {
                 $map[$uid] = 'rejected';
 
                 continue;
             }
+
             if (in_array('pending', $statuses, true)) {
                 $map[$uid] = 'pending';
 
@@ -189,6 +204,7 @@ class CandidateCardDataService
 
     /**
      * @param  list<int>  $candidateIds
+     *
      * @return array<int, true>
      */
     public function favoritedCandidateIdsForViewer(int $viewerId, array $candidateIds): array
@@ -205,6 +221,7 @@ class CandidateCardDataService
             ->all();
 
         $set = [];
+
         foreach ($ids as $id) {
             $set[(int) $id] = true;
         }
@@ -214,6 +231,7 @@ class CandidateCardDataService
 
     /**
      * @param  list<int>  $userIds
+     *
      * @return array<int, bool>
      */
     public function hasPremiumSubscriptionByUserId(array $userIds): array
@@ -223,6 +241,7 @@ class CandidateCardDataService
         }
 
         $premiumId = (int) DB::table('packages')->where('code', self::PREMIUM_PACKAGE_CODE)->value('id');
+
         if ($premiumId === 0) {
             return array_fill_keys($userIds, false);
         }
@@ -236,6 +255,7 @@ class CandidateCardDataService
             ->all();
 
         $set = array_fill_keys($userIds, false);
+
         foreach ($active as $uid) {
             $set[$uid] = true;
         }

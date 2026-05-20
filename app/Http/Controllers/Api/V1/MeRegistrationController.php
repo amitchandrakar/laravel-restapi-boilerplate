@@ -23,9 +23,11 @@ class MeRegistrationController extends Controller
     public function checkout(RegistrationCheckoutRequest $request): JsonResponse
     {
         $user = $request->user();
+
         if ($user === null) {
             return $this->errorResponse('Unauthenticated', 401);
         }
+
         if (!$user->hasRole('candidate')) {
             return $this->forbiddenResponse();
         }
@@ -44,6 +46,7 @@ class MeRegistrationController extends Controller
     public function verify(ConfirmRegistrationPaymentRequest $request): JsonResponse
     {
         $user = $request->user();
+
         if ($user === null) {
             return $this->errorResponse('Unauthenticated', 401);
         }
@@ -73,6 +76,7 @@ class MeRegistrationController extends Controller
     public function status(Request $request): JsonResponse
     {
         $user = $request->user();
+
         if ($user === null) {
             return $this->errorResponse('Unauthenticated', 401);
         }

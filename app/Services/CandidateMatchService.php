@@ -15,6 +15,7 @@ class CandidateMatchService
 
     /**
      * @param  array<string, mixed>  $filters
+     *
      * @return LengthAwarePaginator<int, array<string, mixed>>
      */
     public function paginateMatches(User $viewer, int $perPage, array $filters = []): LengthAwarePaginator
@@ -41,6 +42,7 @@ class CandidateMatchService
         $paginator = $base->paginate($perPage);
         /** @var Collection<int, object> $rows */
         $rows = collect($paginator->items())->values();
+
         if ($rows->isEmpty()) {
             $paginator->setCollection(collect([]));
 
@@ -54,9 +56,11 @@ class CandidateMatchService
         $verificationMap = $this->cardData->profileVerificationStatusByUserId($userIds);
 
         $mergedRows = [];
+
         foreach ($rows as $row) {
             $uid = (int) $row->matched_user_id;
             $matchedUser = $users->get($uid);
+
             if (!$matchedUser instanceof User) {
                 continue;
             }
@@ -65,6 +69,7 @@ class CandidateMatchService
             $eduMap = $this->cardData->educationSummaryByUserId([$uid]);
             $verification = $verificationMap[$uid] ?? 'not_submitted';
             $reason = $row->match_reason_json;
+
             if (is_string($reason)) {
                 $decoded = json_decode($reason, true);
                 $reason = json_last_error() === JSON_ERROR_NONE ? $decoded : $reason;

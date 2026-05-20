@@ -11,6 +11,7 @@ class SiteSettingsService
 {
     /**
      * @param  array<string, mixed>  $data
+     *
      * @return array<string, mixed>
      */
     public function update(array $data): array
@@ -32,6 +33,7 @@ class SiteSettingsService
 
                 $value = $data[$payloadKey];
                 $valueType = 'string';
+
                 if (is_bool($value)) {
                     $valueType = 'boolean';
                     $value = $value ? '1' : '0';
@@ -67,6 +69,7 @@ class SiteSettingsService
     {
         $rows = DB::table('settings')->where('group_key', 'site')->get();
         $indexed = [];
+
         foreach ($rows as $row) {
             $key = (string) $row->setting_key;
             $indexed[$key] = match ((string) $row->value_type) {

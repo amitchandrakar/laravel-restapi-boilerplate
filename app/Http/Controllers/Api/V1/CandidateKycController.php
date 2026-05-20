@@ -17,6 +17,7 @@ class CandidateKycController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
+
         if (!$user?->hasRole('candidate')) {
             return $this->forbiddenResponse();
         }
@@ -32,6 +33,7 @@ class CandidateKycController extends Controller
     public function upsert(StoreKycDocumentRequest $request): JsonResponse
     {
         $user = $request->user();
+
         if (!$user?->hasRole('candidate')) {
             return $this->forbiddenResponse();
         }

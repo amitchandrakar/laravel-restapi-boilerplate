@@ -32,6 +32,7 @@ class RegistrationPaymentService
     public function createOrderForRegistration(User $user, Package $package, int $subscriptionId): array
     {
         $amountRupees = $package->registrationPayableAmountRupees();
+
         if ($amountRupees <= 0) {
             throw new \InvalidArgumentException('Package has no payable amount; use free registration path.');
         }
@@ -59,6 +60,7 @@ class RegistrationPaymentService
         ]);
 
         $orderId = isset($order['id']) && is_string($order['id']) ? $order['id'] : null;
+
         if ($orderId === null || $orderId === '') {
             throw new \RuntimeException('Razorpay order did not return an id.');
         }
@@ -88,6 +90,7 @@ class RegistrationPaymentService
             'razorpay_payment_id' => $paymentId,
             'razorpay_signature' => $signature,
         ]);
+
         if (!$ok) {
             throw ValidationException::withMessages([
                 'razorpay_signature' => ['Invalid payment signature.'],
@@ -130,6 +133,7 @@ class RegistrationPaymentService
     public function handleWebhookEvent(array $decodedBody): void
     {
         $event = data_get($decodedBody, 'event');
+
         if (!is_string($event)) {
             return;
         }
@@ -138,11 +142,13 @@ class RegistrationPaymentService
         $eventIdStr = is_string($eventId) ? $eventId : null;
 
         $entity = data_get($decodedBody, 'payload.payment.entity');
+
         if (!is_array($entity)) {
             return;
         }
 
         $orderId = data_get($entity, 'order_id');
+
         if (!is_string($orderId) || $orderId === '') {
             return;
         }
@@ -152,6 +158,7 @@ class RegistrationPaymentService
 
         /** @var Payment|null $payment */
         $payment = Payment::query()->where('gateway_order_id', $orderId)->where('gateway_name', 'razorpay')->first();
+
         if (!$payment instanceof Payment) {
             return;
         }
@@ -164,12 +171,15 @@ class RegistrationPaymentService
             if ($paymentIdStr === null) {
                 return;
             }
+
             if ($payment->payment_status === 'success') {
                 return;
             }
+
             if ($payment->payment_status !== 'pending') {
                 return;
             }
+
             if (
                 $eventIdStr !== null &&
                 $payment->webhook_event_id !== null &&
@@ -188,6 +198,7 @@ class RegistrationPaymentService
                 if ($this->isDuplicateWebhookEventId($e)) {
                     return;
                 }
+
                 throw $e;
             }
 
@@ -211,6 +222,7 @@ class RegistrationPaymentService
                 if ($this->isDuplicateWebhookEventId($e)) {
                     return;
                 }
+
                 throw $e;
             }
         }
@@ -223,6 +235,7 @@ class RegistrationPaymentService
     {
         /** @var Payment|null $payment */
         $payment = Payment::query()->where('uuid', $paymentUuid)->where('user_id', $user->id)->first();
+
         if (!$payment instanceof Payment) {
             throw ValidationException::withMessages([
                 'paymentUuid' => ['Payment not found.'],
@@ -231,6 +244,7 @@ class RegistrationPaymentService
 
         $subscription = $payment->subscription;
         $endsAt = null;
+
         if ($subscription instanceof Subscription && $subscription->ends_at !== null) {
             $endsAt = Carbon::parse($subscription->ends_at)->toIso8601String();
         }
@@ -259,6 +273,7 @@ class RegistrationPaymentService
             if ($locked->payment_status === 'success') {
                 return;
             }
+
             if ($locked->payment_status !== 'pending') {
                 return;
             }
@@ -278,6 +293,7 @@ class RegistrationPaymentService
             $locked = $locked->refresh();
             /** @var User|null $user */
             $user = User::query()->find($locked->user_id);
+
             if ($user instanceof User) {
                 $user->notify(new PaymentSucceededNotification($locked));
             }
@@ -306,6 +322,7 @@ class RegistrationPaymentService
             $locked = $locked->refresh();
             /** @var User|null $user */
             $user = User::query()->find($locked->user_id);
+
             if ($user instanceof User) {
                 $user->notify(new PaymentFailedNotification($locked, $reason));
             }
@@ -315,6 +332,7 @@ class RegistrationPaymentService
     private function isDuplicateWebhookEventId(QueryException $e): bool
     {
         $code = isset($e->errorInfo[1]) ? (int) $e->errorInfo[1] : 0;
+
         // MySQL 1062 / SQLite 19: unique constraint (webhook_event_id)
         if ($code === 1062 || $code === 19) {
             return true;

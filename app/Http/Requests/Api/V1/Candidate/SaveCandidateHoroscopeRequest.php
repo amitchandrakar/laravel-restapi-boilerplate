@@ -16,13 +16,16 @@ class SaveCandidateHoroscopeRequest extends ApiFormRequest
             return;
         }
         $t = $this->input('time_of_birth');
+
         if (!is_string($t)) {
             return;
         }
         $t = trim($t);
+
         if ($t === '') {
             return;
         }
+
         if (preg_match('/^\d{2}:\d{2}$/', $t)) {
             $this->merge(['time_of_birth' => $t . ':00']);
         }

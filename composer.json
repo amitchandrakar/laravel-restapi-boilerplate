@@ -42,6 +42,10 @@
         "pestphp/pest": "^4.0",
         "pestphp/pest-plugin-drift": "^4.1",
         "pestphp/pest-plugin-laravel": "^4.0",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "shipmonk/dead-code-detector": "^1.1",
+        "slevomat/coding-standard": "^8.29",
+        "squizlabs/php_codesniffer": "^4.0",
         "tyghaykal/laravel-seed-generator": "^2.2"
     },
     "autoload": {
@@ -86,11 +90,23 @@
         "lint": [
             "pint --test"
         ],
+        "phpcs": [
+            "phpcs"
+        ],
+        "phpcs:fix": [
+            "phpcbf"
+        ],
         "analyse": [
             "phpstan analyse --ansi --memory-limit=2G"
         ],
         "test": [
             "pest"
+        ],
+        "quality": [
+            "@lint",
+            "@phpcs",
+            "@analyse",
+            "@test"
         ]
     },
     "extra": {
@@ -105,7 +121,8 @@
         "platform-check": false,
         "allow-plugins": {
             "pestphp/pest-plugin": true,
-            "php-http/discovery": true
+            "php-http/discovery": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
         }
     },
     "minimum-stability": "stable",

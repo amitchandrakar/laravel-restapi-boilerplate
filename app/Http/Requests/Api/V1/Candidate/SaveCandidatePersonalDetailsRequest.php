@@ -32,6 +32,7 @@ class SaveCandidatePersonalDetailsRequest extends ApiFormRequest
         $emailRules = ['nullable', 'email', 'max:255'];
         $incomingEmail = mb_strtolower(trim((string) $this->input('email', '')));
         $currentEmail = mb_strtolower(trim((string) ($targetUser !== null ? $targetUser->email : '')));
+
         if ($incomingEmail !== '' && $incomingEmail !== $currentEmail) {
             $emailRules[] = Rule::unique('users', 'email')->ignore($ignoreId, 'id')->whereNull('deleted_at');
         }
@@ -71,6 +72,7 @@ class SaveCandidatePersonalDetailsRequest extends ApiFormRequest
 
         $incomingEmail = mb_strtolower(trim((string) $this->input('email', '')));
         $currentEmail = mb_strtolower(trim((string) ($targetUser !== null ? $targetUser->email : '')));
+
         if ($incomingEmail !== '' && $incomingEmail !== $currentEmail) {
             $emailRules[] = Rule::unique('users', 'email')->ignore($ignoreId, 'id')->whereNull('deleted_at');
         }
@@ -108,12 +110,15 @@ class SaveCandidatePersonalDetailsRequest extends ApiFormRequest
     private function resolveTargetUser(): ?User
     {
         $routeUser = $this->route('user');
+
         if ($routeUser instanceof User) {
             return $routeUser;
         }
+
         if (is_numeric($routeUser)) {
             return User::query()->find((int) $routeUser);
         }
+
         if (is_string($routeUser) && $routeUser !== '') {
             return User::query()->where('uuid', $routeUser)->first();
         }

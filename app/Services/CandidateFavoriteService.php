@@ -7,7 +7,6 @@ namespace App\Services;
 use App\Models\Favorite;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Pagination\LengthAwarePaginator as Paginator;
 use Illuminate\Validation\ValidationException;
 
 class CandidateFavoriteService
@@ -16,6 +15,7 @@ class CandidateFavoriteService
 
     /**
      * @param  array<string, mixed>  $filters
+     *
      * @return LengthAwarePaginator<int, array<string, mixed>>
      */
     public function paginateFavorites(User $viewer, int $perPage, array $filters = []): LengthAwarePaginator

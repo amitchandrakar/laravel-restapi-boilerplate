@@ -57,6 +57,7 @@ class PaymentService
 
     /**
      * @param  array<string, mixed>  $data
+     *
      * @return array<string, mixed>
      */
     private function normalizePayload(array $data): array
@@ -88,6 +89,7 @@ class PaymentService
         if (array_key_exists('amount', $data)) {
             $payload['amount'] = (float) $data['amount'];
         }
+
         if (array_key_exists('currency', $data)) {
             $payload['currency'] = strtoupper((string) $data['currency']);
         }
@@ -103,6 +105,7 @@ class PaymentService
 
         /** @var Subscription|null $subscription */
         $subscription = Subscription::query()->find($payment->subscription_id);
+
         if (!$subscription instanceof Subscription) {
             return;
         }

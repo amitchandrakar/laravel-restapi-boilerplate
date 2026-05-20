@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Requests\Api\V1;
 
 use App\Http\Requests\Api\ApiFormRequest;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
 
 class RegisterCandidateRequest extends ApiFormRequest
@@ -13,6 +12,7 @@ class RegisterCandidateRequest extends ApiFormRequest
     protected function prepareForValidation(): void
     {
         $email = $this->input('email');
+
         if ($email === null || (is_string($email) && trim($email) === '')) {
             $this->merge(['email' => null]);
         }

@@ -6,7 +6,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Auth\RequestGuard;
-use Illuminate\Foundation\Testing\Concerns\InteractsWithAuthentication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,6 +29,7 @@ class FlushSanctumGuardState
     public function terminate(Request $request, Response $response): void
     {
         $guard = Auth::guard('sanctum');
+
         if ($guard instanceof RequestGuard) {
             $guard->forgetUser();
         }

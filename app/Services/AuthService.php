@@ -20,7 +20,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\PersonalAccessToken;
-use Laravel\Sanctum\TransientToken;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class AuthService
@@ -42,6 +41,7 @@ class AuthService
     {
         $data = $this->mapRegisterPayload($data);
         $candidateRoleId = $this->candidateRoleId();
+
         if ($candidateRoleId !== null) {
             $data['role_id'] = $candidateRoleId;
         }
@@ -99,6 +99,7 @@ class AuthService
      * Register a candidate with profile fields and an explicit package (by UUID).
      *
      * @param  array<string, mixed>  $data
+     *
      * @return array{user: User, token: string, payment: array<string, mixed>|null}
      */
     public function registerCandidate(array $data): array
@@ -110,12 +111,14 @@ class AuthService
 
             /** @var Package|null $package */
             $package = Package::query()->where('uuid', $packageUuid)->where('is_active', true)->first();
+
             if (!$package instanceof Package) {
                 throw ValidationException::withMessages([
                     'package_uuid' => ['The selected package is invalid.'],
                 ]);
             }
             $packageId = (int) $package->id;
+
             if ($candidateRoleId !== null) {
                 $data['role_id'] = $candidateRoleId;
             }
@@ -128,6 +131,7 @@ class AuthService
             }
 
             $payable = $package->registrationPayableAmountRupees();
+
             if ($payable <= 0) {
                 $this->attachSubscriptionForRegistration($user->id, $packageId, 'active', 'system');
                 $this->packagePermissionService->syncCandidatePermissions($user);
@@ -331,6 +335,7 @@ class AuthService
     {
         if ($plainTextBearerToken !== null && $plainTextBearerToken !== '') {
             $accessToken = PersonalAccessToken::findToken($plainTextBearerToken);
+
             if (
                 $accessToken !== null &&
                 (int) $accessToken->tokenable_id === (int) $user->id &&
@@ -341,6 +346,7 @@ class AuthService
         } else {
             /** @var mixed $current */
             $current = $user->currentAccessToken();
+
             if (is_object($current) && method_exists($current, 'delete')) {
                 $current->delete();
             }
@@ -358,6 +364,7 @@ class AuthService
     {
         /** @var mixed $currentToken */
         $currentToken = $user->currentAccessToken();
+
         if (is_object($currentToken) && method_exists($currentToken, 'delete')) {
             $currentToken->delete();
         }
@@ -404,6 +411,7 @@ class AuthService
         /** @var mixed $currentToken */
         $currentToken = $user->currentAccessToken();
         $currentTokenId = is_object($currentToken) && property_exists($currentToken, 'id') ? $currentToken->id : null;
+
         if (is_numeric($currentTokenId)) {
             $user->tokens()->where('id', '!=', (int) $currentTokenId)->delete();
 
@@ -417,6 +425,7 @@ class AuthService
      * Map validated register payload (legacy `name`) to `users` columns.
      *
      * @param  array<string, mixed>  $data
+     *
      * @return array<string, mixed>
      */
     private function mapRegisterPayload(array $data): array
@@ -440,6 +449,7 @@ class AuthService
             ->where('is_default_registration', true)
             ->whereNull('deleted_at')
             ->value('id');
+
         if ($defaultPackageId === 0) {
             return;
         }
@@ -518,6 +528,7 @@ class AuthService
             ->where('subscription_status', 'pending')
             ->orderByDesc('id')
             ->first();
+
         if ($pendingSub !== null) {
             /** @var Package|null $pkg */
             $pkg = Package::query()->whereKey((int) $pendingSub->package_id)->where('is_active', true)->first();
@@ -531,6 +542,7 @@ class AuthService
             ->where('subscription_status', 'active')
             ->orderByDesc('id')
             ->first();
+
         if ($activeSub !== null) {
             /** @var Package|null $pkg */
             $pkg = Package::query()->whereKey((int) $activeSub->package_id)->where('is_active', true)->first();

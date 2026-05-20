@@ -14,6 +14,7 @@ class PackageCreatedListener
     public function handle(PackageCreatedEvent $event): void
     {
         $admins = User::query()->role('admin')->get();
+
         if ($admins->isEmpty()) {
             return;
         }

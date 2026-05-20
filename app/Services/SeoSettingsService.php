@@ -11,6 +11,7 @@ class SeoSettingsService
 {
     /**
      * @param  array<string, mixed>  $data
+     *
      * @return array<string, mixed>
      */
     public function update(array $data): array
@@ -42,6 +43,7 @@ class SeoSettingsService
 
                 $value = $data[$payloadKey];
                 $valueType = 'string';
+
                 if (is_bool($value)) {
                     $valueType = 'boolean';
                     $value = $value ? '1' : '0';
@@ -82,6 +84,7 @@ class SeoSettingsService
     {
         $rows = DB::table('settings')->where('group_key', 'seo')->get();
         $indexed = [];
+
         foreach ($rows as $row) {
             $indexed[(string) $row->setting_key] = $this->castSettingValue(
                 $row->setting_value,

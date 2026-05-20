@@ -48,6 +48,7 @@ trait SearchableCandidateProfile
     public function toSearchableArray(): array
     {
         $age = null;
+
         if ($this->date_of_birth !== null) {
             $age = Carbon::parse($this->date_of_birth)->age;
         }

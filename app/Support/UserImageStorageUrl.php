@@ -29,6 +29,7 @@ final class UserImageStorageUrl
         if ($stored === null || $stored === '') {
             return null;
         }
+
         if (!self::isRelativeStorageKey($stored)) {
             return $stored;
         }
@@ -45,6 +46,7 @@ final class UserImageStorageUrl
         if ($url === null || $url === '') {
             return $url;
         }
+
         if (str_contains($url, '://')) {
             return $url;
         }
@@ -83,6 +85,7 @@ final class UserImageStorageUrl
 
         if (self::shouldUseSignedKycUrl($stored)) {
             $signed = self::temporaryUrl($stored);
+
             if ($signed !== null) {
                 return $signed;
             }
@@ -116,6 +119,7 @@ final class UserImageStorageUrl
         }
 
         $driver = (string) config('filesystems.disks.' . self::disk() . '.driver', 'local');
+
         if ($driver !== 's3') {
             return null;
         }
@@ -147,15 +151,18 @@ final class UserImageStorageUrl
     public static function variantKeyFromMdKey(string $mdKey, string $variant): ?string
     {
         $folders = config('user_images.folders');
+
         if (!is_array($folders) || !isset($folders['md'], $folders[$variant])) {
             return null;
         }
         $md = (string) $folders['md'];
         $target = (string) $folders[$variant];
+
         if ($target === '') {
             return null;
         }
         $needle = '/' . $md . '/';
+
         if (!str_contains($mdKey, $needle)) {
             return null;
         }
@@ -174,6 +181,7 @@ final class UserImageStorageUrl
             return null;
         }
         $key = self::iconKeyFromMdKey($mdStored);
+
         if ($key === null) {
             return null;
         }
@@ -187,6 +195,7 @@ final class UserImageStorageUrl
             return null;
         }
         $key = self::originalKeyFromMdKey($mdStored);
+
         if ($key === null) {
             return null;
         }
