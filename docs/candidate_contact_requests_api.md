@@ -178,6 +178,6 @@ Table **`contact_requests`** (see migration `2026_04_30_107000_create_user_inter
 | Service         | `app/Services/ContactRequestService.php`                                                                                                               |
 | Model           | `app/Models/ContactRequest.php`                                                                                                                        |
 | Form requests   | `app/Http/Requests/Api/V1/Candidate/StoreContactRequestRequest.php`, `RespondContactRequestRequest.php`                                                |
-| Routes          | `routes/api/v1/app.php` (inside `auth` + `sanctum` + `tracked.session` group)                                                                            |
+| Routes          | `routes/api/v1/app.php` (inside `auth` + `sanctum` + `tracked.session` group)                                                                          |
 | Phone masking   | `app/Services/AdminCandidateProfileDetailsService.php` (`profilePhoneForViewer`), `app/Http/Resources/Api/V1/AdminCandidateProfileDetailsResource.php` |
 | Feature tests   | `tests/Feature/ContactRequestFlowTest.php`                                                                                                             |

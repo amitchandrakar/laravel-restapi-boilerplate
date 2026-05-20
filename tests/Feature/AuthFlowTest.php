@@ -154,7 +154,10 @@ it('rotates tokens on refresh and revokes the refreshed token after logout', fun
     $newToken = (string) $refresh->json('data.token');
     expect($newToken)->not->toBe($token);
 
-    $this->withToken($newToken)->postJson('/api/v1/app/auth/logout')->assertStatus(200)->assertJsonPath('success', true);
+    $this->withToken($newToken)
+        ->postJson('/api/v1/app/auth/logout')
+        ->assertStatus(200)
+        ->assertJsonPath('success', true);
 
     expect(PersonalAccessToken::findToken($newToken))->toBeNull(
         'Sanctum token should be removed from storage after logout'

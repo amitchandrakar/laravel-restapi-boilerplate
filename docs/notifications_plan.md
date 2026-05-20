@@ -20,8 +20,8 @@ Each notification row in the client should support:
 
 ## HTTP APIs (implemented)
 
-| Endpoint (conceptual)                                  | Purpose                                                                                                                                |
-| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Endpoint (conceptual)                                      | Purpose                                                                                                                                |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | `GET /api/v1/app/auth/notifications`                       | List notifications for the authenticated user with pagination (`cursor` or `page`), optional `unread_only`, sort by `created_at` desc. |
 | `PATCH` or `POST /api/v1/app/auth/notifications/{id}/read` | Mark one notification read (`id` = notification UUID, Laravel `notifications.id`).                                                     |
 | `POST /api/v1/app/auth/notifications/read-all`             | Mark all unread notifications for the user as read.                                                                                    |

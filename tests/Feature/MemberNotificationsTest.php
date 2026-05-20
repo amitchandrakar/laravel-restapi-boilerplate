@@ -41,7 +41,9 @@ it('includes actionable new-match rows with unread metadata in the notifications
     expect($first['profileImageUrl'])->not->toBe('');
     expect($first['actions'] ?? null)->not->toBeEmpty();
     expect($first['actions'][0]['method'] ?? null)->toBe('GET');
-    expect(str_contains((string) ($first['actions'][0]['path'] ?? ''), '/api/v1/app/auth/candidate/matches'))->toBeTrue();
+    expect(
+        str_contains((string) ($first['actions'][0]['path'] ?? ''), '/api/v1/app/auth/candidate/matches')
+    )->toBeTrue();
 
     expect((int) $res->json('meta.unreadCount'))->toBeGreaterThanOrEqual(1);
 });

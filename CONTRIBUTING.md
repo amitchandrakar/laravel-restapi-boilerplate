@@ -53,7 +53,7 @@ Configuration lives in:
 ### Incremental strictness
 
 - Do **not** add new entries to `phpstan-baseline.neon` without a follow-up issue to fix them.
-- **Phase 2** (planned): enable `shipmonk/dead-code-detector` in PHPStan, analyse `tests/` at level 6+, and tighten boolean/loose-comparison strict rules.
+- **Phase 2** (planned): analyse `tests/` at level 6+, and tighten boolean/loose-comparison strict rules.
 - **Phase 3**: require traversable PHPDoc shapes (`array<string, mixed>`) on complex return types.
 
 ### Frontend / misc formatting

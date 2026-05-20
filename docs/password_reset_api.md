@@ -13,8 +13,8 @@ Responses use the standard API envelope (`success`, `statusCode`, `message`, `da
 
 ## Base paths
 
-| Endpoint            | Path                                |
-| ------------------- | ----------------------------------- |
+| Endpoint            | Path                                    |
+| ------------------- | --------------------------------------- |
 | Request reset email | `POST /api/v1/app/auth/forgot-password` |
 | Apply new password  | `POST /api/v1/app/auth/reset-password`  |
 
