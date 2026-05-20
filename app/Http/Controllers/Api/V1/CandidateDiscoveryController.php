@@ -31,7 +31,8 @@ class CandidateDiscoveryController extends Controller
         }
 
         $perPage = (int) $request->validated('perPage', 15);
-        $paginator = $this->browseService->paginateBrowse($user, $perPage, $request->filters());
+        $page = (int) $request->validated('page', 1);
+        $paginator = $this->browseService->paginateBrowse($user, $perPage, $request->filters(), $page);
 
         return $this->paginatedResponse(
             CandidateCardResource::collection($paginator),

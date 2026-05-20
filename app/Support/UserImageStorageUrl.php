@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -65,6 +66,69 @@ final class UserImageStorageUrl
         $url = self::publicUrl($stored);
 
         return self::toAbsoluteHttpUrl($url ?? $stored);
+    }
+
+    /**
+     * Resolve a KYC / ID verification asset URL (signed when configured for private S3).
+     */
+    public static function resolveKycDocumentUrl(?string $stored): ?string
+    {
+        if ($stored === null || $stored === '') {
+            return null;
+        }
+
+        if (!self::isRelativeStorageKey($stored)) {
+            return self::toAbsoluteHttpUrl($stored);
+        }
+
+        if (self::shouldUseSignedKycUrl($stored)) {
+            $signed = self::temporaryUrl($stored);
+            if ($signed !== null) {
+                return $signed;
+            }
+        }
+
+        return self::resolvePublicHttpUrl($stored);
+    }
+
+    public static function shouldUseSignedKycUrl(string $relativeKey): bool
+    {
+        if (!filter_var(config('kyc_id_verification.use_signed_urls', false), FILTER_VALIDATE_BOOL)) {
+            return false;
+        }
+
+        $driver = (string) config('filesystems.disks.' . self::disk() . '.driver', 'local');
+
+        return $driver === 's3' || self::isKycVerificationKey($relativeKey);
+    }
+
+    public static function isKycVerificationKey(string $relativeKey): bool
+    {
+        $folder = (string) config('kyc_id_verification.folder', 'id_verification');
+
+        return str_contains($relativeKey, '/' . trim($folder, '/') . '/');
+    }
+
+    public static function temporaryUrl(string $relativeKey): ?string
+    {
+        if (!self::isRelativeStorageKey($relativeKey)) {
+            return null;
+        }
+
+        $driver = (string) config('filesystems.disks.' . self::disk() . '.driver', 'local');
+        if ($driver !== 's3') {
+            return null;
+        }
+
+        $disk = Storage::disk(self::disk());
+
+        $minutes = max(1, (int) config('kyc_id_verification.signed_url_minutes', 15));
+
+        try {
+            return $disk->temporaryUrl($relativeKey, Carbon::now()->addMinutes($minutes));
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     /**

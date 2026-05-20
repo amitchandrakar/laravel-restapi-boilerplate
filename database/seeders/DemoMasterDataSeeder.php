@@ -92,5 +92,26 @@ class DemoMasterDataSeeder extends Seeder
                 ]);
             }
         }
+
+        $incomeRanges = [
+            ['name' => 'Below 5 LPA', 'min_amount' => 0, 'max_amount' => 500000, 'sort_order' => 1],
+            ['name' => '5–10 LPA', 'min_amount' => 500000, 'max_amount' => 1000000, 'sort_order' => 2],
+            ['name' => '10–20 LPA', 'min_amount' => 1000000, 'max_amount' => 2000000, 'sort_order' => 3],
+            ['name' => '20 LPA+', 'min_amount' => 2000000, 'max_amount' => null, 'sort_order' => 4],
+        ];
+        foreach ($incomeRanges as $range) {
+            if (DB::table('income_ranges')->where('name', $range['name'])->doesntExist()) {
+                DB::table('income_ranges')->insert([
+                    'name' => $range['name'],
+                    'min_amount' => $range['min_amount'],
+                    'max_amount' => $range['max_amount'],
+                    'currency' => 'INR',
+                    'sort_order' => $range['sort_order'],
+                    'is_active' => true,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            }
+        }
     }
 }

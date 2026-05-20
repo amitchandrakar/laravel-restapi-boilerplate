@@ -25,9 +25,9 @@ class AdminPendingKycDocumentResource extends JsonResource
             'uuid' => $doc->uuid,
             'documentType' => $doc->document_type,
             'documentNumberMasked' => $doc->document_number_masked,
-            'documentFrontUrl' => UserImageStorageUrl::resolvePublicHttpUrl($doc->document_front_url),
-            'documentBackUrl' => UserImageStorageUrl::resolvePublicHttpUrl($doc->document_back_url),
-            'selfieUrl' => UserImageStorageUrl::resolvePublicHttpUrl($doc->selfie_url),
+            'documentFrontUrl' => UserImageStorageUrl::resolveKycDocumentUrl($doc->document_front_url),
+            'documentBackUrl' => UserImageStorageUrl::resolveKycDocumentUrl($doc->document_back_url),
+            'selfieUrl' => UserImageStorageUrl::resolveKycDocumentUrl($doc->selfie_url),
             'verificationStatus' => $doc->verification_status,
             'submittedAt' => optional($doc->submitted_at)?->toIso8601String(),
             'candidate' => $candidate instanceof User

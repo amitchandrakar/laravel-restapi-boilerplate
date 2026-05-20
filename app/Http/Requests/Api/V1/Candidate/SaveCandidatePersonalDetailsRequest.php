@@ -50,10 +50,12 @@ class SaveCandidatePersonalDetailsRequest extends ApiFormRequest
             'manglik_status' => ['required', 'string', 'max:32'],
             'about_me' => ['required', 'string', 'max:500'],
             'photo_url' => ['nullable', 'url', 'max:2048'],
-            'religion' => ['nullable', 'string', 'max:128'],
-            'caste' => ['nullable', 'string', 'max:128'],
             'sub_caste' => ['nullable', 'string', 'max:128'],
-            'community' => ['nullable', 'string', 'max:128'],
+            'gotra' => ['nullable', 'string', 'max:128'],
+            'rashi' => ['nullable', 'string', 'max:64'],
+            'nakshatra' => ['nullable', 'string', 'max:64'],
+            'occupation_id' => ['nullable', 'integer', Rule::exists('occupations', 'id')->where('is_active', true)],
+            'income_range_id' => ['nullable', 'integer', Rule::exists('income_ranges', 'id')->where('is_active', true)],
         ];
     }
 
@@ -87,10 +89,12 @@ class SaveCandidatePersonalDetailsRequest extends ApiFormRequest
             'manglik_status' => ['nullable', 'string', 'max:32'],
             'about_me' => ['nullable', 'string', 'max:500'],
             'photo_url' => ['nullable', 'url', 'max:2048'],
-            'religion' => ['nullable', 'string', 'max:128'],
-            'caste' => ['nullable', 'string', 'max:128'],
             'sub_caste' => ['nullable', 'string', 'max:128'],
-            'community' => ['nullable', 'string', 'max:128'],
+            'gotra' => ['nullable', 'string', 'max:128'],
+            'rashi' => ['nullable', 'string', 'max:64'],
+            'nakshatra' => ['nullable', 'string', 'max:64'],
+            'occupation_id' => ['nullable', 'integer', Rule::exists('occupations', 'id')->where('is_active', true)],
+            'income_range_id' => ['nullable', 'integer', Rule::exists('income_ranges', 'id')->where('is_active', true)],
         ];
     }
 

@@ -6,7 +6,10 @@ namespace App\Observers;
 
 use App\Events\UserCreatedEvent;
 use App\Events\UserLifecycleEvent;
+use App\Jobs\SyncProfileToAlgolia;
 use App\Models\User;
+use App\Support\ScoutConfig;
+use App\Support\SeedingGuard;
 use Illuminate\Support\Str;
 
 class UserObserver
@@ -26,6 +29,10 @@ class UserObserver
      */
     public function created(User $user): void
     {
+        if (SeedingGuard::active()) {
+            return;
+        }
+
         UserCreatedEvent::dispatch($user);
         UserLifecycleEvent::dispatch($user, 'created');
     }
@@ -35,7 +42,19 @@ class UserObserver
      */
     public function updated(User $user): void
     {
+        if (SeedingGuard::active()) {
+            return;
+        }
+
         UserLifecycleEvent::dispatch($user, 'updated');
+
+        if (
+            ScoutConfig::usesAlgolia() &&
+            $user->isCandidateRole() &&
+            $user->wasChanged(['profile_status', 'published_at', 'is_featured', 'deleted_at', 'gender', 'date_of_birth', 'current_city', 'occupation', 'last_name'])
+        ) {
+            SyncProfileToAlgolia::dispatch((int) $user->id);
+        }
     }
 
     /**
@@ -43,7 +62,15 @@ class UserObserver
      */
     public function deleted(User $user): void
     {
+        if (SeedingGuard::active()) {
+            return;
+        }
+
         UserLifecycleEvent::dispatch($user, 'deleted');
+
+        if (ScoutConfig::usesAlgolia() && $user->isCandidateRole()) {
+            SyncProfileToAlgolia::dispatch((int) $user->id);
+        }
     }
 
     /**

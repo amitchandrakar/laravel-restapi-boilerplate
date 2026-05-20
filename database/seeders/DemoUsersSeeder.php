@@ -31,21 +31,12 @@ class DemoUsersSeeder extends Seeder
         $langEnId = (int) DB::table('languages')->where('code', 'en')->value('id');
         $langHiId = (int) DB::table('languages')->where('code', 'hi')->value('id');
 
-        $districtId =
-            $stateId > 0 ? (int) DB::table('districts')->where('state_id', $stateId)->orderBy('id')->value('id') : 0;
-        $villageId =
-            $districtId > 0
-                ? (int) DB::table('villages')->where('district_id', $districtId)->orderBy('id')->value('id')
-                : 0;
-
         $maternalFullRaipur =
-            $countryId > 0 && $stateId > 0 && $cityMumbaiId > 0 && $districtId > 0 && $villageId > 0
+            $countryId > 0 && $stateId > 0 && $cityMumbaiId > 0
                 ? [
                     'maternal_country_id' => $countryId,
                     'maternal_state_id' => $stateId,
                     'maternal_city_id' => $cityMumbaiId,
-                    'maternal_district_id' => $districtId,
-                    'maternal_village_id' => $villageId,
                 ]
                 : [];
         $maternalStateOnly =
@@ -56,13 +47,11 @@ class DemoUsersSeeder extends Seeder
                 ]
                 : [];
         $maternalFullBilaspur =
-            $countryId > 0 && $stateId > 0 && $cityPuneId > 0 && $districtId > 0 && $villageId > 0
+            $countryId > 0 && $stateId > 0 && $cityPuneId > 0
                 ? [
                     'maternal_country_id' => $countryId,
                     'maternal_state_id' => $stateId,
                     'maternal_city_id' => $cityPuneId,
-                    'maternal_district_id' => $districtId,
-                    'maternal_village_id' => $villageId,
                 ]
                 : [];
 
@@ -595,7 +584,6 @@ class DemoUsersSeeder extends Seeder
                 'preferred_smoking' => $p['preferred_smoking'] ?? null,
                 'preferred_drinking' => $p['preferred_drinking'] ?? null,
                 'preferred_degree_ids' => $encodeIdJson($p['preferred_degree_ids'] ?? null),
-                'preferred_location_ids' => $encodeIdJson($p['preferred_location_ids'] ?? null),
                 'preferred_community_ids' => $encodeIdJson($p['preferred_community_ids'] ?? null),
                 'preferred_caste' => $p['preferred_caste'] ?? null,
                 'preferred_occupation' => $p['preferred_occupation'] ?? null,
@@ -604,6 +592,13 @@ class DemoUsersSeeder extends Seeder
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);
+
+            if (!empty($p['preferred_location_ids']) && is_array($p['preferred_location_ids'])) {
+                app(\App\Services\UserPartnerPreferredLocationService::class)->syncForUser(
+                    $user,
+                    $p['preferred_location_ids']
+                );
+            }
 
             $this->attachSubscription($userId, $packageCode);
 
@@ -614,9 +609,7 @@ class DemoUsersSeeder extends Seeder
                     $index,
                     $countryId,
                     $stateId,
-                    $cityMumbaiId,
-                    $districtId,
-                    $villageId
+                    $cityMumbaiId
                 );
                 $this->packagePermissionService->syncCandidatePermissions($published->fresh());
             }
@@ -745,9 +738,7 @@ class DemoUsersSeeder extends Seeder
         int $index,
         int $countryId,
         int $stateId,
-        int $birthCityId,
-        int $districtId,
-        int $villageId
+        int $birthCityId
     ): void {
         $now = now();
         $birthColumns = [];
@@ -759,12 +750,6 @@ class DemoUsersSeeder extends Seeder
         }
         if ($birthCityId > 0) {
             $birthColumns['birth_city_id'] = $birthCityId;
-        }
-        if ($districtId > 0) {
-            $birthColumns['birth_district_id'] = $districtId;
-        }
-        if ($villageId > 0) {
-            $birthColumns['birth_village_id'] = $villageId;
         }
 
         $user
@@ -780,6 +765,10 @@ class DemoUsersSeeder extends Seeder
                         'time_of_birth' => '10:30:00',
                         'zodiac_sign' => 'aries',
                         'place_of_birth_line' => 'Raipur, Chhattisgarh',
+                        'sub_caste' => 'General',
+                        'gotra' => 'Kashyapa',
+                        'rashi' => 'Mesha',
+                        'nakshatra' => 'Ashwini',
                         'father_name' => 'Father ' . $user->last_name,
                         'father_occupation' => 'Business',
                         'mother_name' => 'Mother ' . $user->last_name,
@@ -789,10 +778,52 @@ class DemoUsersSeeder extends Seeder
                         'published_at' => $now,
                         'is_featured' => $index < 5,
                         'featured_at' => $index < 5 ? $now : null,
+                        'occupation_id' => $this->resolveOccupationId((string) ($user->occupation ?? '')),
+                        'income_range_id' => $this->resolveIncomeRangeId($user->income !== null ? (float) $user->income : null),
+                        'current_country_id' => $countryId > 0 ? $countryId : null,
+                        'current_state_id' => $stateId > 0 ? $stateId : null,
+                        'current_city_id' => $birthCityId > 0 ? $birthCityId : null,
                     ],
                     $birthColumns
                 )
             )
             ->save();
+    }
+
+    private function resolveOccupationId(string $occupationLabel): ?int
+    {
+        $trimmed = trim($occupationLabel);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        $id = (int) DB::table('occupations')->where('name', $trimmed)->value('id');
+
+        return $id > 0 ? $id : null;
+    }
+
+    private function resolveIncomeRangeId(?float $annualIncomeInr): ?int
+    {
+        if ($annualIncomeInr === null || $annualIncomeInr < 0) {
+            return null;
+        }
+
+        /** @var list<object> $rows */
+        $rows = DB::table('income_ranges')
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get(['id', 'min_amount', 'max_amount']);
+
+        foreach ($rows as $row) {
+            $min = $row->min_amount !== null ? (float) $row->min_amount : null;
+            $max = $row->max_amount !== null ? (float) $row->max_amount : null;
+            $aboveMin = $min === null || $annualIncomeInr >= $min;
+            $belowMax = $max === null || $annualIncomeInr <= $max;
+            if ($aboveMin && $belowMax) {
+                return (int) $row->id;
+            }
+        }
+
+        return null;
     }
 }

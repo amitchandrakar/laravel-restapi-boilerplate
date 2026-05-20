@@ -50,7 +50,8 @@ final class KycIdVerificationUploadService
         $uuid = (string) Str::uuid();
         $storageKey = $userId . '/' . $folder . '/' . $uuid . '.webp';
 
-        Storage::disk($disk)->put($storageKey, $binary, ['visibility' => 'public']);
+        $visibility = UserImageStorageUrl::shouldUseSignedKycUrl($storageKey) ? 'private' : 'public';
+        Storage::disk($disk)->put($storageKey, $binary, ['visibility' => $visibility]);
 
         $publicUrl = UserImageStorageUrl::resolvePublicHttpUrl($storageKey);
         if ($publicUrl === null || $publicUrl === '') {

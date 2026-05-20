@@ -6,10 +6,14 @@ namespace App\Notifications;
 
 use App\Models\Package;
 use App\Models\Payment;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class PaymentFailedNotification extends Notification
+class PaymentFailedNotification extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     public function __construct(private readonly Payment $payment, private readonly string $reason) {}
 
     public function via(object $notifiable): array

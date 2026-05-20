@@ -1,0 +1,19 @@
+<?php
+
+namespace Algolia\AlgoliaSearch\Api;
+
+class SearchClient
+{
+    public static function create(?string $appId = null, ?string $apiKey = null): self
+    {
+        return new self();
+    }
+
+    /**
+     * @param  mixed  $requestOptions
+     */
+    public function listIndices(?int $page = null, ?int $hitsPerPage = null, mixed $requestOptions = []): mixed
+    {
+        return [];
+    }
+}

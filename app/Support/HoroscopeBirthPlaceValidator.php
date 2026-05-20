@@ -44,13 +44,11 @@ final class HoroscopeBirthPlaceValidator
             $p . $fieldPrefix . 'country_id' => ['nullable', 'integer', Rule::exists('countries', 'id')],
             $p . $fieldPrefix . 'state_id' => ['nullable', 'integer', Rule::exists('states', 'id')],
             $p . $fieldPrefix . 'city_id' => ['nullable', 'integer', Rule::exists('cities', 'id')],
-            $p . $fieldPrefix . 'district_id' => ['nullable', 'integer', Rule::exists('districts', 'id')],
-            $p . $fieldPrefix . 'village_id' => ['nullable', 'integer', Rule::exists('villages', 'id')],
         ];
     }
 
     /**
-     * Ensure geo FKs form a valid chain (state→country, city/district→state, village→district).
+     * Ensure geo FKs form a valid chain (state→country, city→state).
      *
      * @param  array<string, mixed>  $input
      */
@@ -79,8 +77,6 @@ final class HoroscopeBirthPlaceValidator
         $countryId = self::toNullableInt($input[$field('country_id')] ?? null);
         $stateId = self::toNullableInt($input[$field('state_id')] ?? null);
         $cityId = self::toNullableInt($input[$field('city_id')] ?? null);
-        $districtId = self::toNullableInt($input[$field('district_id')] ?? null);
-        $villageId = self::toNullableInt($input[$field('village_id')] ?? null);
 
         if ($stateId !== null && $countryId !== null) {
             $actual = DB::table('states')->where('id', $stateId)->value('country_id');
@@ -95,24 +91,6 @@ final class HoroscopeBirthPlaceValidator
             $actual = DB::table('cities')->where('id', $cityId)->value('state_id');
             if ($actual === null || (int) $actual !== $stateId) {
                 $validator->errors()->add($k('city_id'), 'The selected city does not belong to the selected state.');
-            }
-        }
-
-        if ($districtId !== null && $stateId !== null) {
-            $actual = DB::table('districts')->where('id', $districtId)->value('state_id');
-            if ($actual === null || (int) $actual !== $stateId) {
-                $validator
-                    ->errors()
-                    ->add($k('district_id'), 'The selected district does not belong to the selected state.');
-            }
-        }
-
-        if ($villageId !== null && $districtId !== null) {
-            $actual = DB::table('villages')->where('id', $villageId)->value('district_id');
-            if ($actual === null || (int) $actual !== $districtId) {
-                $validator
-                    ->errors()
-                    ->add($k('village_id'), 'The selected village does not belong to the selected district.');
             }
         }
     }

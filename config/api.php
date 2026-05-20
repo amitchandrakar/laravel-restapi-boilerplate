@@ -36,6 +36,22 @@ return [
     'throttle' => [
         'attempts' => env('API_THROTTLE_ATTEMPTS', 5),
         'decay_minutes' => env('API_THROTTLE_DECAY_MINUTES', 1),
+        'auth_per_minute' => (int) env('API_AUTH_RATE_LIMIT_PER_MINUTE', 5),
+        'general_per_minute' => (int) env('API_RATE_LIMIT_PER_MINUTE', 60),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Authentication (Sanctum + lockout)
+    |--------------------------------------------------------------------------
+    */
+
+    'auth' => [
+        'token_expiry_days' => (int) env('API_AUTH_TOKEN_EXPIRY_DAYS', 30),
+        'lockout' => [
+            'max_attempts' => (int) env('API_AUTH_LOCKOUT_MAX_ATTEMPTS', 5),
+            'decay_minutes' => (int) env('API_AUTH_LOCKOUT_DECAY_MINUTES', 15),
+        ],
     ],
 
     /*

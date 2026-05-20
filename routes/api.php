@@ -14,17 +14,9 @@ Route::get('/', function () {
     return ApiResponseBuilder::success(['version' => 'v1'], 'API is working', 200);
 });
 
-// Health check endpoint (no auth required)
-Route::get('health', function () {
-    return ApiResponseBuilder::success(
-        [
-            'status' => 'up',
-            'timestamp' => now()->utc()->format('Y-m-d\TH:i:s.v\Z'),
-        ],
-        'OK',
-        200
-    );
-});
+// Health check endpoints (no auth required)
+Route::get('health', [\App\Http\Controllers\Api\HealthController::class, 'check']);
+Route::get('health/detailed', [\App\Http\Controllers\Api\HealthController::class, 'detailed']);
 
 // Load V1 routes
 Route::prefix('v1')->group(base_path('routes/api/v1.php'));

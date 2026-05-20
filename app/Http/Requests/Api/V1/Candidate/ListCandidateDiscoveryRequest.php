@@ -18,6 +18,7 @@ class ListCandidateDiscoveryRequest extends FormRequest
     {
         return [
             'perPage' => ['nullable', 'integer', 'min:1', 'max:50'],
+            'page' => ['nullable', 'integer', 'min:1'],
             'gender' => ['nullable', 'string', 'max:32'],
             'min_age' => ['nullable', 'integer', 'min:1', 'max:120'],
             'max_age' => ['nullable', 'integer', 'min:1', 'max:120'],
@@ -78,6 +79,13 @@ class ListCandidateDiscoveryRequest extends FormRequest
             $this->merge(['perPage' => 15]);
         } else {
             $this->merge(['perPage' => max(1, min(50, (int) $perPage))]);
+        }
+
+        $page = $this->input('page');
+        if ($page === '' || $page === null || !is_numeric($page)) {
+            $this->merge(['page' => 1]);
+        } else {
+            $this->merge(['page' => max(1, (int) $page)]);
         }
     }
 

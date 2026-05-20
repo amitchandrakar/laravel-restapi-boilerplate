@@ -29,8 +29,6 @@ class SaveAdminCandidateFullProfileRequest extends ApiFormRequest
             'maternal_country' => 'maternal_country_id',
             'maternal_state' => 'maternal_state_id',
             'maternal_city' => 'maternal_city_id',
-            'maternal_district' => 'maternal_district_id',
-            'maternal_village' => 'maternal_village_id',
         ];
         foreach ($legacyToId as $legacy => $canonical) {
             if (
@@ -42,15 +40,19 @@ class SaveAdminCandidateFullProfileRequest extends ApiFormRequest
                 $loc[$canonical] = $loc[$legacy];
             }
         }
-        foreach (
-            [
-                'maternal_country_id',
-                'maternal_state_id',
-                'maternal_city_id',
-                'maternal_district_id',
-                'maternal_village_id',
-            ] as $key
+        if (
+            array_key_exists('maternal_village', $loc) &&
+            $loc['maternal_village'] !== null &&
+            $loc['maternal_village'] !== '' &&
+            (!array_key_exists('maternal_village_name', $loc) ||
+                $loc['maternal_village_name'] === null ||
+                $loc['maternal_village_name'] === '') &&
+            !is_numeric($loc['maternal_village'])
         ) {
+            $v = $loc['maternal_village'];
+            $loc['maternal_village_name'] = is_string($v) ? $v : (string) $v;
+        }
+        foreach (['maternal_country_id', 'maternal_state_id', 'maternal_city_id'] as $key) {
             if (!array_key_exists($key, $loc)) {
                 continue;
             }
@@ -78,6 +80,7 @@ class SaveAdminCandidateFullProfileRequest extends ApiFormRequest
                 'personal_details' => ['sometimes', 'array'],
                 'horoscope' => ['sometimes', 'array'],
                 'location_family_roots' => ['sometimes', 'array'],
+                'location_family_roots.maternal_village_name' => ['sometimes', 'nullable', 'string', 'max:255'],
                 'career_education' => ['sometimes', 'array'],
                 'family_background' => ['sometimes', 'array'],
                 'lifestyle' => ['sometimes', 'array'],
@@ -85,10 +88,7 @@ class SaveAdminCandidateFullProfileRequest extends ApiFormRequest
                 'basics.email' => ['required_without:candidate_uuid', 'email', 'max:255'],
                 'basics.phone' => ['sometimes', 'nullable', 'string', 'max:32'],
                 'basics.photo_url' => ['sometimes', 'nullable', 'url', 'max:2048'],
-                'basics.religion' => ['sometimes', 'nullable', 'string', 'max:128'],
-                'basics.caste' => ['sometimes', 'nullable', 'string', 'max:128'],
                 'basics.sub_caste' => ['sometimes', 'nullable', 'string', 'max:128'],
-                'basics.community' => ['sometimes', 'nullable', 'string', 'max:128'],
             ],
             HoroscopeBirthPlaceValidator::rules('horoscope'),
             HoroscopeBirthPlaceValidator::flatGeoIdRules('maternal_', 'location_family_roots.'),

@@ -9,6 +9,13 @@ use Illuminate\Validation\Rule;
 
 class UpdateProfileRequest extends ApiFormRequest
 {
+    public function authorize(): bool
+    {
+        $user = $this->user();
+
+        return $user !== null && $user->can('update', $user);
+    }
+
     /**
      * Get the validation rules that apply to the request.
      */

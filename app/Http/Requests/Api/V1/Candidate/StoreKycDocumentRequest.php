@@ -9,6 +9,11 @@ use App\Services\KycDocumentService;
 
 class StoreKycDocumentRequest extends ApiFormRequest
 {
+    public function authorize(): bool
+    {
+        return $this->user() !== null && $this->user()->hasRole('candidate');
+    }
+
     /**
      * @return array<string, mixed>
      */

@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Models\User;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class ProfileViewedNotification extends Notification
+class ProfileViewedNotification extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     public function __construct(private readonly User $viewer, private readonly string $source) {}
 
     public function via(object $notifiable): array

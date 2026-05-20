@@ -112,9 +112,14 @@ class CandidateUserResource extends JsonResource
         $partnerDegreeIds = self::decodeStoredIdList(
             $partner !== null ? data_get($partner, 'preferred_degree_ids') : null
         );
-        $partnerLocationIds = self::decodeStoredIdList(
-            $partner !== null ? data_get($partner, 'preferred_location_ids') : null
-        );
+        $partnerLocationIds = collect(
+            app(\App\Services\UserPartnerPreferredLocationService::class)->listForUserId($user->id)
+        )
+            ->pluck('cityId')
+            ->filter(static fn($id): bool => $id !== null)
+            ->map(static fn($id): int => (int) $id)
+            ->values()
+            ->all();
         $partnerCommunityIds = self::decodeStoredIdList(
             $partner !== null ? data_get($partner, 'preferred_community_ids') : null
         );
@@ -169,10 +174,12 @@ class CandidateUserResource extends JsonResource
                     'phone' => $user->phone,
                     'photoUrl' => $photoUrl,
                     'age' => $user->date_of_birth !== null ? $user->date_of_birth->age : null,
-                    'religion' => data_get($user, 'religion'),
-                    'caste' => data_get($user, 'caste'),
                     'subCaste' => data_get($user, 'sub_caste'),
-                    'community' => data_get($user, 'community'),
+                    'gotra' => data_get($user, 'gotra'),
+                    'rashi' => data_get($user, 'rashi'),
+                    'nakshatra' => data_get($user, 'nakshatra'),
+                    'occupationId' => data_get($user, 'occupation_id'),
+                    'incomeRangeId' => data_get($user, 'income_range_id'),
                     'gender' => $user->gender,
                     'bodyType' => data_get($user, 'body_type'),
                     'complexion' => data_get($user, 'complexion'),
@@ -186,17 +193,17 @@ class CandidateUserResource extends JsonResource
                     'dateOfBirth' => $user->date_of_birth !== null ? (string) $user->date_of_birth : null,
                     'timeOfBirth' => data_get($user, 'time_of_birth'),
                     'zodiacSign' => data_get($user, 'zodiac_sign'),
+                    'manglikStatus' => data_get($user, 'manglik_status'),
+                    'gotra' => data_get($user, 'gotra'),
+                    'rashi' => data_get($user, 'rashi'),
+                    'nakshatra' => data_get($user, 'nakshatra'),
                     'placeOfBirthLine' => data_get($user, 'place_of_birth_line'),
                     'birthCountryId' => data_get($user, 'birth_country_id'),
                     'birthStateId' => data_get($user, 'birth_state_id'),
                     'birthCityId' => data_get($user, 'birth_city_id'),
-                    'birthDistrictId' => data_get($user, 'birth_district_id'),
-                    'birthVillageId' => data_get($user, 'birth_village_id'),
                     'birthCountry' => data_get($user, 'place_of_birth_country'),
                     'birthState' => data_get($user, 'place_of_birth_state'),
                     'birthCity' => data_get($user, 'place_of_birth_city'),
-                    'birthDistrict' => data_get($user, 'place_of_birth_district'),
-                    'birthVillage' => data_get($user, 'place_of_birth_village'),
                 ],
                 'locationFamilyRoots' => [
                     'current' => [
@@ -217,8 +224,7 @@ class CandidateUserResource extends JsonResource
                         'countryId' => data_get($user, 'maternal_country_id'),
                         'stateId' => data_get($user, 'maternal_state_id'),
                         'cityId' => data_get($user, 'maternal_city_id'),
-                        'districtId' => data_get($user, 'maternal_district_id'),
-                        'villageId' => data_get($user, 'maternal_village_id'),
+                        'villageName' => data_get($user, 'maternal_village_name'),
                     ],
                 ],
                 'careerEducation' => [
@@ -274,9 +280,16 @@ class CandidateUserResource extends JsonResource
                     'preferredDiet' => data_get($partner, 'preferred_diet'),
                     'preferredSmoking' => data_get($partner, 'preferred_smoking'),
                     'preferredDrinking' => data_get($partner, 'preferred_drinking'),
+                    'preferredMinWeight' => data_get($partner, 'preferred_min_weight'),
+                    'preferredMaxWeight' => data_get($partner, 'preferred_max_weight'),
+                    'preferredBodyType' => data_get($partner, 'preferred_body_type'),
+                    'preferredComplexion' => data_get($partner, 'preferred_complexion'),
                     'preferredCaste' => data_get($partner, 'preferred_caste'),
                     'preferredIncomeMin' => data_get($partner, 'preferred_income_min'),
                     'preferredDegreeIds' => $partnerDegreeIds,
+                    'preferredLocations' => app(\App\Services\UserPartnerPreferredLocationService::class)->listForUserId(
+                        (int) $user->id
+                    ),
                     'preferredLocationIds' => $partnerLocationIds,
                     'preferredCommunityIds' => $partnerCommunityIds,
                     'preferredOccupation' => data_get($partner, 'preferred_occupation'),

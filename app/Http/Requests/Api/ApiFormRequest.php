@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api;
 
+use App\Support\ApiResponseBuilder;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -24,15 +25,15 @@ abstract class ApiFormRequest extends FormRequest
      */
     protected function failedValidation(Validator $validator): void
     {
+        $fields = ApiResponseBuilder::normalizeValidationFields($validator->errors()->toArray());
+
         throw new HttpResponseException(
-            response()->json(
-                [
-                    'success' => false,
-                    'message' => 'Validation failed',
-                    'code' => JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
-                    'errors' => $validator->errors(),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
+            ApiResponseBuilder::error(
+                'Validation failed.',
+                JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
+                ApiResponseBuilder::ERROR_VALIDATION,
+                'Validation failed.',
+                $fields
             )
         );
     }
@@ -43,13 +44,12 @@ abstract class ApiFormRequest extends FormRequest
     protected function failedAuthorization(): void
     {
         throw new HttpResponseException(
-            response()->json(
-                [
-                    'success' => false,
-                    'message' => 'Forbidden',
-                    'code' => JsonResponse::HTTP_FORBIDDEN,
-                ],
-                JsonResponse::HTTP_FORBIDDEN
+            ApiResponseBuilder::error(
+                'Forbidden',
+                JsonResponse::HTTP_FORBIDDEN,
+                ApiResponseBuilder::ERROR_FORBIDDEN,
+                'Forbidden',
+                null
             )
         );
     }

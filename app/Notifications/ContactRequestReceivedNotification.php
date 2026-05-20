@@ -6,10 +6,14 @@ namespace App\Notifications;
 
 use App\Models\ContactRequest;
 use App\Models\User;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class ContactRequestReceivedNotification extends Notification
+class ContactRequestReceivedNotification extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     public function __construct(private readonly ContactRequest $contactRequest) {}
 
     public function via(object $notifiable): array

@@ -1,27 +1,32 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Razorpay\Api;
+
+/**
+ * @property Order $order
+ * @property Utility $utility
+ */
+class Api
+{
+    public function __construct(string $key, string $secret) {}
+}
 
 class Order
 {
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @return array<string, mixed>
+     */
+    public function create(array $attributes): array
+    {
+        return [];
+    }
 }
 
 class Utility
 {
-}
+    /** @param  array<string, mixed>  $attributes */
+    public function verifyPaymentSignature(array $attributes): void {}
 
-/**
- * Magic properties via {@see Api::__get()} — documented for Larastan.
- *
- * @property-read Order $order
- * @property-read Utility $utility
- */
-class Api
-{
-    /**
-     * @param  string|null  $oauthToken
-     */
-    public function __construct(string $key, string $secret, $oauthToken = null) {}
+    public function verifyWebhookSignature(string $payload, string $signature, string $secret): void {}
 }

@@ -47,7 +47,7 @@ class DemoCandidateNotificationsSeeder extends Seeder
             'request_message' => self::PENDING_MESSAGE,
             'request_status' => 'pending',
         ]);
-        $arjun->notify(new ContactRequestReceivedNotification($pending));
+        $arjun->notifyNow(new ContactRequestReceivedNotification($pending));
 
         $accepted = ContactRequest::query()->create([
             'from_user_id' => $rohan->id,
@@ -56,12 +56,12 @@ class DemoCandidateNotificationsSeeder extends Seeder
             'request_status' => 'accepted',
             'responded_at' => now(),
         ]);
-        $rohan->notify(new ContactRequestAcceptedNotification($accepted));
+        $rohan->notifyNow(new ContactRequestAcceptedNotification($accepted));
 
-        $arjun->notify(new NewMatchNotification($priya, (string) Str::uuid(), 88));
-        $arjun->notify(new ProfileViewedNotification($priya, 'profile_details'));
+        $arjun->notifyNow(new NewMatchNotification($priya, (string) Str::uuid(), 88));
+        $arjun->notifyNow(new ProfileViewedNotification($priya, 'profile_details'));
 
-        $priya->notify(new NewMatchNotification($ananya, (string) Str::uuid(), 82));
+        $priya->notifyNow(new NewMatchNotification($ananya, (string) Str::uuid(), 82));
 
         $readTarget = DatabaseNotification::query()
             ->where('notifiable_type', User::class)

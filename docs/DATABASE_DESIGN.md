@@ -23,8 +23,6 @@
 - `place_of_birth_country`
 - `place_of_birth_state`
 - `place_of_birth_city`
-- `place_of_birth_district`
-- `place_of_birth_village`
 - `current_country`
 - `current_state`
 - `current_city`

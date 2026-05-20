@@ -1,197 +1,177 @@
 <?php
 
 declare(strict_types=1);
-
-namespace Tests\Feature;
-
 use App\Models\Package;
 use App\Models\Role;
 use App\Models\User;
 use Database\Seeders\DemoMasterDataSeeder;
 use Database\Seeders\PackageCatalogSeeder;
 use Database\Seeders\RbacSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Tests\TestCase;
 
-class CandidateRegistrationTest extends TestCase
-{
-    use RefreshDatabase;
+const AUTH_CANDIDATE_REGISTRATION_PW = 'Password@reg1';
+beforeEach(function () {
+    $this->seed(RbacSeeder::class);
+    $this->seed(PackageCatalogSeeder::class);
+    $this->seed(DemoMasterDataSeeder::class);
+});
 
-    private const PASSWORD = 'Password@reg1';
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->seed(RbacSeeder::class);
-        $this->seed(PackageCatalogSeeder::class);
-        $this->seed(DemoMasterDataSeeder::class);
-    }
-
-    public function test_registration_options_returns_packages_and_surnames(): void
-    {
-        $response = $this->getJson('/api/v1/auth/registration');
-        $response
-            ->assertStatus(200)
-            ->assertJsonPath('success', true)
-            ->assertJsonStructure([
-                'data' => [
-                    'packages' => [['uuid', 'name', 'code', 'monthlyPrice', 'yearlyPrice', 'isDefaultRegistration']],
-                    'surnames' => [['id', 'name']],
-                ],
-            ]);
-
-        $names = collect($response->json('data.surnames'))->pluck('name')->all();
-        $this->assertContains('Chandrakar', $names);
-    }
-
-    public function test_register_candidate_creates_user_subscription_and_permissions(): void
-    {
-        $packageUuid = (string) Package::query()->where('code', 'PARICHAY_FREE')->value('uuid');
-        $this->assertNotEmpty($packageUuid);
-
-        $email = 'candidate-reg-' . uniqid('', true) . '@example.com';
-
-        $response = $this->postJson('/api/v1/auth/register-candidate', [
-            'first_name' => 'Test',
-            'last_name' => 'Chandrakar',
-            'email' => $email,
-            'gender' => 'female',
-            'date_of_birth' => '1995-06-15',
-            'phone' => '9876543210',
-            'password' => self::PASSWORD,
-            'password_confirmation' => self::PASSWORD,
-            'package_uuid' => $packageUuid,
+it('returns selectable packages and surname options for registration', function () {
+    $response = $this->getJson('/api/v1/auth/registration');
+    $response
+        ->assertStatus(200)
+        ->assertJsonPath('success', true)
+        ->assertJsonStructure([
+            'data' => [
+                'packages' => [['uuid', 'name', 'code', 'monthlyPrice', 'yearlyPrice', 'isDefaultRegistration']],
+                'surnames' => [['id', 'name']],
+            ],
         ]);
 
-        $response->assertStatus(201)->assertJsonPath('success', true)->assertJsonPath('data.token_type', 'Bearer');
-        $response->assertJsonMissingPath('data.payment');
+    $names = collect($response->json('data.surnames'))->pluck('name')->all();
+    expect($names)->toContain('Chandrakar');
+});
 
-        $user = User::query()->where('email', $email)->first();
-        $this->assertNotNull($user);
-        $this->assertTrue($user->hasRole('candidate'));
-        $candidateRoleId = (int) Role::query()->where('name', 'candidate')->where('guard_name', 'web')->value('id');
-        $this->assertSame($candidateRoleId, (int) $user->role_id);
-        $this->assertSame('Test', $user->first_name);
-        $this->assertSame('Chandrakar', $user->last_name);
-        $this->assertTrue($user->getAllPermissions()->pluck('name')->contains('candidate.browse_profiles.limited'));
+it('creates users with active subscriptions and package permissions from candidate registration', function () {
+    $packageUuid = (string) Package::query()->where('code', 'PARICHAY_FREE')->value('uuid');
+    expect($packageUuid)->not->toBeEmpty();
 
-        $packageId = (int) Package::query()->where('code', 'PARICHAY_FREE')->value('id');
-        $this->assertDatabaseHas('subscriptions', [
-            'user_id' => $user->id,
-            'package_id' => $packageId,
-            'subscription_status' => 'active',
-        ]);
-    }
+    $email = 'candidate-reg-' . uniqid('', true) . '@example.com';
 
-    public function test_register_candidate_rejects_unknown_package_uuid(): void
-    {
-        $response = $this->postJson('/api/v1/auth/register-candidate', [
-            'first_name' => 'Test',
-            'last_name' => 'Chandrakar',
-            'email' => 'bad-pkg-' . uniqid('', true) . '@example.com',
-            'gender' => 'male',
-            'date_of_birth' => '1990-01-01',
-            'phone' => '9876543211',
-            'password' => self::PASSWORD,
-            'password_confirmation' => self::PASSWORD,
-            'package_uuid' => '00000000-0000-4000-8000-000000000001',
-        ]);
+    $response = $this->postJson('/api/v1/auth/register-candidate', [
+        'first_name' => 'Test',
+        'last_name' => 'Chandrakar',
+        'email' => $email,
+        'gender' => 'female',
+        'date_of_birth' => '1995-06-15',
+        'phone' => '9876543210',
+        'password' => AUTH_CANDIDATE_REGISTRATION_PW,
+        'password_confirmation' => AUTH_CANDIDATE_REGISTRATION_PW,
+        'package_uuid' => $packageUuid,
+    ]);
 
-        $response->assertStatus(422);
-    }
+    $response->assertStatus(201)->assertJsonPath('success', true)->assertJsonPath('data.token_type', 'Bearer');
+    $response->assertJsonMissingPath('data.payment');
 
-    public function test_register_candidate_rejects_last_name_not_in_surnames(): void
-    {
-        $packageUuid = (string) Package::query()->where('code', 'PARICHAY_FREE')->value('uuid');
+    $user = User::query()->where('email', $email)->first();
+    expect($user)->not->toBeNull();
+    expect($user->hasRole('candidate'))->toBeTrue();
+    $candidateRoleId = (int) Role::query()->where('name', 'candidate')->where('guard_name', 'web')->value('id');
+    expect((int) $user->role_id)->toBe($candidateRoleId);
+    expect($user->first_name)->toBe('Test');
+    expect($user->last_name)->toBe('Chandrakar');
+    expect($user->getAllPermissions()->pluck('name')->contains('candidate.browse_profiles.limited'))->toBeTrue();
 
-        $response = $this->postJson('/api/v1/auth/register-candidate', [
-            'first_name' => 'Test',
-            'last_name' => 'UnknownSurnameXYZ',
-            'email' => 'bad-surname-' . uniqid('', true) . '@example.com',
-            'gender' => 'male',
-            'date_of_birth' => '1990-01-01',
-            'phone' => '9876543212',
-            'password' => self::PASSWORD,
-            'password_confirmation' => self::PASSWORD,
-            'package_uuid' => $packageUuid,
-        ]);
+    $packageId = (int) Package::query()->where('code', 'PARICHAY_FREE')->value('id');
+    $this->assertDatabaseHas('subscriptions', [
+        'user_id' => $user->id,
+        'package_id' => $packageId,
+        'subscription_status' => 'active',
+    ]);
+});
 
-        $response->assertStatus(422);
-    }
+it('returns validation errors for unknown package UUIDs during registration', function () {
+    $response = $this->postJson('/api/v1/auth/register-candidate', [
+        'first_name' => 'Test',
+        'last_name' => 'Chandrakar',
+        'email' => 'bad-pkg-' . uniqid('', true) . '@example.com',
+        'gender' => 'male',
+        'date_of_birth' => '1990-01-01',
+        'phone' => '9876543211',
+        'password' => AUTH_CANDIDATE_REGISTRATION_PW,
+        'password_confirmation' => AUTH_CANDIDATE_REGISTRATION_PW,
+        'package_uuid' => '00000000-0000-4000-8000-000000000001',
+    ]);
 
-    public function test_register_candidate_without_email_succeeds_and_can_login_with_phone(): void
-    {
-        $packageUuid = (string) Package::query()->where('code', 'PARICHAY_FREE')->value('uuid');
-        $phone = '98765' . substr((string) time(), -5);
+    $response->assertStatus(422);
+});
 
-        $response = $this->postJson('/api/v1/auth/register-candidate', [
-            'first_name' => 'No',
-            'last_name' => 'Chandrakar',
-            'gender' => 'female',
-            'date_of_birth' => '1995-06-15',
-            'phone' => $phone,
-            'password' => self::PASSWORD,
-            'password_confirmation' => self::PASSWORD,
-            'package_uuid' => $packageUuid,
-        ]);
+it('returns validation errors when surname is not in the community allow list', function () {
+    $packageUuid = (string) Package::query()->where('code', 'PARICHAY_FREE')->value('uuid');
 
-        $response->assertStatus(201)->assertJsonPath('success', true);
+    $response = $this->postJson('/api/v1/auth/register-candidate', [
+        'first_name' => 'Test',
+        'last_name' => 'UnknownSurnameXYZ',
+        'email' => 'bad-surname-' . uniqid('', true) . '@example.com',
+        'gender' => 'male',
+        'date_of_birth' => '1990-01-01',
+        'phone' => '9876543212',
+        'password' => AUTH_CANDIDATE_REGISTRATION_PW,
+        'password_confirmation' => AUTH_CANDIDATE_REGISTRATION_PW,
+        'package_uuid' => $packageUuid,
+    ]);
 
-        $user = User::query()->where('phone', $phone)->first();
-        $this->assertNotNull($user);
-        $this->assertNull($user->email);
+    $response->assertStatus(422);
+});
 
-        $this->postJson('/api/v1/auth/login', [
-            'username' => $phone,
-            'password' => self::PASSWORD,
-        ])
-            ->assertStatus(200)
-            ->assertJsonPath('success', true);
-    }
+it('supports email-free registration when phone credentials are supplied and login still works', function () {
+    $packageUuid = (string) Package::query()->where('code', 'PARICHAY_FREE')->value('uuid');
+    $phone = '98765' . substr((string) time(), -5);
 
-    public function test_register_candidate_rejects_duplicate_email(): void
-    {
-        $packageUuid = (string) Package::query()->where('code', 'PARICHAY_FREE')->value('uuid');
-        $email = 'dup-' . uniqid('', true) . '@example.com';
+    $response = $this->postJson('/api/v1/auth/register-candidate', [
+        'first_name' => 'No',
+        'last_name' => 'Chandrakar',
+        'gender' => 'female',
+        'date_of_birth' => '1995-06-15',
+        'phone' => $phone,
+        'password' => AUTH_CANDIDATE_REGISTRATION_PW,
+        'password_confirmation' => AUTH_CANDIDATE_REGISTRATION_PW,
+        'package_uuid' => $packageUuid,
+    ]);
 
-        $this->postJson('/api/v1/auth/register-candidate', [
-            'first_name' => 'A',
-            'last_name' => 'Verma',
-            'email' => $email,
-            'gender' => 'male',
-            'date_of_birth' => '1992-01-01',
-            'phone' => '9876543213',
-            'password' => self::PASSWORD,
-            'password_confirmation' => self::PASSWORD,
-            'package_uuid' => $packageUuid,
-        ])->assertStatus(201);
+    $response->assertStatus(201)->assertJsonPath('success', true);
 
-        $this->postJson('/api/v1/auth/register-candidate', [
-            'first_name' => 'B',
-            'last_name' => 'Verma',
-            'email' => $email,
-            'gender' => 'female',
-            'date_of_birth' => '1993-01-01',
-            'phone' => '9876543214',
-            'password' => self::PASSWORD,
-            'password_confirmation' => self::PASSWORD,
-            'package_uuid' => $packageUuid,
-        ])->assertStatus(422);
-    }
+    $user = User::query()->where('phone', $phone)->first();
+    expect($user)->not->toBeNull();
+    expect($user->email)->toBeNull();
 
-    public function test_registration_options_excludes_inactive_packages(): void
-    {
-        $inactiveId = (int) Package::query()->where('code', 'RISHTA_PRO')->value('id');
-        DB::table('packages')
-            ->where('id', $inactiveId)
-            ->update(['is_active' => false]);
+    $this->postJson('/api/v1/auth/login', [
+        'username' => $phone,
+        'password' => AUTH_CANDIDATE_REGISTRATION_PW,
+    ])
+        ->assertStatus(200)
+        ->assertJsonPath('success', true);
+});
 
-        $uuids = collect($this->getJson('/api/v1/auth/registration')->json('data.packages'))
-            ->pluck('uuid')
-            ->all();
+it('returns validation errors when registering a duplicate email address', function () {
+    $packageUuid = (string) Package::query()->where('code', 'PARICHAY_FREE')->value('uuid');
+    $email = 'dup-' . uniqid('', true) . '@example.com';
 
-        $inactiveUuid = (string) Package::query()->where('id', $inactiveId)->value('uuid');
-        $this->assertNotContains($inactiveUuid, $uuids);
-    }
-}
+    $this->postJson('/api/v1/auth/register-candidate', [
+        'first_name' => 'A',
+        'last_name' => 'Verma',
+        'email' => $email,
+        'gender' => 'male',
+        'date_of_birth' => '1992-01-01',
+        'phone' => '9876543213',
+        'password' => AUTH_CANDIDATE_REGISTRATION_PW,
+        'password_confirmation' => AUTH_CANDIDATE_REGISTRATION_PW,
+        'package_uuid' => $packageUuid,
+    ])->assertStatus(201);
+
+    $this->postJson('/api/v1/auth/register-candidate', [
+        'first_name' => 'B',
+        'last_name' => 'Verma',
+        'email' => $email,
+        'gender' => 'female',
+        'date_of_birth' => '1993-01-01',
+        'phone' => '9876543214',
+        'password' => AUTH_CANDIDATE_REGISTRATION_PW,
+        'password_confirmation' => AUTH_CANDIDATE_REGISTRATION_PW,
+        'package_uuid' => $packageUuid,
+    ])->assertStatus(422);
+});
+
+it('omits inactive catalog packages from registration option responses', function () {
+    $inactiveId = (int) Package::query()->where('code', 'RISHTA_PRO')->value('id');
+    DB::table('packages')
+        ->where('id', $inactiveId)
+        ->update(['is_active' => false]);
+
+    $uuids = collect($this->getJson('/api/v1/auth/registration')->json('data.packages'))
+        ->pluck('uuid')
+        ->all();
+
+    $inactiveUuid = (string) Package::query()->where('id', $inactiveId)->value('uuid');
+    expect($uuids)->not->toContain($inactiveUuid);
+});

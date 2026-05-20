@@ -11,9 +11,15 @@ use App\Models\User;
 use App\Observers\PackageObserver;
 use App\Observers\SubscriptionObserver;
 use App\Observers\UserObserver;
+use App\Jobs\Scout\MakeSearchableOnLowQueue;
+use App\Jobs\Scout\RemoveFromSearchOnLowQueue;
 use Hashids\Hashids;
+use Laravel\Scout\Scout;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -39,6 +45,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->configureRateLimiting();
+        $this->configureScoutQueues();
+
         Gate::before(static function ($user, string $ability): ?bool {
             if ($user instanceof User && $user->hasRole('admin')) {
                 return true;
@@ -50,5 +59,30 @@ class AppServiceProvider extends ServiceProvider
         User::observe(UserObserver::class);
         Package::observe(PackageObserver::class);
         Subscription::observe(SubscriptionObserver::class);
+    }
+
+    protected function configureScoutQueues(): void
+    {
+        Scout::makeSearchableUsing(MakeSearchableOnLowQueue::class);
+        Scout::removeFromSearchUsing(RemoveFromSearchOnLowQueue::class);
+    }
+
+    protected function configureRateLimiting(): void
+    {
+        RateLimiter::for('api-auth-strict', static function (Request $request): Limit {
+            $perMinute = max(1, (int) config('api.throttle.auth_per_minute', 5));
+
+            return Limit::perMinute($perMinute)->by(
+                $request->user()?->id ?: $request->ip()
+            );
+        });
+
+        RateLimiter::for('api-general', static function (Request $request): Limit {
+            $perMinute = max(1, (int) config('api.throttle.general_per_minute', 60));
+
+            return Limit::perMinute($perMinute)->by(
+                $request->user()?->id ?: $request->ip()
+            );
+        });
     }
 }

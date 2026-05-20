@@ -21,7 +21,8 @@ class PublicFeaturedCandidateController extends Controller
         $viewer = $this->resolveViewerFromBearerTokenOrNull($request);
 
         $perPage = max(1, min(50, (int) $request->integer('perPage', 15)));
-        $paginator = $this->featuredCandidateService->paginatePublicFeatured($perPage);
+        $page = max(1, (int) $request->integer('page', 1));
+        $paginator = $this->featuredCandidateService->paginatePublicFeatured($perPage, $page);
 
         if ($viewer instanceof User) {
             $candidateIds = collect($paginator->items())

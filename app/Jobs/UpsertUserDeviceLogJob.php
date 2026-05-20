@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Jobs\Concerns\ConfiguresQueueRetries;
 use App\Services\UserActionLogService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -13,6 +14,7 @@ use Illuminate\Queue\SerializesModels;
 
 class UpsertUserDeviceLogJob implements ShouldQueue
 {
+    use ConfiguresQueueRetries;
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public function __construct(

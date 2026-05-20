@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Requests\Api\V1\Candidate;
 
 use App\Http\Requests\Api\ApiFormRequest;
+use App\Models\ContactRequest;
 
 class StoreContactRequestRequest extends ApiFormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user()?->can('create', ContactRequest::class) ?? false;
     }
 
     /**

@@ -55,10 +55,7 @@ class CandidateProfileSectionService
                     'phone' => $payload['phone'] ?? null,
                     'marital_status' => $payload['marital_status'] ?? null,
                     'profile_photo_url' => $payload['photo_url'] ?? null,
-                    'religion' => $payload['religion'] ?? null,
-                    'caste' => $payload['caste'] ?? null,
                     'sub_caste' => $payload['sub_caste'] ?? null,
-                    'community' => $payload['community'] ?? null,
                 ]),
                 self::SECTION_PHOTOS => $this->savePhotos($user, $payload['photos'] ?? []),
                 self::SECTION_PERSONAL_DETAILS => $this->saveUsersData($user, [
@@ -75,10 +72,9 @@ class CandidateProfileSectionService
                     'manglik_status' => $payload['manglik_status'] ?? null,
                     'about_me' => $payload['about_me'] ?? null,
                     'profile_photo_url' => $payload['photo_url'] ?? null,
-                    'religion' => $payload['religion'] ?? null,
-                    'caste' => $payload['caste'] ?? null,
                     'sub_caste' => $payload['sub_caste'] ?? null,
-                    'community' => $payload['community'] ?? null,
+                    'occupation_id' => $payload['occupation_id'] ?? null,
+                    'income_range_id' => $payload['income_range_id'] ?? null,
                 ]),
                 self::SECTION_HOROSCOPE => $this->saveHoroscopeSection($user, $payload),
                 self::SECTION_LOCATION_FAMILY_ROOTS => $this->saveLocationFamilyRootsSection($user, $payload),
@@ -184,12 +180,14 @@ class CandidateProfileSectionService
             'date_of_birth',
             'time_of_birth',
             'zodiac_sign',
+            'manglik_status',
+            'gotra',
+            'rashi',
+            'nakshatra',
             'place_of_birth_line',
             'birth_country_id',
             'birth_state_id',
             'birth_city_id',
-            'birth_district_id',
-            'birth_village_id',
         ];
         $columns = [];
         foreach ($allowed as $key) {
@@ -215,7 +213,7 @@ class CandidateProfileSectionService
     }
 
     /**
-     * Current / hometown free-text fields plus maternal place FKs on `users`.
+     * Current / hometown free-text fields, maternal village name, and maternal place FKs on `users`.
      *
      * @param  array<string, mixed>  $payload
      */
@@ -232,13 +230,12 @@ class CandidateProfileSectionService
             'hometown_city',
             'hometown_district',
             'hometown_village',
+            'maternal_village_name',
         ];
         $maternalIdKeys = [
             'maternal_country_id',
             'maternal_state_id',
             'maternal_city_id',
-            'maternal_district_id',
-            'maternal_village_id',
         ];
 
         $columns = [];
@@ -415,6 +412,10 @@ class CandidateProfileSectionService
             'preferred_drinking',
             'preferred_occupation',
             'preferred_caste',
+            'preferred_min_weight',
+            'preferred_max_weight',
+            'preferred_body_type',
+            'preferred_complexion',
             'preferred_sleep_pattern',
             'preferred_working_hours',
             'preferred_social_personality',
@@ -458,20 +459,6 @@ class CandidateProfileSectionService
         }
 
         if (
-            array_key_exists('preferred_location_ids', $payload) &&
-            Schema::hasColumn($table, 'preferred_location_ids')
-        ) {
-            $ids = $payload['preferred_location_ids'];
-            if (is_array($ids)) {
-                $row['preferred_location_ids'] = json_encode(
-                    array_values(array_map(static fn($id): int => (int) $id, $ids))
-                );
-            } elseif ($ids === null) {
-                $row['preferred_location_ids'] = null;
-            }
-        }
-
-        if (
             array_key_exists('preferred_community_ids', $payload) &&
             Schema::hasColumn($table, 'preferred_community_ids')
         ) {
@@ -505,25 +492,36 @@ class CandidateProfileSectionService
             }
         }
 
-        if ($row === []) {
+        if ($row === [] && !array_key_exists('preferred_locations', $payload) && !array_key_exists('preferred_location_ids', $payload)) {
             return;
         }
 
         $now = now();
         $exists = DB::table($table)->where('user_id', $user->id)->exists();
 
-        if ($exists) {
+        if ($exists && $row !== []) {
             $row['updated_at'] = $now;
             DB::table($table)->where('user_id', $user->id)->update($row);
-
-            return;
+        } elseif (!$exists && $row !== []) {
+            $row['uuid'] = (string) Str::uuid();
+            $row['user_id'] = $user->id;
+            $row['created_at'] = $now;
+            $row['updated_at'] = $now;
+            DB::table($table)->insert($row);
         }
 
-        $row['uuid'] = (string) Str::uuid();
-        $row['user_id'] = $user->id;
-        $row['created_at'] = $now;
-        $row['updated_at'] = $now;
-        DB::table($table)->insert($row);
+        if (array_key_exists('preferred_locations', $payload)) {
+            app(UserPartnerPreferredLocationService::class)->syncForUser(
+                $user,
+                is_array($payload['preferred_locations']) ? $payload['preferred_locations'] : null
+            );
+        } elseif (array_key_exists('preferred_location_ids', $payload)) {
+            $legacy = $payload['preferred_location_ids'];
+            app(UserPartnerPreferredLocationService::class)->syncForUser(
+                $user,
+                is_array($legacy) ? $legacy : null
+            );
+        }
     }
 
     private function saveLifestyleSection(User $user, array $payload): void

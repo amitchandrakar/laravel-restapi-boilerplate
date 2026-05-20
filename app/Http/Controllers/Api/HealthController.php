@@ -5,112 +5,52 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\HealthCheckService;
+use App\Support\ApiResponseBuilder;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 
 class HealthController extends Controller
 {
+    public function __construct(private readonly HealthCheckService $healthCheckService) {}
+
     /**
-     * Health check endpoint
+     * Lightweight health check (database + cache).
      */
     public function check(): JsonResponse
     {
-        $checks = [
-            'status' => 'up',
-            'timestamp' => now()->toIso8601String(),
-            'services' => $this->checkServices(),
+        $services = [
+            'database' => $this->healthCheckService->checkDatabase(),
+            'cache' => $this->healthCheckService->checkCache(),
         ];
+        $healthy = collect($services)->every(static fn(array $s): bool => $s['status'] === 'up');
 
-        $allHealthy = collect($checks['services'])->every(fn($service) => $service['status'] === 'up');
-
-        return response()->json($checks, $allHealthy ? 200 : 503);
+        return ApiResponseBuilder::success(
+            [
+                'status' => $healthy ? 'up' : 'degraded',
+                'timestamp' => now()->utc()->format('Y-m-d\TH:i:s.v\Z'),
+                'services' => $services,
+            ],
+            $healthy ? 'OK' : 'Service degraded',
+            $healthy ? 200 : 503
+        );
     }
 
     /**
-     * Check all services
+     * Detailed health check for ops (database, cache, queue, storage).
      */
-    protected function checkServices(): array
+    public function detailed(): JsonResponse
     {
-        return [
-            'database' => $this->checkDatabase(),
-            'cache' => $this->checkCache(),
-            'storage' => $this->checkStorage(),
-        ];
-    }
+        $services = $this->healthCheckService->checkServices();
+        $healthy = $this->healthCheckService->isHealthy();
 
-    /**
-     * Check database connection
-     */
-    protected function checkDatabase(): array
-    {
-        try {
-            DB::connection()->getPdo();
-            $status = 'up';
-            $message = 'Database connection is healthy';
-        } catch (\Exception $e) {
-            $status = 'down';
-            $message = config('app.debug') ? $e->getMessage() : 'Database connection failed';
-        }
-
-        return [
-            'status' => $status,
-            'message' => $message,
-        ];
-    }
-
-    /**
-     * Check cache connection
-     */
-    protected function checkCache(): array
-    {
-        try {
-            Cache::put('health_check', true, 10);
-            $canRead = Cache::get('health_check') === true;
-            Cache::forget('health_check');
-
-            if ($canRead) {
-                $status = 'up';
-                $message = 'Cache connection is healthy';
-            } else {
-                $status = 'down';
-                $message = 'Cache read failed';
-            }
-        } catch (\Exception $e) {
-            $status = 'down';
-            $message = config('app.debug') ? $e->getMessage() : 'Cache connection failed';
-        }
-
-        return [
-            'status' => $status,
-            'message' => $message,
-        ];
-    }
-
-    /**
-     * Check storage accessibility
-     */
-    protected function checkStorage(): array
-    {
-        try {
-            $path = storage_path('logs');
-            $writable = is_writable($path);
-
-            if ($writable) {
-                $status = 'up';
-                $message = 'Storage is writable';
-            } else {
-                $status = 'down';
-                $message = 'Storage is not writable';
-            }
-        } catch (\Exception $e) {
-            $status = 'down';
-            $message = config('app.debug') ? $e->getMessage() : 'Storage check failed';
-        }
-
-        return [
-            'status' => $status,
-            'message' => $message,
-        ];
+        return ApiResponseBuilder::success(
+            [
+                'status' => $healthy ? 'up' : 'degraded',
+                'timestamp' => now()->utc()->format('Y-m-d\TH:i:s.v\Z'),
+                'services' => $services,
+            ],
+            $healthy ? 'All systems operational' : 'One or more services are unhealthy',
+            $healthy ? 200 : 503
+        );
     }
 }

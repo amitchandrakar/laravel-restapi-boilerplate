@@ -16,8 +16,6 @@ class SaveCandidateLocationFamilyRootsRequest extends ApiFormRequest
             'maternal_country' => 'maternal_country_id',
             'maternal_state' => 'maternal_state_id',
             'maternal_city' => 'maternal_city_id',
-            'maternal_district' => 'maternal_district_id',
-            'maternal_village' => 'maternal_village_id',
         ];
         $merge = [];
         foreach ($legacyToId as $legacy => $canonical) {
@@ -25,15 +23,7 @@ class SaveCandidateLocationFamilyRootsRequest extends ApiFormRequest
                 $merge[$canonical] = $this->input($legacy);
             }
         }
-        foreach (
-            [
-                'maternal_country_id',
-                'maternal_state_id',
-                'maternal_city_id',
-                'maternal_district_id',
-                'maternal_village_id',
-            ] as $key
-        ) {
+        foreach (['maternal_country_id', 'maternal_state_id', 'maternal_city_id'] as $key) {
             if (!$this->has($key)) {
                 continue;
             }
@@ -43,6 +33,12 @@ class SaveCandidateLocationFamilyRootsRequest extends ApiFormRequest
             }
             if (is_numeric($v)) {
                 $merge[$key] = (int) $v;
+            }
+        }
+        if ($this->filled('maternal_village') && !$this->filled('maternal_village_name')) {
+            $v = $this->input('maternal_village');
+            if (!is_numeric($v)) {
+                $merge['maternal_village_name'] = is_string($v) ? $v : (string) $v;
             }
         }
         if ($merge !== []) {
@@ -64,6 +60,7 @@ class SaveCandidateLocationFamilyRootsRequest extends ApiFormRequest
                 'hometown_city' => ['nullable', 'string', 'max:128'],
                 'hometown_district' => ['nullable', 'string', 'max:128'],
                 'hometown_village' => ['nullable', 'string', 'max:128'],
+                'maternal_village_name' => ['nullable', 'string', 'max:255'],
             ],
             HoroscopeBirthPlaceValidator::flatGeoIdRules('maternal_', '')
         );

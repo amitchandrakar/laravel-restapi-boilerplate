@@ -5,6 +5,7 @@ includes:
 parameters:
     stubFiles:
         - stubs/razorpay-api.stub
+        - stubs/algolia-search.stub
 
     paths:
         - app
@@ -16,5 +17,5 @@ parameters:
         - app/Http/Controllers/Api/V1/Auth/RegisterController.php (?)
         - app/Http/Controllers/Api/V1/Auth/ResetPasswordController.php (?)
 
-    # Level (0-9) — start with 5 for production
-    level: 5
+    # Level (0-9) — app-plan §21 target; remaining issues in phpstan-baseline.neon
+    level: 8

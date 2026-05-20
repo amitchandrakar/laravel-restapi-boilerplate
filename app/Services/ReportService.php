@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Support\CacheKeys;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class ReportService
@@ -13,6 +15,16 @@ class ReportService
      * @return array<string, mixed>
      */
     public function dashboardStats(): array
+    {
+        $ttl = max(60, (int) config('cache_strategy.dashboard_metrics_seconds', 900));
+
+        return Cache::remember(CacheKeys::dashboardMetricsOverview(), $ttl, fn (): array => $this->computeDashboardStats());
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function computeDashboardStats(): array
     {
         $candidateBaseQuery = DB::table('users')
             ->join('roles', 'roles.id', '=', 'users.role_id')
@@ -121,13 +133,13 @@ class ReportService
             ->values()
             ->all();
 
-        $topCommunities = (clone $candidateBaseQuery)
-            ->selectRaw("COALESCE(NULLIF(TRIM(users.last_name), ''), 'Unknown') as community, COUNT(*) as total")
-            ->groupBy('community')
+        $topSubCastes = (clone $candidateBaseQuery)
+            ->selectRaw("COALESCE(NULLIF(TRIM(users.sub_caste), ''), 'Unknown') as sub_caste, COUNT(*) as total")
+            ->groupBy('sub_caste')
             ->orderByDesc('total')
             ->limit(10)
             ->get()
-            ->map(static fn($row): array => ['community' => (string) $row->community, 'total' => (int) $row->total])
+            ->map(static fn($row): array => ['subCaste' => (string) $row->sub_caste, 'total' => (int) $row->total])
             ->values()
             ->all();
 
@@ -153,7 +165,7 @@ class ReportService
             'genderSplit' => $genderSplit,
             'candidatesByAge' => $candidatesByAge,
             'teamsByLocation' => $teamsByLocation,
-            'topCommunities' => $topCommunities,
+            'topSubCastes' => $topSubCastes,
         ];
     }
 

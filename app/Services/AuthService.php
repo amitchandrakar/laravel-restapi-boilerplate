@@ -11,6 +11,7 @@ use App\Models\Subscription;
 use App\Models\User;
 use App\Models\UserVerificationDocument;
 use App\Services\Payment\RegistrationPaymentService;
+use App\Support\SanctumAuthToken;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +29,8 @@ class AuthService
 
     public function __construct(
         private readonly PackagePermissionService $packagePermissionService,
-        private readonly RegistrationPaymentService $registrationPaymentService
+        private readonly RegistrationPaymentService $registrationPaymentService,
+        private readonly LoginLockoutService $loginLockoutService
     ) {}
 
     /**
@@ -53,7 +55,7 @@ class AuthService
         $this->attachDefaultPackageForRegistration($user->id);
         $this->packagePermissionService->syncCandidatePermissions($user);
 
-        $token = $user->createToken('auth-token')->plainTextToken;
+        $token = SanctumAuthToken::issue($user);
 
         return ['user' => $user, 'token' => $token];
     }
@@ -129,7 +131,7 @@ class AuthService
             if ($payable <= 0) {
                 $this->attachSubscriptionForRegistration($user->id, $packageId, 'active', 'system');
                 $this->packagePermissionService->syncCandidatePermissions($user);
-                $token = $user->createToken('auth-token')->plainTextToken;
+                $token = SanctumAuthToken::issue($user);
 
                 return ['user' => $user, 'token' => $token, 'payment' => null];
             }
@@ -140,7 +142,7 @@ class AuthService
                 $package,
                 $subscriptionId
             );
-            $token = $user->createToken('auth-token')->plainTextToken;
+            $token = SanctumAuthToken::issue($user);
 
             return ['user' => $user, 'token' => $token, 'payment' => $paymentMeta];
         });
@@ -283,15 +285,32 @@ class AuthService
             })
             ->first();
 
+        if ($user !== null) {
+            $this->loginLockoutService->assertNotLocked($user);
+        } elseif ($username !== '' && $this->loginLockoutService->isLockedForIdentifier($username)) {
+            throw new \Symfony\Component\HttpKernel\Exception\HttpException(
+                423,
+                'Account is temporarily locked due to too many failed login attempts. Please try again later.'
+            );
+        }
+
         if ($user === null || !Hash::check($password, $user->getAuthPassword())) {
+            if ($user !== null) {
+                $this->loginLockoutService->recordFailedAttempt($user);
+            } elseif ($username !== '') {
+                $this->loginLockoutService->recordFailedAttemptForIdentifier($username);
+            }
+
             throw new AuthenticationException('Invalid credentials');
         }
+
+        $this->loginLockoutService->clear($user);
 
         // API auth uses Sanctum personal access tokens only. Avoid web-guard session login here:
         // Sanctum checks the web guard first; a session user + TransientToken would bypass PAT
         // validation and keep the user "logged in" after the PAT is revoked on logout.
 
-        $token = $user->createToken('auth-token')->plainTextToken;
+        $token = SanctumAuthToken::issue($user);
 
         return [
             'user' => $user,
@@ -343,7 +362,7 @@ class AuthService
             $currentToken->delete();
         }
 
-        $token = $user->createToken('auth-token')->plainTextToken;
+        $token = SanctumAuthToken::issue($user);
 
         return ['user' => $user, 'token' => $token];
     }

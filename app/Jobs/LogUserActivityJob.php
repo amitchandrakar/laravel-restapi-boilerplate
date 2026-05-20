@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Jobs\Concerns\ConfiguresQueueRetries;
 use App\Services\UserActionLogService;
+use App\Support\QueuePriority;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -13,6 +15,7 @@ use Illuminate\Queue\SerializesModels;
 
 class LogUserActivityJob implements ShouldQueue
 {
+    use ConfiguresQueueRetries;
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
@@ -24,7 +27,9 @@ class LogUserActivityJob implements ShouldQueue
         private readonly ?string $activitySource = null,
         private readonly ?array $metadata = null,
         private readonly ?string $ipAddress = null
-    ) {}
+    ) {
+        $this->onQueue(QueuePriority::default());
+    }
 
     public function handle(UserActionLogService $logService): void
     {

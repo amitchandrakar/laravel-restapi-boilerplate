@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Requests\Api\V1\Payment\ConfirmRegistrationPaymentRequest;
+use App\Jobs\ProcessPaymentWebhook;
 use App\Models\Subscription;
 use App\Services\Payment\RazorpayClient;
 use App\Services\Payment\RegistrationPaymentService;
@@ -87,13 +88,13 @@ class RegistrationPaymentController extends Controller
         try {
             /** @var array<string, mixed> $decoded */
             $decoded = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
-            $this->registrationPaymentService->handleWebhookEvent($decoded);
+            ProcessPaymentWebhook::dispatch($decoded);
         } catch (Throwable $e) {
-            Log::warning('razorpay_webhook_failed', ['error' => $e->getMessage()]);
+            Log::warning('razorpay_webhook_dispatch_failed', ['error' => $e->getMessage()]);
 
             return $this->errorResponse('Webhook processing failed', 422);
         }
 
-        return $this->successResponse(['received' => true], 'Webhook processed', 200);
+        return $this->successResponse(['received' => true], 'Webhook accepted for processing', 202);
     }
 }

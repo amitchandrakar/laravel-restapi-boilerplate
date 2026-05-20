@@ -5,18 +5,35 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\User;
+use App\Support\ScoutConfig;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as Paginator;
 
 class CandidateBrowseService
 {
-    public function __construct(private readonly CandidateCardDataService $cardData) {}
+    public function __construct(
+        private readonly CandidateCardDataService $cardData,
+        private readonly CandidateAlgoliaBrowseService $algoliaBrowse
+    ) {}
 
     /**
      * @param  array<string, mixed>  $filters
      * @return LengthAwarePaginator<int, array<string, mixed>>
      */
-    public function paginateBrowse(User $viewer, int $perPage, array $filters = []): LengthAwarePaginator
+    public function paginateBrowse(User $viewer, int $perPage, array $filters = [], int $page = 1): LengthAwarePaginator
+    {
+        if (ScoutConfig::usesAlgolia()) {
+            return $this->algoliaBrowse->paginateBrowse($viewer, $perPage, max(1, $page), $filters);
+        }
+
+        return $this->paginateBrowseFromDatabase($viewer, $perPage, $filters);
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     * @return LengthAwarePaginator<int, array<string, mixed>>
+     */
+    private function paginateBrowseFromDatabase(User $viewer, int $perPage, array $filters): LengthAwarePaginator
     {
         $query = User::query()
             ->candidates()

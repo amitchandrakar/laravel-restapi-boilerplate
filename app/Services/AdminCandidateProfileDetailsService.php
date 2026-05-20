@@ -66,8 +66,14 @@ class AdminCandidateProfileDetailsService
         $partnerDegreeIds = self::decodeStoredIdList(
             $partner !== null ? data_get($partner, 'preferred_degree_ids') : null
         );
-        $partnerLocationIds = self::decodeStoredIdList(
-            $partner !== null ? data_get($partner, 'preferred_location_ids') : null
+        $partnerLocationIds = array_values(
+            collect(
+                app(\App\Services\UserPartnerPreferredLocationService::class)->listForUserId($user->id)
+            )
+                ->pluck('cityId')
+                ->filter(static fn($id): bool => $id !== null)
+                ->map(static fn($id): int => (int) $id)
+                ->all()
         );
         $partnerCommunityIds = self::decodeStoredIdList(
             $partner !== null ? data_get($partner, 'preferred_community_ids') : null
@@ -125,15 +131,11 @@ class AdminCandidateProfileDetailsService
                 'country' => 'birth_country_id',
                 'state' => 'birth_state_id',
                 'city' => 'birth_city_id',
-                'district' => 'birth_district_id',
-                'village' => 'birth_village_id',
             ],
             [
                 'country' => 'place_of_birth_country',
                 'state' => 'place_of_birth_state',
                 'city' => 'place_of_birth_city',
-                'district' => 'place_of_birth_district',
-                'village' => 'place_of_birth_village',
             ]
         );
 
@@ -144,17 +146,16 @@ class AdminCandidateProfileDetailsService
                 'country' => 'maternal_country_id',
                 'state' => 'maternal_state_id',
                 'city' => 'maternal_city_id',
-                'district' => 'maternal_district_id',
-                'village' => 'maternal_village_id',
             ],
             [
                 'country' => null,
                 'state' => null,
                 'city' => null,
-                'district' => null,
-                'village' => null,
             ]
         );
+        $maternalVillage = data_get($user, 'maternal_village_name');
+        $maternalPlace['village'] =
+            is_string($maternalVillage) && trim($maternalVillage) !== '' ? trim($maternalVillage) : null;
 
         $preferredDegreeNames = $this->orderedNames($partnerDegreeIds, $maps['degrees'], 'name');
         $preferredCityNames = $this->orderedNames($partnerLocationIds, $maps['cities'], 'name');
@@ -194,10 +195,12 @@ class AdminCandidateProfileDetailsService
                     'phone' => $phone,
                     'photoUrl' => $photoUrl,
                     'age' => $user->date_of_birth !== null ? $user->date_of_birth->age : null,
-                    'religion' => data_get($user, 'religion'),
-                    'caste' => data_get($user, 'caste'),
                     'subCaste' => data_get($user, 'sub_caste'),
-                    'community' => data_get($user, 'community'),
+                    'gotra' => data_get($user, 'gotra'),
+                    'rashi' => data_get($user, 'rashi'),
+                    'nakshatra' => data_get($user, 'nakshatra'),
+                    'occupationId' => data_get($user, 'occupation_id'),
+                    'incomeRangeId' => data_get($user, 'income_range_id'),
                     'gender' => $user->gender,
                     'bodyType' => data_get($user, 'body_type'),
                     'complexion' => data_get($user, 'complexion'),
@@ -211,6 +214,10 @@ class AdminCandidateProfileDetailsService
                     'dateOfBirth' => $user->date_of_birth !== null ? (string) $user->date_of_birth : null,
                     'timeOfBirth' => data_get($user, 'time_of_birth'),
                     'zodiacSign' => data_get($user, 'zodiac_sign'),
+                    'manglikStatus' => data_get($user, 'manglik_status'),
+                    'gotra' => data_get($user, 'gotra'),
+                    'rashi' => data_get($user, 'rashi'),
+                    'nakshatra' => data_get($user, 'nakshatra'),
                     'placeOfBirthLine' => data_get($user, 'place_of_birth_line'),
                     'birthPlace' => $birthPlace,
                 ],
@@ -284,10 +291,17 @@ class AdminCandidateProfileDetailsService
                     'preferredDiet' => data_get($partner, 'preferred_diet'),
                     'preferredSmoking' => data_get($partner, 'preferred_smoking'),
                     'preferredDrinking' => data_get($partner, 'preferred_drinking'),
+                    'preferredMinWeight' => data_get($partner, 'preferred_min_weight'),
+                    'preferredMaxWeight' => data_get($partner, 'preferred_max_weight'),
+                    'preferredBodyType' => data_get($partner, 'preferred_body_type'),
+                    'preferredComplexion' => data_get($partner, 'preferred_complexion'),
                     'preferredCaste' => data_get($partner, 'preferred_caste'),
                     'preferredIncomeMin' => data_get($partner, 'preferred_income_min'),
                     'preferredDegrees' => $preferredDegreeNames,
                     'preferredCities' => $preferredCityNames,
+                    'preferredLocations' => app(\App\Services\UserPartnerPreferredLocationService::class)->listForUserId(
+                        (int) $user->id
+                    ),
                     'preferredCommunities' => $preferredCommunityNames,
                     'preferredOccupation' => data_get($partner, 'preferred_occupation'),
                     'preferredSleepPattern' => data_get($partner, 'preferred_sleep_pattern'),
@@ -409,8 +423,6 @@ class AdminCandidateProfileDetailsService
      *     countries: Collection<(int|string), \stdClass>,
      *     states: Collection<(int|string), \stdClass>,
      *     cities: Collection<(int|string), \stdClass>,
-     *     districts: Collection<(int|string), \stdClass>,
-     *     villages: Collection<(int|string), \stdClass>,
      *     degrees: Collection<(int|string), \stdClass>,
      *     languages: Collection<(int|string), \stdClass>,
      *     surnames: Collection<(int|string), \stdClass>
@@ -427,8 +439,6 @@ class AdminCandidateProfileDetailsService
         $countryIds = [];
         $stateIds = [];
         $cityIds = [];
-        $districtIds = [];
-        $villageIds = [];
         $degreeIds = [];
         $languageIds = [];
         $surnameIds = [];
@@ -442,14 +452,10 @@ class AdminCandidateProfileDetailsService
         $push($countryIds, $user->birth_country_id);
         $push($stateIds, $user->birth_state_id);
         $push($cityIds, $user->birth_city_id);
-        $push($districtIds, $user->birth_district_id);
-        $push($villageIds, $user->birth_village_id);
 
         $push($countryIds, $user->maternal_country_id);
         $push($stateIds, $user->maternal_state_id);
         $push($cityIds, $user->maternal_city_id);
-        $push($districtIds, $user->maternal_district_id);
-        $push($villageIds, $user->maternal_village_id);
 
         foreach ($educationRows as $row) {
             $push($degreeIds, data_get($row, 'degree_id'));
@@ -467,8 +473,6 @@ class AdminCandidateProfileDetailsService
         $countryIds = array_keys($countryIds);
         $stateIds = array_keys($stateIds);
         $cityIds = array_keys($cityIds);
-        $districtIds = array_keys($districtIds);
-        $villageIds = array_keys($villageIds);
         $degreeIds = array_keys($degreeIds);
         $languageIds = array_keys($languageIds);
         $surnameIds = array_keys($surnameIds);
@@ -477,8 +481,6 @@ class AdminCandidateProfileDetailsService
             'countries' => $this->fetchMap('countries', $countryIds, ['id', 'name', 'iso2']),
             'states' => $this->fetchMap('states', $stateIds, ['id', 'name', 'code']),
             'cities' => $this->fetchMap('cities', $cityIds, ['id', 'name']),
-            'districts' => $this->fetchMap('districts', $districtIds, ['id', 'name']),
-            'villages' => $this->fetchMap('villages', $villageIds, ['id', 'name']),
             'degrees' => $this->fetchMap('degrees', $degreeIds, ['id', 'name']),
             'languages' => $this->fetchMap('languages', $languageIds, ['id', 'name']),
             'surnames' => $this->fetchMap('surnames', $surnameIds, ['id', 'name']),
@@ -504,12 +506,12 @@ class AdminCandidateProfileDetailsService
      *
      * @param  array<string, string>  $fkKeys  logical key => user column
      * @param  array<string, string|null>  $legacyKeys  logical key => user legacy text column or null
-     * @return array{country: ?string, state: ?string, city: ?string, district: ?string, village: ?string}
+     * @return array{country: ?string, state: ?string, city: ?string}
      */
     private function resolveGeoChain(User $user, array $maps, array $fkKeys, array $legacyKeys): array
     {
         $out = [];
-        foreach (['country', 'state', 'city', 'district', 'village'] as $level) {
+        foreach (['country', 'state', 'city'] as $level) {
             $fkCol = $fkKeys[$level];
             $id = data_get($user, $fkCol);
             $legacyCol = $legacyKeys[$level] ?? null;
@@ -527,8 +529,6 @@ class AdminCandidateProfileDetailsService
             'country' => 'countries',
             'state' => 'states',
             'city' => 'cities',
-            'district' => 'districts',
-            'village' => 'villages',
             default => 'countries',
         };
         /** @var Collection<int, object> $collection */

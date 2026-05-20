@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\Admin\ReportController;
 use App\Http\Controllers\Api\V1\Admin\SeoSettingsController;
 use App\Http\Controllers\Api\V1\Admin\SiteSettingsController;
 use App\Http\Controllers\Api\V1\Admin\SocialLoginSettingsController;
+use App\Http\Controllers\Api\V1\Admin\SystemHealthController;
 use App\Http\Controllers\Api\V1\Admin\TeamUserController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CandidateContactRequestController;
@@ -58,12 +59,17 @@ Route::prefix('me')
     });
 
 Route::prefix('auth')->group(function () use ($sanctumWithTrackedSession) {
-    Route::get('registration', [AuthController::class, 'registrationOptions']);
-    Route::post('register-candidate', [AuthController::class, 'registerCandidate']);
-    Route::post('register', [AuthController::class, 'register']);
-    Route::post('login', [AuthController::class, 'login']);
-    Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::get('registration', [AuthController::class, 'registrationOptions'])->middleware('throttle:api-general');
+
+    Route::middleware('throttle:api-auth-strict')->group(function (): void {
+        Route::post('register-candidate', [AuthController::class, 'registerCandidate']);
+        Route::post('register', [AuthController::class, 'register']);
+        Route::post('login', [AuthController::class, 'login']);
+        Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+    });
+
     Route::post('reset-password', [AuthController::class, 'resetPassword'])->middleware([
+        'throttle:api-auth-strict',
         'optional.sanctum',
         'tracked.session',
     ]);
@@ -82,7 +88,7 @@ Route::prefix('auth')->group(function () use ($sanctumWithTrackedSession) {
         ])->whereUuid('paymentUuid');
 
         Route::prefix('notifications')
-            ->middleware('throttle:60,1')
+            ->middleware('throttle:api-general')
             ->group(function () {
                 Route::get('/', [MemberNotificationController::class, 'index']);
                 Route::get('summary', [MemberNotificationController::class, 'summary']);
@@ -190,6 +196,9 @@ Route::prefix('admin')
             'permission:admin.reports.team_activities.view'
         );
         Route::get('dashboard/stats', [ReportController::class, 'dashboardStats'])->middleware(
+            'permission:admin.dashboard.view'
+        );
+        Route::get('system-health', [SystemHealthController::class, 'index'])->middleware(
             'permission:admin.dashboard.view'
         );
         Route::get('settings/seo', [SeoSettingsController::class, 'show'])->middleware(

@@ -8,6 +8,14 @@ use App\Http\Requests\Api\ApiFormRequest;
 
 class ReviewKycDocumentRequest extends ApiFormRequest
 {
+    public function authorize(): bool
+    {
+        $document = $this->route('document');
+
+        return $document instanceof \App\Models\UserVerificationDocument
+            && ($this->user()?->can('review', $document) ?? false);
+    }
+
     /**
      * @return array<string, mixed>
      */

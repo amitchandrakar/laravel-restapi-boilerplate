@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\SearchableCandidateProfile;
 use Illuminate\Auth\Authenticatable as UserAuthenticatable;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -24,7 +25,7 @@ use Spatie\Permission\Traits\HasRoles;
  */
 class User extends BaseModel implements Authenticatable, AuthorizableContract
 {
-    use Authorizable, HasApiTokens, HasPermissions, HasRoles, Notifiable, SoftDeletes, UserAuthenticatable;
+    use Authorizable, HasApiTokens, HasPermissions, HasRoles, Notifiable, SearchableCandidateProfile, SoftDeletes, UserAuthenticatable;
 
     protected $table = 'users';
 
@@ -65,13 +66,14 @@ class User extends BaseModel implements Authenticatable, AuthorizableContract
             'birth_country_id' => 'integer',
             'birth_state_id' => 'integer',
             'birth_city_id' => 'integer',
-            'birth_district_id' => 'integer',
-            'birth_village_id' => 'integer',
+            'occupation_id' => 'integer',
+            'income_range_id' => 'integer',
+            'current_country_id' => 'integer',
+            'current_state_id' => 'integer',
+            'current_city_id' => 'integer',
             'maternal_country_id' => 'integer',
             'maternal_state_id' => 'integer',
             'maternal_city_id' => 'integer',
-            'maternal_district_id' => 'integer',
-            'maternal_village_id' => 'integer',
         ];
     }
 
