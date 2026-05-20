@@ -75,11 +75,13 @@ class UserPartnerPreferredLocationService
                 ->orderBy('sort_order')
                 ->orderBy('id')
                 ->get(['country_id', 'state_id', 'city_id'])
-                ->map(static fn($row): array => [
-                    'countryId' => $row->country_id !== null ? (int) $row->country_id : null,
-                    'stateId' => $row->state_id !== null ? (int) $row->state_id : null,
-                    'cityId' => $row->city_id !== null ? (int) $row->city_id : null,
-                ])
+                ->map(
+                    static fn($row): array => [
+                        'countryId' => $row->country_id !== null ? (int) $row->country_id : null,
+                        'stateId' => $row->state_id !== null ? (int) $row->state_id : null,
+                        'cityId' => $row->city_id !== null ? (int) $row->city_id : null,
+                    ]
+                )
                 ->all()
         );
     }

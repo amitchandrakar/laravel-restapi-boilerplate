@@ -51,7 +51,17 @@ class UserObserver
         if (
             ScoutConfig::usesAlgolia() &&
             $user->isCandidateRole() &&
-            $user->wasChanged(['profile_status', 'published_at', 'is_featured', 'deleted_at', 'gender', 'date_of_birth', 'current_city', 'occupation', 'last_name'])
+            $user->wasChanged([
+                'profile_status',
+                'published_at',
+                'is_featured',
+                'deleted_at',
+                'gender',
+                'date_of_birth',
+                'current_city',
+                'occupation',
+                'last_name',
+            ])
         ) {
             SyncProfileToAlgolia::dispatch((int) $user->id);
         }

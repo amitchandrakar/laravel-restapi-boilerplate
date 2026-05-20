@@ -18,7 +18,11 @@ class ReportService
     {
         $ttl = max(60, (int) config('cache_strategy.dashboard_metrics_seconds', 900));
 
-        return Cache::remember(CacheKeys::dashboardMetricsOverview(), $ttl, fn (): array => $this->computeDashboardStats());
+        return Cache::remember(
+            CacheKeys::dashboardMetricsOverview(),
+            $ttl,
+            fn(): array => $this->computeDashboardStats()
+        );
     }
 
     /**

@@ -57,13 +57,17 @@ class FeaturedCandidateService
         $page = max(1, $page);
         $key = CacheKeys::publicFeaturedPage($page, $perPage);
 
-        return Cache::remember($key, $ttl, fn (): LengthAwarePaginator => User::query()
-            ->candidates()
-            ->where('is_featured', true)
-            ->where('profile_status', 'published')
-            ->whereNotNull('published_at')
-            ->orderByDesc('featured_at')
-            ->orderByDesc('published_at')
-            ->paginate($perPage, ['*'], 'page', $page));
+        return Cache::remember(
+            $key,
+            $ttl,
+            fn(): LengthAwarePaginator => User::query()
+                ->candidates()
+                ->where('is_featured', true)
+                ->where('profile_status', 'published')
+                ->whereNotNull('published_at')
+                ->orderByDesc('featured_at')
+                ->orderByDesc('published_at')
+                ->paginate($perPage, ['*'], 'page', $page)
+        );
     }
 }

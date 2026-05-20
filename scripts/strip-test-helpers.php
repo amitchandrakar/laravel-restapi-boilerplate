@@ -54,7 +54,10 @@ foreach (glob($featureDir . '/*.php') ?: [] as $path) {
         $trimmedAfter = preg_replace('/^\s*\r?\n/', '', $after) ?? $after;
         $src = $trimmedBefore . "\n\n" . ltrim((string) $trimmedAfter, "\n");
 
-        fwrite(STDOUT, $dryRun ? "[dry-run] would strip {$method} from {$path}\n" : "Stripped {$method} from {$path}\n");
+        fwrite(
+            STDOUT,
+            $dryRun ? "[dry-run] would strip {$method} from {$path}\n" : "Stripped {$method} from {$path}\n"
+        );
     }
     if (!$dryRun) {
         file_put_contents($path, $src);

@@ -30,9 +30,7 @@ final class HealthCheckService
 
     public function isHealthy(): bool
     {
-        return collect($this->checkServices())->every(
-            static fn(array $service): bool => $service['status'] === 'up'
-        );
+        return collect($this->checkServices())->every(static fn(array $service): bool => $service['status'] === 'up');
     }
 
     /**

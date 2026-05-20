@@ -41,10 +41,7 @@ it('includes actionable new-match rows with unread metadata in the notifications
     expect($first['profileImageUrl'])->not->toBe('');
     expect($first['actions'] ?? null)->not->toBeEmpty();
     expect($first['actions'][0]['method'] ?? null)->toBe('GET');
-    expect(str_contains(
-        (string) ($first['actions'][0]['path'] ?? ''),
-        '/api/v1/auth/candidate/matches'
-    ))->toBeTrue();
+    expect(str_contains((string) ($first['actions'][0]['path'] ?? ''), '/api/v1/auth/candidate/matches'))->toBeTrue();
 
     expect((int) $res->json('meta.unreadCount'))->toBeGreaterThanOrEqual(1);
 });
@@ -197,19 +194,23 @@ function memberNotificationsTwoCandidatesWithTokens(): array
     $emailA = 'notif-a-' . uniqid('', true) . '@example.com';
     $emailB = 'notif-b-' . uniqid('', true) . '@example.com';
 
-    test()->postJson('/api/v1/auth/register', [
-        'name' => 'Notif A',
-        'email' => $emailA,
-        'password' => MEMBER_NOTIFICATIONS_TEST_PW,
-        'password_confirmation' => MEMBER_NOTIFICATIONS_TEST_PW,
-    ])->assertStatus(201);
+    test()
+        ->postJson('/api/v1/auth/register', [
+            'name' => 'Notif A',
+            'email' => $emailA,
+            'password' => MEMBER_NOTIFICATIONS_TEST_PW,
+            'password_confirmation' => MEMBER_NOTIFICATIONS_TEST_PW,
+        ])
+        ->assertStatus(201);
 
-    test()->postJson('/api/v1/auth/register', [
-        'name' => 'Notif B',
-        'email' => $emailB,
-        'password' => MEMBER_NOTIFICATIONS_TEST_PW,
-        'password_confirmation' => MEMBER_NOTIFICATIONS_TEST_PW,
-    ])->assertStatus(201);
+    test()
+        ->postJson('/api/v1/auth/register', [
+            'name' => 'Notif B',
+            'email' => $emailB,
+            'password' => MEMBER_NOTIFICATIONS_TEST_PW,
+            'password_confirmation' => MEMBER_NOTIFICATIONS_TEST_PW,
+        ])
+        ->assertStatus(201);
 
     $a = User::query()->where('email', $emailA)->firstOrFail();
     $b = User::query()->where('email', $emailB)->firstOrFail();

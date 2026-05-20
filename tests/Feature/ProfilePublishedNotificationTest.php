@@ -21,10 +21,7 @@ it('notifies candidates when admins publish their profile', function () {
     ]);
     $admin->assignRole('admin');
 
-    $candidateRoleId = (int) DB::table('roles')
-        ->where('name', 'candidate')
-        ->where('guard_name', 'web')
-        ->value('id');
+    $candidateRoleId = (int) DB::table('roles')->where('name', 'candidate')->where('guard_name', 'web')->value('id');
 
     /** @var User $candidate */
     $candidate = User::query()->create([

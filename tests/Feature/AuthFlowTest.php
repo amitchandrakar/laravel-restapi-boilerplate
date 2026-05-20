@@ -18,7 +18,6 @@ beforeEach(function (): void {
 });
 
 it('covers registration, login, forgot password, and anonymous password reset', function (): void {
-
     $email = 'auth-flow-' . uniqid('', true) . '@example.com';
 
     $register = $this->postJson('/api/v1/auth/register', [
@@ -122,7 +121,6 @@ it('subscribes new users to the default registration package when configured', f
 });
 
 it('accepts discrete first and last names when the legacy name field is omitted', function () {
-
     $email = 'auth-split-name-' . uniqid('', true) . '@example.com';
     $password = 'Password@split1';
 
@@ -156,18 +154,16 @@ it('rotates tokens on refresh and revokes the refreshed token after logout', fun
     $newToken = (string) $refresh->json('data.token');
     expect($newToken)->not->toBe($token);
 
-    $this->withToken($newToken)
-        ->postJson('/api/v1/auth/logout')
-        ->assertStatus(200)
-        ->assertJsonPath('success', true);
+    $this->withToken($newToken)->postJson('/api/v1/auth/logout')->assertStatus(200)->assertJsonPath('success', true);
 
-    expect(PersonalAccessToken::findToken($newToken))->toBeNull('Sanctum token should be removed from storage after logout');
+    expect(PersonalAccessToken::findToken($newToken))->toBeNull(
+        'Sanctum token should be removed from storage after logout'
+    );
 
     $this->withToken($newToken)->getJson('/api/v1/auth/me')->assertStatus(401);
 });
 
 it('authenticates candidates using either phone or email as the username', function () {
-
     /** @var User $user */
     $user = User::query()->create([
         'first_name' => 'Phone',
@@ -235,7 +231,6 @@ it('rejects authenticated password resets when the current password is incorrect
 });
 
 it('rejects reset-password mutations that lack a valid bearer token', function () {
-
     $this->withToken('invalid-token-that-does-not-exist')
         ->postJson('/api/v1/auth/reset-password', [
             'current_password' => 'x',
@@ -300,12 +295,14 @@ function registerAndLogin(): array
     $email = 'auth-user-' . uniqid('', true) . '@example.com';
     $password = 'Password@seed1';
 
-    test()->postJson('/api/v1/auth/register', [
-        'name' => 'Auth Test User',
-        'email' => $email,
-        'password' => $password,
-        'password_confirmation' => $password,
-    ])->assertStatus(201);
+    test()
+        ->postJson('/api/v1/auth/register', [
+            'name' => 'Auth Test User',
+            'email' => $email,
+            'password' => $password,
+            'password_confirmation' => $password,
+        ])
+        ->assertStatus(201);
 
     $login = test()->postJson('/api/v1/auth/login', [
         'username' => $email,

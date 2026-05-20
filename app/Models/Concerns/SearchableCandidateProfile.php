@@ -61,10 +61,9 @@ trait SearchableCandidateProfile
             ->values()
             ->all();
 
-        $displayName = trim(implode(' ', array_filter([
-            (string) ($this->first_name ?? ''),
-            (string) ($this->last_name ?? ''),
-        ])));
+        $displayName = trim(
+            implode(' ', array_filter([(string) ($this->first_name ?? ''), (string) ($this->last_name ?? '')]))
+        );
 
         return [
             'uuid' => (string) $this->uuid,

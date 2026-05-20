@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-use App\Models\User;
 use Database\Seeders\RbacSeeder;
 
 it('allows admins to update and fetch site settings', function () {

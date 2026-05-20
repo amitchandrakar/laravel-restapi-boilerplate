@@ -67,9 +67,7 @@ class AdminCandidateProfileDetailsService
             $partner !== null ? data_get($partner, 'preferred_degree_ids') : null
         );
         $partnerLocationIds = array_values(
-            collect(
-                app(\App\Services\UserPartnerPreferredLocationService::class)->listForUserId($user->id)
-            )
+            collect(app(UserPartnerPreferredLocationService::class)->listForUserId($user->id))
                 ->pluck('cityId')
                 ->filter(static fn($id): bool => $id !== null)
                 ->map(static fn($id): int => (int) $id)
@@ -299,9 +297,9 @@ class AdminCandidateProfileDetailsService
                     'preferredIncomeMin' => data_get($partner, 'preferred_income_min'),
                     'preferredDegrees' => $preferredDegreeNames,
                     'preferredCities' => $preferredCityNames,
-                    'preferredLocations' => app(\App\Services\UserPartnerPreferredLocationService::class)->listForUserId(
-                        (int) $user->id
-                    ),
+                    'preferredLocations' => app(
+                        UserPartnerPreferredLocationService::class
+                    )->listForUserId((int) $user->id),
                     'preferredCommunities' => $preferredCommunityNames,
                     'preferredOccupation' => data_get($partner, 'preferred_occupation'),
                     'preferredSleepPattern' => data_get($partner, 'preferred_sleep_pattern'),

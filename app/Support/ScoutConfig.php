@@ -13,9 +13,9 @@ final class ScoutConfig
 
     public static function usesAlgolia(): bool
     {
-        return self::driver() === 'algolia'
-            && filled(config('scout.algolia.id'))
-            && filled(config('scout.algolia.secret'));
+        return self::driver() === 'algolia' &&
+            filled(config('scout.algolia.id')) &&
+            filled(config('scout.algolia.secret'));
     }
 
     public static function candidateIndexName(): string

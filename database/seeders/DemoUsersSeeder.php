@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Services\CandidateProfileSectionService;
 use App\Services\PackagePermissionService;
+use App\Services\UserPartnerPreferredLocationService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -594,7 +595,7 @@ class DemoUsersSeeder extends Seeder
             ]);
 
             if (!empty($p['preferred_location_ids']) && is_array($p['preferred_location_ids'])) {
-                app(\App\Services\UserPartnerPreferredLocationService::class)->syncForUser(
+                app(UserPartnerPreferredLocationService::class)->syncForUser(
                     $user,
                     $p['preferred_location_ids']
                 );
@@ -604,13 +605,7 @@ class DemoUsersSeeder extends Seeder
 
             $published = $user->fresh();
             if ($published instanceof User) {
-                $this->finalizePublishedCandidate(
-                    $published,
-                    $index,
-                    $countryId,
-                    $stateId,
-                    $cityMumbaiId
-                );
+                $this->finalizePublishedCandidate($published, $index, $countryId, $stateId, $cityMumbaiId);
                 $this->packagePermissionService->syncCandidatePermissions($published->fresh());
             }
 
@@ -779,7 +774,9 @@ class DemoUsersSeeder extends Seeder
                         'is_featured' => $index < 5,
                         'featured_at' => $index < 5 ? $now : null,
                         'occupation_id' => $this->resolveOccupationId((string) ($user->occupation ?? '')),
-                        'income_range_id' => $this->resolveIncomeRangeId($user->income !== null ? (float) $user->income : null),
+                        'income_range_id' => $this->resolveIncomeRangeId(
+                            $user->income !== null ? (float) $user->income : null
+                        ),
                         'current_country_id' => $countryId > 0 ? $countryId : null,
                         'current_state_id' => $stateId > 0 ? $stateId : null,
                         'current_city_id' => $birthCityId > 0 ? $birthCityId : null,

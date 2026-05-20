@@ -15,7 +15,7 @@ final class SeedingGuard
 
     public static function begin(): void
     {
-        ++self::$depth;
+        self::$depth++;
     }
 
     public static function end(): void
@@ -32,7 +32,6 @@ final class SeedingGuard
      * @template T
      *
      * @param  callable(): T  $callback
-     *
      * @return T
      */
     public static function run(callable $callback): mixed

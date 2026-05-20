@@ -14,8 +14,7 @@ class RespondContactRequestRequest extends ApiFormRequest
     {
         $contactRequest = $this->route('contactRequest');
 
-        return $contactRequest instanceof ContactRequest
-            && ($this->user()?->can('respond', $contactRequest) ?? false);
+        return $contactRequest instanceof ContactRequest && ($this->user()?->can('respond', $contactRequest) ?? false);
     }
 
     /**

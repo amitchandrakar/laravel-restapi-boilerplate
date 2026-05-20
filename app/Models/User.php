@@ -25,7 +25,14 @@ use Spatie\Permission\Traits\HasRoles;
  */
 class User extends BaseModel implements Authenticatable, AuthorizableContract
 {
-    use Authorizable, HasApiTokens, HasPermissions, HasRoles, Notifiable, SearchableCandidateProfile, SoftDeletes, UserAuthenticatable;
+    use Authorizable,
+        HasApiTokens,
+        HasPermissions,
+        HasRoles,
+        Notifiable,
+        SearchableCandidateProfile,
+        SoftDeletes,
+        UserAuthenticatable;
 
     protected $table = 'users';
 

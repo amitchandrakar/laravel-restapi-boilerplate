@@ -288,7 +288,7 @@ class AuthService
         if ($user !== null) {
             $this->loginLockoutService->assertNotLocked($user);
         } elseif ($username !== '' && $this->loginLockoutService->isLockedForIdentifier($username)) {
-            throw new \Symfony\Component\HttpKernel\Exception\HttpException(
+            throw new HttpException(
                 423,
                 'Account is temporarily locked due to too many failed login attempts. Please try again later.'
             );

@@ -32,9 +32,7 @@ it('redacts phone numbers on peer profiles until a contact request is accepted',
         ])
         ->assertStatus(201);
 
-    $detailsPending = $this->withToken($tokenA)->getJson(
-        '/api/v1/admin/candidates/' . $b->uuid . '/profile-details'
-    );
+    $detailsPending = $this->withToken($tokenA)->getJson('/api/v1/admin/candidates/' . $b->uuid . '/profile-details');
     $detailsPending->assertStatus(200)->assertJsonPath('data.phone', null);
 
     $row = ContactRequest::query()->where('from_user_id', $a->id)->where('to_user_id', $b->id)->firstOrFail();
@@ -186,19 +184,23 @@ function contactRequestTwoCandidatesWithTokens(string $prefixA = 'cr-a-', string
     $emailA = $prefixA . uniqid('', true) . '@example.com';
     $emailB = $prefixB . uniqid('', true) . '@example.com';
 
-    test()->postJson('/api/v1/auth/register', [
-        'name' => 'Contact A',
-        'email' => $emailA,
-        'password' => CONTACT_REQUEST_TEST_PW,
-        'password_confirmation' => CONTACT_REQUEST_TEST_PW,
-    ]    )->assertStatus(201);
+    test()
+        ->postJson('/api/v1/auth/register', [
+            'name' => 'Contact A',
+            'email' => $emailA,
+            'password' => CONTACT_REQUEST_TEST_PW,
+            'password_confirmation' => CONTACT_REQUEST_TEST_PW,
+        ])
+        ->assertStatus(201);
 
-    test()->postJson('/api/v1/auth/register', [
-        'name' => 'Contact B',
-        'email' => $emailB,
-        'password' => CONTACT_REQUEST_TEST_PW,
-        'password_confirmation' => CONTACT_REQUEST_TEST_PW,
-    ])->assertStatus(201);
+    test()
+        ->postJson('/api/v1/auth/register', [
+            'name' => 'Contact B',
+            'email' => $emailB,
+            'password' => CONTACT_REQUEST_TEST_PW,
+            'password_confirmation' => CONTACT_REQUEST_TEST_PW,
+        ])
+        ->assertStatus(201);
 
     $a = User::query()->where('email', $emailA)->firstOrFail();
     $b = User::query()->where('email', $emailB)->firstOrFail();

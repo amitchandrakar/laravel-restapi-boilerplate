@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Tracks failed login attempts and temporary account lockouts (cache-backed).
@@ -30,7 +31,7 @@ final class LoginLockoutService
     public function assertNotLocked(User $user): void
     {
         if ($this->isLocked($user)) {
-            throw new \Symfony\Component\HttpKernel\Exception\HttpException(
+            throw new HttpException(
                 423,
                 'Account is temporarily locked due to too many failed login attempts. Please try again later.'
             );
@@ -49,10 +50,7 @@ final class LoginLockoutService
             return;
         }
 
-        $this->incrementFailures(
-            $this->failureKeyForIdentifier($normalized),
-            $this->lockKeyForIdentifier($normalized)
-        );
+        $this->incrementFailures($this->failureKeyForIdentifier($normalized), $this->lockKeyForIdentifier($normalized));
     }
 
     public function clear(User $user): void

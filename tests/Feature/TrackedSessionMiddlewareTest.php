@@ -92,7 +92,9 @@ it('refreshes the opaque session token hash without breaking subsequent `/me` ca
 
     $user = User::query()->where('email', $email)->first();
     expect($user)->not->toBeNull();
-    expect(app(UserActionLogService::class)->hasActiveUserSession((int) $user->id, $firstHash))->toBeFalse('Old session hash should be inactive after refresh');
+    expect(app(UserActionLogService::class)->hasActiveUserSession((int) $user->id, $firstHash))->toBeFalse(
+        'Old session hash should be inactive after refresh'
+    );
     expect(app(UserActionLogService::class)->hasActiveUserSession((int) $user->id, $secondHash))->toBeTrue();
 });
 

@@ -67,21 +67,12 @@ it('persists queue worker output across all four mirrored logging tables', funct
     $logService = app(UserActionLogService::class);
     $sessionHash = hash('sha256', 'session-token');
 
-    (new LogAuditJob(
-        $user->id,
-        'users',
-        $user->id,
-        'test.audit',
-        null,
-        ['ok' => true],
-        '127.0.0.1',
-        'tester'
-    ))->handle($logService);
-    (new LogUserActivityJob($user->id, 'test.activity', 'tests', ['ok' => true], '127.0.0.1'))->handle($logService);
-    (new UpsertUserDeviceLogJob($user->id, 'test-device', 'web', 'Test Browser', 'Web'))->handle($logService);
-    (new StartUserSessionJob($user->id, $sessionHash, null, '127.0.0.1', 'tester', 'test-device'))->handle(
+    (new LogAuditJob($user->id, 'users', $user->id, 'test.audit', null, ['ok' => true], '127.0.0.1', 'tester'))->handle(
         $logService
     );
+    (new LogUserActivityJob($user->id, 'test.activity', 'tests', ['ok' => true], '127.0.0.1'))->handle($logService);
+    (new UpsertUserDeviceLogJob($user->id, 'test-device', 'web', 'Test Browser', 'Web'))->handle($logService);
+    (new StartUserSessionJob($user->id, $sessionHash, null, '127.0.0.1', 'tester', 'test-device'))->handle($logService);
     (new EndUserSessionJob($user->id, $sessionHash))->handle($logService);
 
     $this->assertDatabaseHas('audit_logs', [

@@ -1,8 +1,6 @@
 <?php
 
 declare(strict_types=1);
-use App\Models\Role;
-use App\Models\User;
 use Database\Seeders\RbacSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;

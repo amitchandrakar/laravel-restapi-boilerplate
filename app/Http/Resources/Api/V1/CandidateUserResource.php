@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api\V1;
 
 use App\Models\User;
+use App\Services\UserPartnerPreferredLocationService;
 use App\Support\UserProfilePhotos;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -113,7 +114,7 @@ class CandidateUserResource extends JsonResource
             $partner !== null ? data_get($partner, 'preferred_degree_ids') : null
         );
         $partnerLocationIds = collect(
-            app(\App\Services\UserPartnerPreferredLocationService::class)->listForUserId($user->id)
+            app(UserPartnerPreferredLocationService::class)->listForUserId($user->id)
         )
             ->pluck('cityId')
             ->filter(static fn($id): bool => $id !== null)
@@ -287,9 +288,9 @@ class CandidateUserResource extends JsonResource
                     'preferredCaste' => data_get($partner, 'preferred_caste'),
                     'preferredIncomeMin' => data_get($partner, 'preferred_income_min'),
                     'preferredDegreeIds' => $partnerDegreeIds,
-                    'preferredLocations' => app(\App\Services\UserPartnerPreferredLocationService::class)->listForUserId(
-                        (int) $user->id
-                    ),
+                    'preferredLocations' => app(
+                        UserPartnerPreferredLocationService::class
+                    )->listForUserId((int) $user->id),
                     'preferredLocationIds' => $partnerLocationIds,
                     'preferredCommunityIds' => $partnerCommunityIds,
                     'preferredOccupation' => data_get($partner, 'preferred_occupation'),

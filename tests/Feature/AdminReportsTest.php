@@ -134,9 +134,7 @@ it('returns forbidden when a candidate calls report endpoints', function () {
 
     $this->actingAs($candidate, 'sanctum')->getJson('/api/v1/admin/reports/candidates/area')->assertStatus(403);
     $this->actingAs($candidate, 'sanctum')->getJson('/api/v1/admin/reports/candidates/surname')->assertStatus(403);
-    $this->actingAs($candidate, 'sanctum')
-        ->getJson('/api/v1/admin/reports/candidates/education')
-        ->assertStatus(403);
+    $this->actingAs($candidate, 'sanctum')->getJson('/api/v1/admin/reports/candidates/education')->assertStatus(403);
     $this->actingAs($candidate, 'sanctum')->getJson('/api/v1/admin/reports/active-users')->assertStatus(403);
     $this->actingAs($candidate, 'sanctum')->getJson('/api/v1/admin/reports/user-activities')->assertStatus(403);
     $this->actingAs($candidate, 'sanctum')->getJson('/api/v1/admin/reports/team-activities')->assertStatus(403);

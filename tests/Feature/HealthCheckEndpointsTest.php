@@ -7,11 +7,7 @@ it('returns public health status using the standard envelope', function () {
         ->assertStatus(200)
         ->assertJsonPath('success', true)
         ->assertJsonStructure([
-            'data' => [
-                'status',
-                'timestamp',
-                'services' => ['database', 'cache'],
-            ],
+            'data' => ['status', 'timestamp', 'services' => ['database', 'cache']],
         ]);
 });
 

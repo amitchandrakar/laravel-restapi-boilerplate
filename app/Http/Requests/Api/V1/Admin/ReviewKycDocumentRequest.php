@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Api\V1\Admin;
 
 use App\Http\Requests\Api\ApiFormRequest;
+use App\Models\UserVerificationDocument;
 
 class ReviewKycDocumentRequest extends ApiFormRequest
 {
@@ -12,8 +13,8 @@ class ReviewKycDocumentRequest extends ApiFormRequest
     {
         $document = $this->route('document');
 
-        return $document instanceof \App\Models\UserVerificationDocument
-            && ($this->user()?->can('review', $document) ?? false);
+        return $document instanceof UserVerificationDocument &&
+            ($this->user()?->can('review', $document) ?? false);
     }
 
     /**

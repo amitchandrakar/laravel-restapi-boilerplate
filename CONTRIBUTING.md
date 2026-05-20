@@ -32,7 +32,7 @@ Before submitting a pull request, please run the following checks:
 - **Styling**: `./vendor/bin/pint`
 - **Formatting**: `npm run format` (Prettier)
 - **Static Analysis**: `./vendor/bin/phpstan analyse`
-- **Testing**: `composer test` (runs [Pest](https://pestphp.com); configuration in [`tests/Pest.php`](tests/Pest.php)). Prefer `it()` specs whose titles read as full sentences after Pest prints the leading `it ` (e.g. start with *allows*, *returns*, *rejects*), shared setup in `beforeEach` / `describe`, and `expect()` for assertions that are not fluent `TestResponse` chains.
+- **Testing**: `composer test` (runs [Pest](https://pestphp.com); configuration in [`tests/Pest.php`](tests/Pest.php)). Prefer `it()` specs whose titles read as full sentences after Pest prints the leading `it ` (e.g. start with _allows_, _returns_, _rejects_), shared setup in `beforeEach` / `describe`, and `expect()` for assertions that are not fluent `TestResponse` chains.
 
 Our **pre-commit hook** will automatically run these checks for you. Ensure your commit passes all local checks before pushing.
 

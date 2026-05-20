@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Default Search Engine
@@ -119,13 +118,7 @@ return [
         'secret' => env('ALGOLIA_SECRET', ''),
         'index-settings' => [
             env('SCOUT_CANDIDATE_INDEX', 'candidates') => [
-                'searchableAttributes' => [
-                    'display_name',
-                    'first_name',
-                    'last_name',
-                    'current_city',
-                    'occupation',
-                ],
+                'searchableAttributes' => ['display_name', 'first_name', 'last_name', 'current_city', 'occupation'],
                 'attributesForFaceting' => [
                     'filterOnly(uuid)',
                     'filterOnly(gender)',
@@ -234,5 +227,4 @@ return [
         ],
         'import_action' => env('TYPESENSE_IMPORT_ACTION', 'upsert'),
     ],
-
 ];

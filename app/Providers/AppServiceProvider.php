@@ -5,22 +5,22 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Exceptions\Handler as AppExceptionHandler;
+use App\Jobs\Scout\MakeSearchableOnLowQueue;
+use App\Jobs\Scout\RemoveFromSearchOnLowQueue;
 use App\Models\Package;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Observers\PackageObserver;
 use App\Observers\SubscriptionObserver;
 use App\Observers\UserObserver;
-use App\Jobs\Scout\MakeSearchableOnLowQueue;
-use App\Jobs\Scout\RemoveFromSearchOnLowQueue;
 use Hashids\Hashids;
-use Laravel\Scout\Scout;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Scout\Scout;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -72,17 +72,13 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('api-auth-strict', static function (Request $request): Limit {
             $perMinute = max(1, (int) config('api.throttle.auth_per_minute', 5));
 
-            return Limit::perMinute($perMinute)->by(
-                $request->user()?->id ?: $request->ip()
-            );
+            return Limit::perMinute($perMinute)->by($request->user()?->id ?: $request->ip());
         });
 
         RateLimiter::for('api-general', static function (Request $request): Limit {
             $perMinute = max(1, (int) config('api.throttle.general_per_minute', 60));
 
-            return Limit::perMinute($perMinute)->by(
-                $request->user()?->id ?: $request->ip()
-            );
+            return Limit::perMinute($perMinute)->by($request->user()?->id ?: $request->ip());
         });
     }
 }

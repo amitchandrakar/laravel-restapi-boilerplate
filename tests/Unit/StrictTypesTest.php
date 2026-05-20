@@ -21,5 +21,7 @@ it('requires declare(strict_types=1) across PHP files in app, config, and core p
         }
     }
 
-    expect($filesWithoutStrictTypes)->toBeEmpty("The following files are missing 'declare(strict_types=1);':\n" . implode("\n", $filesWithoutStrictTypes));
+    expect($filesWithoutStrictTypes)->toBeEmpty(
+        "The following files are missing 'declare(strict_types=1);':\n" . implode("\n", $filesWithoutStrictTypes)
+    );
 });

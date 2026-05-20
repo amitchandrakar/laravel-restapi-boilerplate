@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\HealthController;
 use App\Support\ApiResponseBuilder;
 use Illuminate\Support\Facades\Route;
 
@@ -15,8 +16,8 @@ Route::get('/', function () {
 });
 
 // Health check endpoints (no auth required)
-Route::get('health', [\App\Http\Controllers\Api\HealthController::class, 'check']);
-Route::get('health/detailed', [\App\Http\Controllers\Api\HealthController::class, 'detailed']);
+Route::get('health', [HealthController::class, 'check']);
+Route::get('health/detailed', [HealthController::class, 'detailed']);
 
 // Load V1 routes
 Route::prefix('v1')->group(base_path('routes/api/v1.php'));

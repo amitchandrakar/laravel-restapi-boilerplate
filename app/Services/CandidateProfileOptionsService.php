@@ -21,7 +21,7 @@ class CandidateProfileOptionsService
     {
         $ttl = max(60, (int) config('cache_strategy.profile_options_seconds', 3600));
 
-        return Cache::remember(CacheKeys::candidateProfileOptions(), $ttl, fn (): array => $this->buildAll());
+        return Cache::remember(CacheKeys::candidateProfileOptions(), $ttl, fn(): array => $this->buildAll());
     }
 
     /**

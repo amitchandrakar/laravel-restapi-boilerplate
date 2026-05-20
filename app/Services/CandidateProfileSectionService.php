@@ -232,11 +232,7 @@ class CandidateProfileSectionService
             'hometown_village',
             'maternal_village_name',
         ];
-        $maternalIdKeys = [
-            'maternal_country_id',
-            'maternal_state_id',
-            'maternal_city_id',
-        ];
+        $maternalIdKeys = ['maternal_country_id', 'maternal_state_id', 'maternal_city_id'];
 
         $columns = [];
 
@@ -492,7 +488,11 @@ class CandidateProfileSectionService
             }
         }
 
-        if ($row === [] && !array_key_exists('preferred_locations', $payload) && !array_key_exists('preferred_location_ids', $payload)) {
+        if (
+            $row === [] &&
+            !array_key_exists('preferred_locations', $payload) &&
+            !array_key_exists('preferred_location_ids', $payload)
+        ) {
             return;
         }
 
@@ -517,10 +517,7 @@ class CandidateProfileSectionService
             );
         } elseif (array_key_exists('preferred_location_ids', $payload)) {
             $legacy = $payload['preferred_location_ids'];
-            app(UserPartnerPreferredLocationService::class)->syncForUser(
-                $user,
-                is_array($legacy) ? $legacy : null
-            );
+            app(UserPartnerPreferredLocationService::class)->syncForUser($user, is_array($legacy) ? $legacy : null);
         }
     }
 

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 use App\Events\PackageCreatedEvent;
-use App\Models\User;
 use App\Notifications\PackageCreatedNotification;
 use Database\Seeders\RbacSeeder;
 use Illuminate\Support\Facades\Event;
