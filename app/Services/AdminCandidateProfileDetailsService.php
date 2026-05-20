@@ -297,9 +297,9 @@ class AdminCandidateProfileDetailsService
                     'preferredIncomeMin' => data_get($partner, 'preferred_income_min'),
                     'preferredDegrees' => $preferredDegreeNames,
                     'preferredCities' => $preferredCityNames,
-                    'preferredLocations' => app(
-                        UserPartnerPreferredLocationService::class
-                    )->listForUserId((int) $user->id),
+                    'preferredLocations' => app(UserPartnerPreferredLocationService::class)->listForUserId(
+                        (int) $user->id
+                    ),
                     'preferredCommunities' => $preferredCommunityNames,
                     'preferredOccupation' => data_get($partner, 'preferred_occupation'),
                     'preferredSleepPattern' => data_get($partner, 'preferred_sleep_pattern'),

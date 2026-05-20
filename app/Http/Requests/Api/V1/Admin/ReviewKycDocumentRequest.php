@@ -13,8 +13,7 @@ class ReviewKycDocumentRequest extends ApiFormRequest
     {
         $document = $this->route('document');
 
-        return $document instanceof UserVerificationDocument &&
-            ($this->user()?->can('review', $document) ?? false);
+        return $document instanceof UserVerificationDocument && ($this->user()?->can('review', $document) ?? false);
     }
 
     /**

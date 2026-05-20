@@ -595,10 +595,7 @@ class DemoUsersSeeder extends Seeder
             ]);
 
             if (!empty($p['preferred_location_ids']) && is_array($p['preferred_location_ids'])) {
-                app(UserPartnerPreferredLocationService::class)->syncForUser(
-                    $user,
-                    $p['preferred_location_ids']
-                );
+                app(UserPartnerPreferredLocationService::class)->syncForUser($user, $p['preferred_location_ids']);
             }
 
             $this->attachSubscription($userId, $packageCode);
