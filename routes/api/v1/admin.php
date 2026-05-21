@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\Admin\AdminRoleController;
+use App\Http\Controllers\Api\V1\Admin\AdminSubscriptionController;
 use App\Http\Controllers\Api\V1\Admin\CandidateUserController;
 use App\Http\Controllers\Api\V1\Admin\KycDocumentController;
 use App\Http\Controllers\Api\V1\Admin\PackageController;
@@ -61,6 +62,20 @@ Route::middleware($sanctumWithTrackedSession)->group(function (): void {
     Route::delete('packages/{package}', [PackageController::class, 'destroy'])->middleware(
         'permission:admin.packages.delete'
     );
+
+    Route::get('subscriptions/active', [AdminSubscriptionController::class, 'active'])->middleware(
+        'permission:admin.subscriptions.view'
+    );
+    Route::get('subscriptions/expiring-soon', [AdminSubscriptionController::class, 'expiringSoon'])->middleware(
+        'permission:admin.subscriptions.view'
+    );
+    Route::get('subscriptions/expired', [AdminSubscriptionController::class, 'expired'])->middleware(
+        'permission:admin.subscriptions.view'
+    );
+    Route::get('subscriptions/history/{user:uuid}', [AdminSubscriptionController::class, 'history'])->middleware(
+        'permission:admin.subscriptions.view'
+    );
+
     Route::get('payments', [PaymentController::class, 'index'])->middleware('permission:admin.payments.view');
     Route::get('payments/{payment:uuid}', [PaymentController::class, 'show'])->middleware(
         'permission:admin.payments.view'
@@ -130,6 +145,9 @@ Route::middleware($sanctumWithTrackedSession)->group(function (): void {
         'permission:admin.settings.roles.edit'
     );
 
+    Route::get('team-users/permission-options', [TeamUserController::class, 'permissionOptions'])->middleware(
+        'permission:admin.teams.view'
+    );
     Route::get('team-users', [TeamUserController::class, 'index'])->middleware('permission:admin.teams.view');
     Route::post('team-users', [TeamUserController::class, 'store'])->middleware('permission:admin.teams.add');
     Route::get('team-users/{user:uuid}', [TeamUserController::class, 'show'])->middleware(
@@ -143,8 +161,17 @@ Route::middleware($sanctumWithTrackedSession)->group(function (): void {
     );
 
     Route::get('candidates', [CandidateUserController::class, 'index'])->middleware('permission:admin.candidates.view');
+    Route::get('candidates/export', [CandidateUserController::class, 'export'])->middleware(
+        'permission:admin.candidates.export'
+    );
+    Route::post('candidates/import', [CandidateUserController::class, 'import'])->middleware(
+        'permission:admin.candidates.import'
+    );
+    Route::get('candidates/import/{importId}', [CandidateUserController::class, 'importStatus'])->middleware(
+        'permission:admin.candidates.import'
+    );
     Route::post('candidates', [CandidateUserController::class, 'store'])->middleware('permission:admin.candidates.add');
-    Route::put('candidates/profile', [CandidateUserController::class, 'saveCompleteProfile'])->middleware(
+    Route::post('candidates/{user:uuid}/restore', [CandidateUserController::class, 'restore'])->middleware(
         'permission:admin.candidates.edit'
     );
     Route::get('candidates/kyc/pending', [KycDocumentController::class, 'pending'])->middleware(
@@ -153,61 +180,29 @@ Route::middleware($sanctumWithTrackedSession)->group(function (): void {
     Route::patch('candidates/kyc/documents/{document:uuid}', [KycDocumentController::class, 'review'])->middleware(
         'permission:admin.candidates.edit'
     );
-    Route::get('candidates/{user:uuid}/profile-details', [CandidateUserController::class, 'profileDetails']);
-    Route::get('candidates/{user:uuid}', [CandidateUserController::class, 'show']);
+    Route::get('candidates/{user:uuid}/kyc/documents', [KycDocumentController::class, 'indexForCandidate'])->middleware(
+        'permission:admin.candidates.view'
+    );
+    Route::post('candidates/{user:uuid}/impersonate', [CandidateUserController::class, 'impersonate'])->middleware(
+        'permission:admin.candidates.impersonate'
+    );
+    Route::get('candidates/{user:uuid}', [CandidateUserController::class, 'show'])->middleware(
+        'permission:admin.candidates.view'
+    );
     Route::match(['put', 'patch'], 'candidates/{user:uuid}', [CandidateUserController::class, 'update'])->middleware(
         'permission:admin.candidates.edit'
     );
     Route::delete('candidates/{user:uuid}', [CandidateUserController::class, 'destroy'])->middleware(
         'permission:admin.candidates.delete'
     );
-    Route::match(['put', 'patch'], 'candidates/{user:uuid}/sections/photos', [
+    Route::patch('candidates/{user:uuid}/profile-status', [
         CandidateUserController::class,
-        'savePhotos',
+        'updateProfileStatus',
     ])->middleware('permission:admin.candidates.edit');
-    Route::match(['put', 'patch'], 'candidates/{user:uuid}/sections/personal-details', [
-        CandidateUserController::class,
-        'savePersonalDetails',
-    ])->middleware('permission:admin.candidates.edit');
-    Route::match(['put', 'patch'], 'candidates/{user:uuid}/sections/horoscope', [
-        CandidateUserController::class,
-        'saveHoroscope',
-    ])->middleware('permission:admin.candidates.edit');
-    Route::match(['put', 'patch'], 'candidates/{user:uuid}/sections/location-family-roots', [
-        CandidateUserController::class,
-        'saveLocationFamilyRoots',
-    ])->middleware('permission:admin.candidates.edit');
-    Route::match(['put', 'patch'], 'candidates/{user:uuid}/sections/career-education', [
-        CandidateUserController::class,
-        'saveCareerEducation',
-    ])->middleware('permission:admin.candidates.edit');
-    Route::match(['put', 'patch'], 'candidates/{user:uuid}/sections/family-background', [
-        CandidateUserController::class,
-        'saveFamilyBackground',
-    ])->middleware('permission:admin.candidates.edit');
-    Route::match(['put', 'patch'], 'candidates/{user:uuid}/sections/lifestyle', [
-        CandidateUserController::class,
-        'saveLifestyle',
-    ])->middleware('permission:admin.candidates.edit');
-    Route::match(['put', 'patch'], 'candidates/{user:uuid}/sections/partner-preferences', [
-        CandidateUserController::class,
-        'savePartnerPreferences',
-    ])->middleware('permission:admin.candidates.edit');
-    Route::match(['put', 'patch'], 'candidates/{user:uuid}/sections/preferences', [
-        CandidateUserController::class,
-        'savePreferences',
-    ]);
-    Route::get('candidates/{user:uuid}/section-progress', [
-        CandidateUserController::class,
-        'sectionProgress',
-    ])->middleware('permission:admin.candidates.view');
     Route::post('candidates/{user:uuid}/publish', [CandidateUserController::class, 'publishProfile'])->middleware(
         'permission:admin.candidates.edit'
     );
     Route::patch('candidates/{user:uuid}/featured', [CandidateUserController::class, 'setFeatured'])->middleware(
         'permission:admin.candidates.feature'
-    );
-    Route::put('candidates/{user:uuid}/profile', [CandidateUserController::class, 'saveFullProfile'])->middleware(
-        'permission:admin.candidates.edit'
     );
 });

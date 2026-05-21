@@ -85,9 +85,23 @@ For update, all fields are optional (`PATCH` semantics).
 }
 ```
 
+## List query parameters
+
+| Parameter               | Type   | Description                                   |
+| ----------------------- | ------ | --------------------------------------------- |
+| `perPage`               | int    | 1–100                                         |
+| `search`                | string | Gateway ids or payer email                    |
+| `user_id`               | int    | Payer user id                                 |
+| `package_id`            | int    | Package id                                    |
+| `payment_status`        | string | pending, success, failed, refunded, cancelled |
+| `gateway_name`          | string | e.g. razorpay                                 |
+| `payment_method`        | string | upi, card, netbanking, wallet, cash, manual   |
+| `paid_from` / `paid_to` | date   | Paid-at range                                 |
+| `sort`                  | string | latest (default), oldest, amount              |
+
 ## List response
 
-`GET /api/v1/admin/payments?perPage=15` returns the same `data` item shape as above in an array, with pagination in `meta.pagination`.
+`GET /api/v1/admin/payments?perPage=15` returns payment rows with embedded `candidate` (uuid, fullName, profilePhoto, email) and `packageName`, plus pagination in `meta.pagination`.
 
 ## Side effects on create/update
 

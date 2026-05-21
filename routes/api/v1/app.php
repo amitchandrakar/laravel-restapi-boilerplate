@@ -86,6 +86,9 @@ Route::prefix('auth')->group(function () use ($sanctumWithTrackedSession): void 
             });
 
         Route::prefix('candidate/profile')->group(function (): void {
+            Route::get('details', [CandidateProfileController::class, 'profileDetails']);
+            Route::put('details', [CandidateProfileController::class, 'saveFullProfile']);
+            Route::patch('preferences', [CandidateProfileController::class, 'savePreferences']);
             Route::patch('basics', [CandidateProfileController::class, 'saveBasics']);
             Route::patch('photos', [CandidateProfileController::class, 'savePhotos']);
             Route::post('photos/upload', [CandidateProfileController::class, 'uploadPhoto']);
@@ -99,6 +102,11 @@ Route::prefix('auth')->group(function () use ($sanctumWithTrackedSession): void 
             Route::get('progress', [CandidateProfileController::class, 'progress']);
             Route::post('publish', [CandidateProfileController::class, 'publish']);
         });
+
+        Route::get('candidate/{candidate:uuid}/profile-details', [
+            CandidateProfileController::class,
+            'peerProfileDetails',
+        ]);
 
         Route::prefix('candidate/kyc')->group(function (): void {
             Route::get('documents', [CandidateKycController::class, 'index']);

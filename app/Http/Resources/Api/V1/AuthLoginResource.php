@@ -30,6 +30,10 @@ class AuthLoginResource extends JsonResource
             'permissions' => $data['permissions'] ?? [],
         ];
 
+        if (array_key_exists('expires_at', $data)) {
+            $out['expires_at'] = $data['expires_at'];
+        }
+
         if (array_key_exists('session_token_hash', $data)) {
             $out['session_token_hash'] = $data['session_token_hash'];
         }

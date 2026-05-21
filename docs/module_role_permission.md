@@ -208,6 +208,7 @@ Generate one row per key below in `permissions` (each linked to the correct `mod
 - `admin.candidates.view`, `admin.candidates.add`, `admin.candidates.edit`, `admin.candidates.delete`
 - `admin.teams.view`, `admin.teams.add`, `admin.teams.edit`, `admin.teams.delete`
 - `admin.packages.view`, `admin.packages.add`, `admin.packages.edit`, `admin.packages.delete`
+- `admin.subscriptions.view`
 - `admin.payments.view`, `admin.payments.edit`
 - `admin.reports.state.view`, `admin.reports.community.view`, `admin.reports.education.view`, `admin.reports.active_users.view`, `admin.reports.user_activities.view`, `admin.reports.team_activities.view`
 - `admin.settings.site.view`, `admin.settings.site.edit`
@@ -238,6 +239,7 @@ Typical staff reviewer: work candidates and read operations; **no** role/permiss
 | `admin.candidates.*`        | Y                            | Y   | Y    | **—** (optional Y for soft-delete if policy allows) |
 | `admin.teams.*`             | Y                            | —   | —    | —                                                   |
 | `admin.packages.*`          | Y                            | —   | —    | —                                                   |
+| `admin.subscriptions.*`     | Y (view only)                | —   | —    | —                                                   |
 | `admin.payments.*`          | Y                            | —   | Y    | —                                                   |
 | `admin.reports.*`           | Y (all report segment views) | —   | —    | —                                                   |
 | `admin.settings.site.*`     | Y                            | —   | —    | —                                                   |

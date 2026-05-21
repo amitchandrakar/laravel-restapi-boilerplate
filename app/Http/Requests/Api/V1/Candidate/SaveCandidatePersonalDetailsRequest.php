@@ -11,7 +11,6 @@ use Illuminate\Validation\Rule;
 /**
  * Personal details + former "basics" fields (contact, marital status, photo URL, community fields).
  *
- * Admin `PUT|PATCH .../admin/candidates/{uuid}/sections/personal-details` requires core identity fields.
  * Candidate self-service `PATCH .../auth/candidate/profile/personal-details` allows partial updates.
  */
 class SaveCandidatePersonalDetailsRequest extends ApiFormRequest
@@ -102,9 +101,7 @@ class SaveCandidatePersonalDetailsRequest extends ApiFormRequest
 
     private function isAdminCandidatePersonalDetailsRoute(): bool
     {
-        $path = $this->path();
-
-        return str_contains($path, 'admin/candidates/') && str_contains($path, 'sections/personal-details');
+        return false;
     }
 
     private function resolveTargetUser(): ?User

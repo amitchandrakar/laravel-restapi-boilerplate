@@ -10,6 +10,11 @@ use Illuminate\Contracts\Validation\Validator;
 
 class SaveAdminCandidateFullProfileRequest extends ApiFormRequest
 {
+    public function authorize(): bool
+    {
+        return $this->user()?->hasRole('candidate') ?? false;
+    }
+
     protected function prepareForValidation(): void
     {
         $horoscope = $this->input('horoscope');

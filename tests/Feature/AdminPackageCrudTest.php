@@ -12,6 +12,18 @@ beforeEach(function (): void {
 });
 
 describe('admin package management', function (): void {
+    it('filters packages on index', function (): void {
+        $admin = $this->createUserWithRole('admin', 'admin-filter@example.com');
+        packageCrudMakePackage('FILTER_A');
+        $target = packageCrudMakePackage('FILTER_TARGET');
+        $target->update(['is_popular' => true]);
+
+        $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/v1/admin/packages?search=FILTER_TARGET&is_popular=1')
+            ->assertStatus(200)
+            ->assertJsonPath('data.0.code', 'FILTER_TARGET');
+    });
+
     it('allows admins to list and view packages', function (): void {
         $admin = $this->createUserWithRole('admin', 'admin-list@example.com');
         $package = packageCrudMakePackage('LIST_PLAN');
@@ -182,6 +194,20 @@ describe('admin package management', function (): void {
             ->getJson('/api/v1/admin/packages/permission-options')
             ->assertStatus(200)
             ->assertJsonPath('success', true);
+    });
+
+    it('returns only package-feature permissions with null module_id in permission-options', function (): void {
+        $admin = $this->createUserWithRole('admin', 'admin-perm-options@example.com');
+
+        $response = $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/v1/admin/packages/permission-options')
+            ->assertStatus(200);
+
+        $ids = collect($response->json('data'))->pluck('id')->all();
+        $nullModuleCount = Permission::query()->whereNull('module_id')->where('guard_name', 'web')->count();
+
+        expect(count($ids))->toBe($nullModuleCount);
+        expect(Permission::query()->where('name', 'admin.dashboard.view')->whereIn('id', $ids)->exists())->toBeFalse();
     });
 
     it('rejects package payloads containing non candidate-scoped permissions', function () {

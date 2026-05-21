@@ -7,11 +7,10 @@ use Illuminate\Support\Facades\DB;
 it('persists lifestyle and partner-preference deltas and echoes them via profile-details reads', function () {
     $this->seed(RbacSeeder::class);
 
-    $admin = $this->createUserWithRole('admin', 'admin-lifestyle-pref@example.com');
     $candidate = $this->createUserWithRole('candidate', 'candidate-lifestyle-pref@example.com');
 
-    $this->actingAs($admin, 'sanctum')
-        ->patchJson('/api/v1/admin/candidates/' . $candidate->uuid . '/sections/lifestyle', [
+    $this->actingAs($candidate, 'sanctum')
+        ->patchJson('/api/v1/app/auth/candidate/profile/lifestyle', [
             'sleep_pattern' => 'Night Owl',
             'working_hours' => 'Flexible Hours',
             'social_personality' => 'Ambivert',
@@ -31,8 +30,8 @@ it('persists lifestyle and partner-preference deltas and echoes them via profile
         ])
         ->assertStatus(200);
 
-    $this->actingAs($admin, 'sanctum')
-        ->patchJson('/api/v1/admin/candidates/' . $candidate->uuid . '/sections/partner-preferences', [
+    $this->actingAs($candidate, 'sanctum')
+        ->patchJson('/api/v1/app/auth/candidate/profile/partner-preferences', [
             'preferred_sleep_pattern' => 'Early Bird (Morning Person)',
             'preferred_working_hours' => 'Standard 9-to-5',
             'preferred_social_personality' => 'Introvert',
@@ -52,8 +51,8 @@ it('persists lifestyle and partner-preference deltas and echoes them via profile
         ])
         ->assertStatus(200);
 
-    $details = $this->actingAs($admin, 'sanctum')
-        ->getJson('/api/v1/admin/candidates/' . $candidate->uuid . '/profile-details')
+    $details = $this->actingAs($candidate, 'sanctum')
+        ->getJson('/api/v1/app/auth/candidate/profile/details')
         ->assertStatus(200)
         ->assertJsonPath('success', true)
         ->json('data.sections');

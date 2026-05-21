@@ -25,4 +25,14 @@ final class CacheKeys
     {
         return 'user:' . $userId . ':permissions';
     }
+
+    public static function candidateImportBatch(string $importId): string
+    {
+        return 'admin:candidate-import:' . $importId . ':batch';
+    }
+
+    public static function candidateImportRows(string $importId): string
+    {
+        return 'admin:candidate-import:' . $importId . ':rows';
+    }
 }

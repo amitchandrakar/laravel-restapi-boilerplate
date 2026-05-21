@@ -7,11 +7,10 @@ use Illuminate\Support\Str;
 
 it('stores parents and sibling metadata from family background submissions', function () {
     $this->seed(RbacSeeder::class);
-    $admin = $this->createUserWithRole('admin', 'admin-fam-bg@example.com');
     $candidate = $this->createUserWithRole('candidate', 'candidate-fam-bg@example.com');
 
-    $this->actingAs($admin, 'sanctum')
-        ->patchJson('/api/v1/admin/candidates/' . $candidate->uuid . '/sections/family-background', [
+    $this->actingAs($candidate, 'sanctum')
+        ->patchJson('/api/v1/app/auth/candidate/profile/family-background', [
             'father_name' => 'Rajesh',
             'father_occupation' => 'Business',
             'father_gotra' => 'Kashyap',
@@ -49,8 +48,8 @@ it('stores parents and sibling metadata from family background submissions', fun
     expect((int) $sib->age)->toBe(40);
     expect($sib->relation_type)->toBe('brother');
 
-    $this->actingAs($admin, 'sanctum')
-        ->getJson('/api/v1/admin/candidates/' . $candidate->uuid)
+    $this->actingAs($candidate, 'sanctum')
+        ->getJson('/api/v1/app/auth/candidate/profile/details')
         ->assertStatus(200)
         ->assertJsonPath('data.sections.familyBackground.siblings.0.name', 'Ravi')
         ->assertJsonPath('data.sections.familyBackground.siblings.0.age', 40);
@@ -58,7 +57,6 @@ it('stores parents and sibling metadata from family background submissions', fun
 
 it('clears stored siblings whenever clients submit an empty siblings array', function () {
     $this->seed(RbacSeeder::class);
-    $admin = $this->createUserWithRole('admin', 'admin-fam-clear@example.com');
     $candidate = $this->createUserWithRole('candidate', 'candidate-fam-clear@example.com');
 
     DB::table('user_siblings_details')->insert([
@@ -72,8 +70,8 @@ it('clears stored siblings whenever clients submit an empty siblings array', fun
         'updated_at' => now(),
     ]);
 
-    $this->actingAs($admin, 'sanctum')
-        ->patchJson('/api/v1/admin/candidates/' . $candidate->uuid . '/sections/family-background', [
+    $this->actingAs($candidate, 'sanctum')
+        ->patchJson('/api/v1/app/auth/candidate/profile/family-background', [
             'siblings' => [],
         ])
         ->assertStatus(200);

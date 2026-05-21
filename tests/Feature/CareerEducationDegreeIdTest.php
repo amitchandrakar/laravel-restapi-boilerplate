@@ -9,14 +9,13 @@ it('persists career education rows with explicit degree foreign keys', function 
     $this->seed(RbacSeeder::class);
     $this->seed(MasterDegreesOccupationsSeeder::class);
 
-    $admin = $this->createUserWithRole('admin', 'admin-career-deg@example.com');
     $candidate = $this->createUserWithRole('candidate', 'candidate-career-deg@example.com');
 
     $degreeId = (int) DB::table('degrees')->where('name', 'BE/BTech')->where('is_active', true)->value('id');
     expect($degreeId)->toBeGreaterThan(0);
 
-    $this->actingAs($admin, 'sanctum')
-        ->patchJson('/api/v1/admin/candidates/' . $candidate->uuid . '/sections/career-education', [
+    $this->actingAs($candidate, 'sanctum')
+        ->patchJson('/api/v1/app/auth/candidate/profile/career-education', [
             'occupation' => 'Software Engineer',
             'employer' => 'Acme Tech',
             'income' => 1400000,

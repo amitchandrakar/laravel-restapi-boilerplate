@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\User;
 use App\Models\UserVerificationDocument;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
 
 class KycDocumentService
@@ -119,6 +120,20 @@ class KycDocumentService
             ->orderByDesc('submitted_at')
             ->orderBy('id')
             ->paginate($perPage);
+    }
+
+    /**
+     * All KYC documents for a single candidate (any verification status).
+     *
+     * @return Collection<int, UserVerificationDocument>
+     */
+    public function listForCandidate(User $candidate): Collection
+    {
+        return UserVerificationDocument::query()
+            ->where('user_id', $candidate->id)
+            ->orderByDesc('submitted_at')
+            ->orderBy('id')
+            ->get();
     }
 
     /**

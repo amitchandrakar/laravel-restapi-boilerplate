@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Jobs\SyncPackageCandidatePermissionsJob;
 use App\Models\Package;
 use App\Models\User;
+use App\Support\QuerySearch;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PackageService
 {
-    public function __construct(private readonly PackagePermissionService $packagePermissionService) {}
+    public const SORT_OPTIONS = ['sort_order', 'name', 'latest'];
 
     /**
      * @param  array<string, mixed>  $data
@@ -52,12 +56,18 @@ class PackageService
 
             if (array_key_exists('permission_ids', $data) && is_array($data['permission_ids'])) {
                 $package->permissions()->sync(array_values(array_unique(array_map('intval', $data['permission_ids']))));
+                SyncPackageCandidatePermissionsJob::dispatch((int) $package->id);
             }
 
-            return $package->refresh();
+            Log::info('PackageService: package created', ['package_id' => $package->id]);
+
+            return $package->refresh()->load('permissions');
         });
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public function updatePackage(Package $package, array $data, User $actor): Package
     {
         return DB::transaction(function () use ($package, $data, $actor): Package {
@@ -122,10 +132,12 @@ class PackageService
 
             if (array_key_exists('permission_ids', $data) && is_array($data['permission_ids'])) {
                 $package->permissions()->sync(array_values(array_unique(array_map('intval', $data['permission_ids']))));
-                $this->packagePermissionService->syncCandidatesForPackage($package);
+                SyncPackageCandidatePermissionsJob::dispatch((int) $package->id);
             }
 
-            return $package->refresh();
+            Log::info('PackageService: package updated', ['package_id' => $package->id]);
+
+            return $package->refresh()->load('permissions');
         });
     }
 
@@ -134,13 +146,55 @@ class PackageService
         DB::transaction(function () use ($package, $actor): void {
             $package->update(['updated_by' => $actor->id]);
             $package->delete();
+            Log::info('PackageService: package deleted', ['package_id' => $package->id]);
         });
     }
 
-    public function paginatePackages(int $perPage = 15): LengthAwarePaginator
+    /**
+     * @param  array<string, mixed>  $filters
+     *
+     * @return LengthAwarePaginator<int, Package>
+     */
+    public function list(array $filters = []): LengthAwarePaginator
     {
-        $perPage = max(1, min(100, $perPage));
+        $perPage = min(100, max(1, (int) ($filters['perPage'] ?? 15)));
 
-        return Package::query()->orderBy('sort_order')->orderByDesc('id')->paginate($perPage);
+        return $this->buildListQuery($filters)->with('permissions')->paginate($perPage);
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     *
+     * @return Builder<Package>
+     */
+    public function buildListQuery(array $filters = []): Builder
+    {
+        $query = Package::query();
+
+        if (!empty($filters['search'])) {
+            QuerySearch::whereContainsAny($query, ['name', 'code'], (string) $filters['search']);
+        }
+
+        if (array_key_exists('is_active', $filters)) {
+            $query->where('is_active', filter_var($filters['is_active'], FILTER_VALIDATE_BOOLEAN));
+        }
+
+        if (!empty($filters['duration_unit'])) {
+            $query->where('duration_unit', (string) $filters['duration_unit']);
+        }
+
+        if (array_key_exists('is_popular', $filters)) {
+            $query->where('is_popular', filter_var($filters['is_popular'], FILTER_VALIDATE_BOOLEAN));
+        }
+
+        $sort = (string) ($filters['sort'] ?? 'sort_order');
+
+        match ($sort) {
+            'name' => $query->orderBy('name'),
+            'latest' => $query->orderByDesc('id'),
+            default => $query->orderBy('sort_order')->orderByDesc('id'),
+        };
+
+        return $query;
     }
 }

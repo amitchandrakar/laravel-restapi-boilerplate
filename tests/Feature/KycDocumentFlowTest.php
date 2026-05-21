@@ -37,6 +37,12 @@ it('lets candidates submit KYC documents and reviewers finalize approval', funct
         ->assertJsonPath('success', true);
 
     $this->actingAs($reviewer, 'sanctum')
+        ->getJson('/api/v1/admin/candidates/' . $candidate->uuid . '/kyc/documents')
+        ->assertStatus(200)
+        ->assertJsonPath('success', true)
+        ->assertJsonCount(1, 'data');
+
+    $this->actingAs($reviewer, 'sanctum')
         ->patchJson('/api/v1/admin/candidates/kyc/documents/' . $uuid, [
             'verification_status' => 'approved',
         ])

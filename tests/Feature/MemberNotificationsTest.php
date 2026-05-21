@@ -175,10 +175,10 @@ it('deduplicates peer profile-view notifications within the configured cooldown 
     $before = $b->notifications()->where('type', ProfileViewedNotification::class)->count();
 
     $this->withToken($tokenA)
-        ->getJson('/api/v1/admin/candidates/' . $b->uuid . '/profile-details')
+        ->getJson('/api/v1/app/auth/candidate/' . $b->uuid . '/profile-details')
         ->assertStatus(200);
     $this->withToken($tokenA)
-        ->getJson('/api/v1/admin/candidates/' . $b->uuid . '/profile-details')
+        ->getJson('/api/v1/app/auth/candidate/' . $b->uuid . '/profile-details')
         ->assertStatus(200);
 
     $b->refresh();

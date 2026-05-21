@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 use Database\Seeders\ChhattisgarhMasterGeoSeeder;
 use Database\Seeders\DemoMasterDataSeeder;
 use Database\Seeders\RbacSeeder;
@@ -15,15 +16,14 @@ it('resolves birth geography in profile details and hides raw identifier fields'
     $this->seed(DemoMasterDataSeeder::class);
     $this->seed(ChhattisgarhMasterGeoSeeder::class);
 
-    $admin = $this->createUserWithRole('admin', 'admin-profile-details@example.com');
     $candidate = $this->createUserWithRole('candidate', 'candidate-profile-details@example.com');
 
     $countryId = (int) DB::table('countries')->where('iso2', 'IN')->value('id');
     $stateId = (int) DB::table('states')->where('country_id', $countryId)->where('code', 'CG')->value('id');
     $cityId = (int) DB::table('cities')->where('state_id', $stateId)->value('id');
 
-    $this->actingAs($admin, 'sanctum')
-        ->patchJson('/api/v1/admin/candidates/' . $candidate->uuid . '/sections/horoscope', [
+    $this->actingAs($candidate, 'sanctum')
+        ->patchJson('/api/v1/app/auth/candidate/profile/horoscope', [
             'date_of_birth' => '1995-08-07',
             'birth_country_id' => $countryId,
             'birth_state_id' => $stateId,
@@ -33,8 +33,8 @@ it('resolves birth geography in profile details and hides raw identifier fields'
 
     $countryName = (string) DB::table('countries')->where('id', $countryId)->value('name');
 
-    $res = $this->actingAs($admin, 'sanctum')
-        ->getJson('/api/v1/admin/candidates/' . $candidate->uuid . '/profile-details')
+    $res = $this->actingAs($candidate, 'sanctum')
+        ->getJson('/api/v1/app/auth/candidate/profile/details')
         ->assertStatus(200)
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.sections.horoscopeDetails.birthPlace.country', $countryName);
@@ -47,10 +47,10 @@ it('resolves birth geography in profile details and hides raw identifier fields'
 });
 
 it('returns not found for profile details when the UUID is unknown', function (): void {
-    $admin = $this->createUserWithRole('admin', 'admin-profile-details-404@example.com');
+    $candidate = $this->createUserWithRole('candidate', 'candidate-profile-details-404@example.com');
 
-    $this->actingAs($admin, 'sanctum')
-        ->getJson('/api/v1/admin/candidates/' . (string) Str::uuid() . '/profile-details')
+    $this->actingAs($candidate, 'sanctum')
+        ->getJson('/api/v1/app/auth/candidate/' . (string) Str::uuid() . '/profile-details')
         ->assertStatus(404);
 });
 
@@ -58,7 +58,7 @@ it('lets a candidate load their own profile details', function (): void {
     $candidate = $this->createUserWithRole('candidate', 'candidate-own-profile-details@example.com');
 
     $this->actingAs($candidate, 'sanctum')
-        ->getJson('/api/v1/admin/candidates/' . $candidate->uuid . '/profile-details')
+        ->getJson('/api/v1/app/auth/candidate/profile/details')
         ->assertStatus(200)
         ->assertJsonPath('data.uuid', $candidate->uuid);
 });
@@ -68,7 +68,7 @@ it('lets a candidate view another candidate profile through profile details', fu
     $b = $this->createUserWithRole('candidate', 'candidate-b-profile-details@example.com');
 
     $this->actingAs($a, 'sanctum')
-        ->getJson('/api/v1/admin/candidates/' . $b->uuid . '/profile-details')
+        ->getJson('/api/v1/app/auth/candidate/' . $b->uuid . '/profile-details')
         ->assertStatus(200)
         ->assertJsonPath('data.uuid', $b->uuid);
 });

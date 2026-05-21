@@ -22,7 +22,7 @@ it('redacts phone numbers on peer profiles until a contact request is accepted',
     [$a, $b, $tokenA] = contactRequestTwoCandidatesWithTokens();
     $b->update(['phone' => '+919876543210']);
 
-    $details = $this->withToken($tokenA)->getJson('/api/v1/admin/candidates/' . $b->uuid . '/profile-details');
+    $details = $this->withToken($tokenA)->getJson('/api/v1/app/auth/candidate/' . $b->uuid . '/profile-details');
     $details->assertStatus(200)->assertJsonPath('data.phone', null);
 
     $this->withToken($tokenA)
@@ -32,7 +32,7 @@ it('redacts phone numbers on peer profiles until a contact request is accepted',
         ])
         ->assertStatus(201);
 
-    $detailsPending = $this->withToken($tokenA)->getJson('/api/v1/admin/candidates/' . $b->uuid . '/profile-details');
+    $detailsPending = $this->withToken($tokenA)->getJson('/api/v1/app/auth/candidate/' . $b->uuid . '/profile-details');
     $detailsPending->assertStatus(200)->assertJsonPath('data.phone', null);
 
     $row = ContactRequest::query()->where('from_user_id', $a->id)->where('to_user_id', $b->id)->firstOrFail();
@@ -45,7 +45,7 @@ it('redacts phone numbers on peer profiles until a contact request is accepted',
         ->assertStatus(200)
         ->assertJsonPath('data.requestStatus', 'accepted');
 
-    $detailsOk = $this->withToken($tokenA)->getJson('/api/v1/admin/candidates/' . $b->uuid . '/profile-details');
+    $detailsOk = $this->withToken($tokenA)->getJson('/api/v1/app/auth/candidate/' . $b->uuid . '/profile-details');
     $detailsOk->assertStatus(200)->assertJsonPath('data.phone', '+919876543210');
     $detailsOk->assertJsonPath('data.sections.personalDetails.phone', '+919876543210');
 });

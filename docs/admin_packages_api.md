@@ -45,7 +45,7 @@ Auth for all endpoints: `Bearer` Sanctum token required.
 - `is_active`: nullable boolean
 - `is_default_registration`: nullable boolean (only one package should be default)
 - `is_popular`: nullable boolean
-- `permission_ids`: nullable array of permission ids (candidate permissions only)
+- `permission_ids`: nullable array of permission ids (package features: `permissions` rows with `module_id` null)
 - `sort_order`: nullable integer, minimum 0
 
 ## Create/Update request body
@@ -115,13 +115,24 @@ For update, all fields are optional (`PATCH` semantics).
 }
 ```
 
+## List query parameters
+
+| Parameter       | Type    | Description                              |
+| --------------- | ------- | ---------------------------------------- |
+| `perPage`       | int     | 1–100 (default 15)                       |
+| `search`        | string  | Name or code                             |
+| `is_active`     | boolean | Active flag                              |
+| `duration_unit` | string  | `month` or `year`                        |
+| `is_popular`    | boolean | Popular flag                             |
+| `sort`          | string  | `sort_order` (default), `name`, `latest` |
+
 ## List response
 
-`GET /api/v1/admin/packages?perPage=15` returns the same `data` item shape as above in an array, with pagination in `meta.pagination`.
+`GET /api/v1/admin/packages?perPage=15` returns the same `data` item shape as above in an array, with pagination in `meta.pagination`. Index responses include `featurePermissions` (eager-loaded).
 
 ## Permission options response
 
-`GET /api/v1/admin/packages/permission-options` returns all selectable candidate permissions for package create/update UI checklists.
+`GET /api/v1/admin/packages/permission-options` returns all package-feature permissions (`permissions` where `module_id` is null) for create/update checkbox UI.
 
 ## Delete response
 
@@ -131,9 +142,9 @@ Delete is soft-delete (`deleted_at` is populated); deleted packages are excluded
 
 ## Event and notification flow
 
-- `PackageObserver` dispatches `PackageCreatedEvent` after insert.
-- `PackageCreatedListener` receives the event and notifies all users with role `admin`.
-- Notification class: `PackageCreatedNotification` (database channel).
+- `PackageObserver` dispatches `PackageCreatedEvent` after insert and `PackageUpdatedEvent` after update.
+- Listeners notify admins via database notifications (`PackageCreatedNotification`, `PackageUpdatedNotification`).
+- When `permission_ids` change on create/update, `SyncPackageCandidatePermissionsJob` runs on the queue to sync active subscribers’ direct permissions.
 
 ## Test command
 

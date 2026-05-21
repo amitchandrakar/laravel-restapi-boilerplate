@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
+use App\Events\TeamMemberLifecycleEvent;
 use App\Events\UserCreatedEvent;
 use App\Events\UserLifecycleEvent;
 use App\Jobs\SyncProfileToAlgolia;
@@ -35,6 +36,10 @@ class UserObserver
 
         UserCreatedEvent::dispatch($user);
         UserLifecycleEvent::dispatch($user, 'created');
+
+        if ($this->isTeamMember($user)) {
+            TeamMemberLifecycleEvent::dispatch($user, 'created');
+        }
     }
 
     /**
@@ -47,6 +52,10 @@ class UserObserver
         }
 
         UserLifecycleEvent::dispatch($user, 'updated');
+
+        if ($this->isTeamMember($user)) {
+            TeamMemberLifecycleEvent::dispatch($user, 'updated');
+        }
 
         if (
             ScoutConfig::usesAlgolia() &&
@@ -78,6 +87,10 @@ class UserObserver
 
         UserLifecycleEvent::dispatch($user, 'deleted');
 
+        if ($this->isTeamMember($user)) {
+            TeamMemberLifecycleEvent::dispatch($user, 'deleted');
+        }
+
         if (ScoutConfig::usesAlgolia() && $user->isCandidateRole()) {
             SyncProfileToAlgolia::dispatch((int) $user->id);
         }
@@ -97,5 +110,12 @@ class UserObserver
     public function forceDeleted(User $user): void
     {
         //
+    }
+
+    private function isTeamMember(User $user): bool
+    {
+        $user->loadMissing('primaryRole');
+
+        return $user->primaryRole !== null && $user->primaryRole->name !== 'candidate';
     }
 }

@@ -9,15 +9,14 @@ it('persists maternal geography IDs from admin family-roots updates', function (
     $this->seed(RbacSeeder::class);
     $this->seed(ChhattisgarhMasterGeoSeeder::class);
 
-    $admin = $this->createUserWithRole('admin', 'admin-maternal@example.com');
     $candidate = $this->createUserWithRole('candidate', 'candidate-maternal@example.com');
 
     $countryId = (int) DB::table('countries')->where('iso2', 'IN')->value('id');
     $stateId = (int) DB::table('states')->where('country_id', $countryId)->where('code', 'CG')->value('id');
     $cityId = (int) DB::table('cities')->where('state_id', $stateId)->value('id');
 
-    $this->actingAs($admin, 'sanctum')
-        ->patchJson('/api/v1/admin/candidates/' . $candidate->uuid . '/sections/location-family-roots', [
+    $this->actingAs($candidate, 'sanctum')
+        ->patchJson('/api/v1/app/auth/candidate/profile/location-family-roots', [
             'maternal_country_id' => $countryId,
             'maternal_state_id' => $stateId,
             'maternal_city_id' => $cityId,
@@ -33,15 +32,14 @@ it('still accepts legacy maternal geography keys during family-roots updates', f
     $this->seed(RbacSeeder::class);
     $this->seed(ChhattisgarhMasterGeoSeeder::class);
 
-    $admin = $this->createUserWithRole('admin', 'admin-maternal-legacy@example.com');
     $candidate = $this->createUserWithRole('candidate', 'candidate-maternal-legacy@example.com');
 
     $countryId = (int) DB::table('countries')->where('iso2', 'IN')->value('id');
     $stateId = (int) DB::table('states')->where('country_id', $countryId)->where('code', 'CG')->value('id');
     $cityId = (int) DB::table('cities')->where('state_id', $stateId)->value('id');
 
-    $this->actingAs($admin, 'sanctum')
-        ->patchJson('/api/v1/admin/candidates/' . $candidate->uuid . '/sections/location-family-roots', [
+    $this->actingAs($candidate, 'sanctum')
+        ->patchJson('/api/v1/app/auth/candidate/profile/location-family-roots', [
             'maternal_country' => (string) $countryId,
             'maternal_state' => (string) $stateId,
             'maternal_city' => (string) $cityId,

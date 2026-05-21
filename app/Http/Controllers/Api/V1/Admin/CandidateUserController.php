@@ -5,53 +5,69 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Api\V1\Controller;
+use App\Http\Requests\Api\V1\Admin\AdminImpersonateCandidateRequest;
+use App\Http\Requests\Api\V1\Admin\ExportCandidatesRequest;
+use App\Http\Requests\Api\V1\Admin\ImportCandidatesRequest;
+use App\Http\Requests\Api\V1\Admin\ListCandidatesRequest;
 use App\Http\Requests\Api\V1\Admin\UpdateCandidateFeaturedRequest;
-use App\Http\Requests\Api\V1\Candidate\SaveAdminCandidateFullProfileRequest;
-use App\Http\Requests\Api\V1\Candidate\SaveCandidateCareerEducationRequest;
-use App\Http\Requests\Api\V1\Candidate\SaveCandidateFamilyBackgroundRequest;
-use App\Http\Requests\Api\V1\Candidate\SaveCandidateHoroscopeRequest;
-use App\Http\Requests\Api\V1\Candidate\SaveCandidateLifestyleRequest;
-use App\Http\Requests\Api\V1\Candidate\SaveCandidateLocationFamilyRootsRequest;
-use App\Http\Requests\Api\V1\Candidate\SaveCandidatePartnerPreferencesRequest;
-use App\Http\Requests\Api\V1\Candidate\SaveCandidatePersonalDetailsRequest;
-use App\Http\Requests\Api\V1\Candidate\SaveCandidatePhotosRequest;
-use App\Http\Requests\Api\V1\Candidate\SaveCandidatePreferencesRequest;
+use App\Http\Requests\Api\V1\Admin\UpdateCandidateProfileStatusRequest;
 use App\Http\Requests\Api\V1\StoreCandidateUserRequest;
 use App\Http\Requests\Api\V1\UpdateCandidateUserRequest;
-use App\Http\Resources\Api\V1\AdminCandidateProfileDetailsResource;
+use App\Http\Resources\Api\V1\AuthLoginResource;
 use App\Http\Resources\Api\V1\CandidateUserResource;
+use App\Http\Resources\Api\V1\UserResource;
 use App\Jobs\LogAuditJob;
 use App\Jobs\LogUserActivityJob;
-use App\Models\Role;
+use App\Jobs\StartUserSessionJob;
 use App\Models\User;
+use App\Services\CandidateCsvExportService;
+use App\Services\CandidateCsvImportService;
+use App\Services\CandidateImpersonationService;
 use App\Services\CandidateProfileSectionService;
 use App\Services\CandidateUserService;
 use App\Services\FeaturedCandidateService;
-use App\Services\ProfileViewService;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Support\SanctumPlainTokenHasher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Throwable;
 
+/**
+ * Admin CRUD and operational actions for candidate (member) users.
+ */
 class CandidateUserController extends Controller
 {
     public function __construct(
         private readonly CandidateUserService $service,
         private readonly FeaturedCandidateService $featuredCandidateService,
-        private readonly ProfileViewService $profileViewService
+        private readonly CandidateImpersonationService $impersonationService,
+        private readonly CandidateCsvExportService $csvExportService,
+        private readonly CandidateCsvImportService $csvImportService
     ) {}
 
-    public function index(Request $request): JsonResponse
+    /**
+     * List candidates with pagination and filters (bucket, search, profile_status, etc.).
+     */
+    public function index(ListCandidatesRequest $request): JsonResponse
     {
-        if (!$request->user()?->can('admin.candidates.view')) {
-            return $this->forbiddenResponse();
+        try {
+            $paginator = $this->service->list($request->validated());
+        } catch (Throwable $e) {
+            Log::error('admin.candidates.index_failed', [
+                'actor_id' => $request->user()?->id,
+                'message' => $e->getMessage(),
+            ]);
+
+            throw $e;
         }
-        $paginator = $this->service->list((int) $request->integer('perPage', 15));
+
         LogUserActivityJob::dispatch(
             (int) $request->user()->id,
             'admin.candidates.index',
             'api_v1_admin',
-            null,
+            ['filters' => $request->validated()],
             $request->ip()
         );
 
@@ -61,15 +77,227 @@ class CandidateUserController extends Controller
         );
     }
 
-    public function store(StoreCandidateUserRequest $request): JsonResponse
+    /**
+     * Stream candidates as CSV using the same filters as the index.
+     */
+    public function export(ExportCandidatesRequest $request): StreamedResponse|JsonResponse
     {
-        if (!$request->user()?->can('admin.candidates.add')) {
+        $filters = $request->validated();
+        $actorId = (int) $request->user()->id;
+
+        try {
+            $candidates = $this->csvExportService->candidatesForExport($filters);
+            $rows = $this->csvExportService->rowsForCsv($candidates);
+            $filename = $this->csvExportService->filename($filters);
+        } catch (Throwable $e) {
+            Log::error('admin.candidates.export_failed', [
+                'actor_id' => $actorId,
+                'message' => $e->getMessage(),
+            ]);
+
+            throw $e;
+        }
+
+        LogAuditJob::dispatch(
+            $actorId,
+            'users',
+            0,
+            'export',
+            null,
+            ['filters' => $filters, 'count' => $candidates->count()],
+            $request->ip(),
+            $request->userAgent()
+        );
+        LogUserActivityJob::dispatch(
+            $actorId,
+            'admin.candidates.export',
+            'api_v1_admin',
+            ['filters' => $filters, 'count' => $candidates->count()],
+            $request->ip()
+        );
+
+        $headers = CandidateCsvExportService::HEADERS;
+
+        return response()->streamDownload(
+            static function () use ($headers, $rows): void {
+                $out = fopen('php://output', 'wb');
+
+                if ($out === false) {
+                    return;
+                }
+
+                fputcsv($out, $headers);
+
+                foreach ($rows as $row) {
+                    fputcsv($out, $row);
+                }
+
+                fclose($out);
+            },
+            $filename,
+            [
+                'Content-Type' => 'text/csv',
+            ]
+        );
+    }
+
+    /**
+     * Import basic candidate rows from CSV (sync for small files, queued otherwise).
+     */
+    public function import(ImportCandidatesRequest $request): JsonResponse
+    {
+        $actorId = (int) $request->user()->id;
+        $file = $request->file('file');
+
+        if ($file === null) {
+            return $this->errorResponse('CSV file is required.', 422);
+        }
+
+        try {
+            $result = $this->csvImportService->importFromUpload($file, $actorId);
+        } catch (Throwable $e) {
+            Log::error('admin.candidates.import_failed', [
+                'actor_id' => $actorId,
+                'message' => $e->getMessage(),
+            ]);
+
+            throw $e;
+        }
+
+        LogAuditJob::dispatch(
+            $actorId,
+            'users',
+            0,
+            'import',
+            null,
+            [
+                'import_id' => $result['import_id'],
+                'queued' => $result['queued'],
+                'total_rows' => $result['total_rows'],
+            ],
+            $request->ip(),
+            $request->userAgent()
+        );
+        LogUserActivityJob::dispatch(
+            $actorId,
+            'admin.candidates.import',
+            'api_v1_admin',
+            [
+                'import_id' => $result['import_id'],
+                'queued' => $result['queued'],
+                'total_rows' => $result['total_rows'],
+            ],
+            $request->ip()
+        );
+
+        if ($result['queued']) {
+            return $this->successResponse($result, 'Candidate import queued', 202);
+        }
+
+        return $this->successResponse($result, 'Candidate import completed');
+    }
+
+    /**
+     * Poll status for a queued candidate CSV import.
+     */
+    public function importStatus(Request $request, string $importId): JsonResponse
+    {
+        if (!$request->user()?->can('admin.candidates.import')) {
             return $this->forbiddenResponse();
         }
-        $user = $this->service->create($request->validated());
-        $user->syncRoles(['candidate']);
+
+        $status = $this->csvImportService->batchStatus($importId);
+
+        if ($status === null) {
+            return $this->notFoundResponse('Import batch not found');
+        }
+
+        return $this->successResponse($status, 'Import status fetched successfully');
+    }
+
+    /**
+     * Issue a short-lived app token to act as the candidate (admin panel opens member app).
+     */
+    public function impersonate(AdminImpersonateCandidateRequest $request, User $user): JsonResponse
+    {
+        $admin = $request->user();
+
+        if (!($admin instanceof User)) {
+            return $this->unauthorizedResponse();
+        }
+
+        if (!$user->hasRole('candidate')) {
+            return $this->notFoundResponse('Candidate not found');
+        }
+
+        try {
+            $result = $this->impersonationService->impersonate($user, $admin);
+        } catch (Throwable $e) {
+            Log::error('admin.candidates.impersonate_failed', [
+                'admin_id' => $admin->id,
+                'candidate_id' => $user->id,
+                'message' => $e->getMessage(),
+            ]);
+
+            throw $e;
+        }
+
+        $meta = $this->requestMeta($request);
+        $tokenHash = SanctumPlainTokenHasher::hashPlainTextToken((string) $result['token']);
+        StartUserSessionJob::dispatchSync($user->id, $tokenHash, null, $meta['ip'], $meta['ua'], $meta['device_id']);
+
         LogAuditJob::dispatch(
-            (int) $request->user()->id,
+            (int) $admin->id,
+            'users',
+            (int) $user->id,
+            'impersonate',
+            null,
+            ['candidate_uuid' => $user->uuid],
+            $request->ip(),
+            $request->userAgent()
+        );
+        LogUserActivityJob::dispatch(
+            (int) $admin->id,
+            'admin.candidates.impersonate',
+            'api_v1_admin',
+            ['candidate_id' => $user->id, 'candidate_uuid' => $user->uuid],
+            $request->ip()
+        );
+
+        return $this->successResponse(
+            AuthLoginResource::make([
+                'user' => UserResource::make($result['user']),
+                'token' => $result['token'],
+                'token_type' => $result['token_type'],
+                'expires_at' => $result['expires_at'],
+                'session_token_hash' => $tokenHash,
+                'permissions' => $user->getAllPermissions()->pluck('name')->values()->all(),
+            ])->resolve(),
+            'Impersonation token issued successfully'
+        );
+    }
+
+    /**
+     * Create a candidate with validated basic details. Use section endpoints for full profile data.
+     */
+    public function store(StoreCandidateUserRequest $request): JsonResponse
+    {
+        $actorId = (int) $request->user()->id;
+
+        try {
+            $user = $this->service->create($request->validated(), $actorId);
+            $user->syncRoles(['candidate']);
+        } catch (Throwable $e) {
+            Log::error('admin.candidates.store_failed', [
+                'actor_id' => $actorId,
+                'message' => $e->getMessage(),
+            ]);
+
+            throw $e;
+        }
+
+        LogAuditJob::dispatch(
+            $actorId,
             'users',
             (int) $user->id,
             'create',
@@ -79,7 +307,7 @@ class CandidateUserController extends Controller
             $request->userAgent()
         );
         LogUserActivityJob::dispatch(
-            (int) $request->user()->id,
+            $actorId,
             'admin.candidates.create',
             'api_v1_admin',
             ['user_id' => $user->id],
@@ -89,11 +317,11 @@ class CandidateUserController extends Controller
         return $this->createdResponse(CandidateUserResource::make($user), 'Candidate created successfully');
     }
 
+    /**
+     * Fetch a single candidate summary card (admin list row shape).
+     */
     public function show(Request $request, string $user): JsonResponse
     {
-        // if (!$request->user()?->can('admin.candidates.view')) {
-        //     return $this->forbiddenResponse();
-        // }
         $candidate = $this->findCandidateByUuid($user);
 
         if (!($candidate instanceof User)) {
@@ -110,37 +338,6 @@ class CandidateUserController extends Controller
         return $this->successResponse(CandidateUserResource::make($candidate), 'Candidate fetched successfully');
     }
 
-    public function profileDetails(Request $request, string $user): JsonResponse
-    {
-        $candidate = $this->findCandidateByUuid($user);
-
-        if (!($candidate instanceof User)) {
-            return $this->notFoundResponse('Candidate not found');
-        }
-
-        if (!$this->actorMayViewCandidateProfileDetails($request)) {
-            return $this->forbiddenResponse();
-        }
-        LogUserActivityJob::dispatch(
-            (int) $request->user()->id,
-            'admin.candidates.profile_details',
-            'api_v1_admin',
-            ['user_id' => $candidate->id],
-            $request->ip()
-        );
-
-        $actor = $request->user();
-
-        if ($actor instanceof User) {
-            $this->profileViewService->recordCandidatePeerView($actor, $candidate);
-        }
-
-        return $this->successResponse(
-            AdminCandidateProfileDetailsResource::make($candidate),
-            'Candidate profile details fetched successfully'
-        );
-    }
-
     public function update(UpdateCandidateUserRequest $request, string $user): JsonResponse
     {
         if (!$request->user()?->can('admin.candidates.edit')) {
@@ -152,7 +349,7 @@ class CandidateUserController extends Controller
             return $this->notFoundResponse('Candidate not found');
         }
         $oldValues = $candidate->only(['email', 'phone', 'status', 'current_city']);
-        $updated = $this->service->update($candidate, $request->validated());
+        $updated = $this->service->update($candidate, $request->validated(), (int) $request->user()->id);
         LogAuditJob::dispatch(
             (int) $request->user()->id,
             'users',
@@ -184,8 +381,8 @@ class CandidateUserController extends Controller
         if (!($candidate instanceof User)) {
             return $this->notFoundResponse('Candidate not found');
         }
-        $oldValues = $candidate->only(['email', 'phone', 'status', 'current_city']);
-        $this->service->delete($candidate);
+        $oldValues = $candidate->only(['email', 'phone', 'status', 'profile_status', 'current_city']);
+        $this->service->delete($candidate, (int) $request->user()->id);
         LogAuditJob::dispatch(
             (int) $request->user()->id,
             'users',
@@ -207,96 +404,59 @@ class CandidateUserController extends Controller
         return $this->successResponse(null, 'Candidate deleted successfully');
     }
 
-    public function savePhotos(
-        string $user,
-        SaveCandidatePhotosRequest $request,
-        CandidateProfileSectionService $sectionService
-    ): JsonResponse {
-        return $this->saveSection($request, $user, CandidateProfileSectionService::SECTION_PHOTOS, $sectionService);
-    }
+    /**
+     * Restore a soft-deleted candidate.
+     */
+    public function restore(Request $request, string $user): JsonResponse
+    {
+        if (!$request->user()?->can('admin.candidates.edit')) {
+            return $this->forbiddenResponse();
+        }
 
-    public function savePersonalDetails(
-        string $user,
-        SaveCandidatePersonalDetailsRequest $request,
-        CandidateProfileSectionService $sectionService
-    ): JsonResponse {
-        return $this->saveSection(
-            $request,
-            $user,
-            CandidateProfileSectionService::SECTION_PERSONAL_DETAILS,
-            $sectionService
+        $candidate = $this->findCandidateByUuid($user, withTrashed: true);
+
+        if (!($candidate instanceof User)) {
+            return $this->notFoundResponse('Candidate not found');
+        }
+
+        try {
+            $restored = $this->service->restore($candidate, (int) $request->user()->id);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (Throwable $e) {
+            Log::error('admin.candidates.restore_failed', [
+                'uuid' => $user,
+                'message' => $e->getMessage(),
+            ]);
+
+            throw $e;
+        }
+
+        LogAuditJob::dispatch(
+            (int) $request->user()->id,
+            'users',
+            (int) $restored->id,
+            'restore',
+            null,
+            ['profile_status' => $restored->profile_status],
+            $request->ip(),
+            $request->userAgent()
         );
-    }
-
-    public function saveHoroscope(
-        string $user,
-        SaveCandidateHoroscopeRequest $request,
-        CandidateProfileSectionService $sectionService
-    ): JsonResponse {
-        return $this->saveSection($request, $user, CandidateProfileSectionService::SECTION_HOROSCOPE, $sectionService);
-    }
-
-    public function saveLocationFamilyRoots(
-        string $user,
-        SaveCandidateLocationFamilyRootsRequest $request,
-        CandidateProfileSectionService $sectionService
-    ): JsonResponse {
-        return $this->saveSection(
-            $request,
-            $user,
-            CandidateProfileSectionService::SECTION_LOCATION_FAMILY_ROOTS,
-            $sectionService
+        LogUserActivityJob::dispatch(
+            (int) $request->user()->id,
+            'admin.candidates.restore',
+            'api_v1_admin',
+            ['user_id' => $restored->id],
+            $request->ip()
         );
+
+        return $this->successResponse(CandidateUserResource::make($restored), 'Candidate restored successfully');
     }
 
-    public function saveCareerEducation(
-        string $user,
-        SaveCandidateCareerEducationRequest $request,
-        CandidateProfileSectionService $sectionService
-    ): JsonResponse {
-        return $this->saveSection(
-            $request,
-            $user,
-            CandidateProfileSectionService::SECTION_CAREER_EDUCATION,
-            $sectionService
-        );
-    }
-
-    public function saveFamilyBackground(
-        string $user,
-        SaveCandidateFamilyBackgroundRequest $request,
-        CandidateProfileSectionService $sectionService
-    ): JsonResponse {
-        return $this->saveSection(
-            $request,
-            $user,
-            CandidateProfileSectionService::SECTION_FAMILY_BACKGROUND,
-            $sectionService
-        );
-    }
-
-    public function saveLifestyle(
-        string $user,
-        SaveCandidateLifestyleRequest $request,
-        CandidateProfileSectionService $sectionService
-    ): JsonResponse {
-        return $this->saveSection($request, $user, CandidateProfileSectionService::SECTION_LIFESTYLE, $sectionService);
-    }
-
-    public function savePartnerPreferences(
-        string $user,
-        SaveCandidatePartnerPreferencesRequest $request,
-        CandidateProfileSectionService $sectionService
-    ): JsonResponse {
-        return $this->saveSection(
-            $request,
-            $user,
-            CandidateProfileSectionService::SECTION_PARTNER_PREFERENCES,
-            $sectionService
-        );
-    }
-
-    public function savePreferences(string $user, SaveCandidatePreferencesRequest $request): JsonResponse
+    /**
+     * Update profile_status (draft, under_review, published, suspended, spam).
+     */
+    public function updateProfileStatus(UpdateCandidateProfileStatusRequest $request, string $user): JsonResponse
     {
         $candidate = $this->findCandidateByUuid($user);
 
@@ -304,74 +464,45 @@ class CandidateUserController extends Controller
             return $this->notFoundResponse('Candidate not found');
         }
 
-        $actor = $request->user();
+        $oldStatus = (string) ($candidate->profile_status ?? 'draft');
+        $newStatus = (string) $request->validated('profile_status');
 
-        if (!($actor instanceof User)) {
-            return $this->forbiddenResponse();
+        try {
+            $updated = $this->service->updateProfileStatus($candidate, $newStatus, (int) $request->user()->id);
+        } catch (Throwable $e) {
+            Log::error('admin.candidates.profile_status_failed', [
+                'user_id' => $candidate->id,
+                'profile_status' => $newStatus,
+                'message' => $e->getMessage(),
+            ]);
+
+            throw $e;
         }
 
-        $isAdminEditor = $actor->can('admin.candidates.edit');
-        $isSelfCandidate = $actor->hasRole('candidate') && (int) $actor->id === (int) $candidate->id;
-
-        if (!$isAdminEditor && !$isSelfCandidate) {
-            return $this->forbiddenResponse();
-        }
-
-        $payload = $request->validated();
-
-        $updates = [];
-
-        if (array_key_exists('phoneAlertsEnabled', $payload)) {
-            $updates['phone_alerts_enabled'] = (bool) $payload['phoneAlertsEnabled'];
-        }
-
-        if (array_key_exists('emailNotificationsEnabled', $payload)) {
-            $updates['email_notifications_enabled'] = (bool) $payload['emailNotificationsEnabled'];
-        }
-
-        if (array_key_exists('showOnlineStatus', $payload)) {
-            $updates['show_online_status'] = (bool) $payload['showOnlineStatus'];
-        }
-
-        if (array_key_exists('hidePhoneNumber', $payload)) {
-            $updates['hide_phone_number'] = (bool) $payload['hidePhoneNumber'];
-        }
-
-        if ($updates !== []) {
-            $candidate->forceFill($updates)->save();
-            $candidate->refresh();
-        }
-
-        return $this->successResponse(
+        LogAuditJob::dispatch(
+            (int) $request->user()->id,
+            'users',
+            (int) $updated->id,
+            'profile_status',
+            ['profile_status' => $oldStatus],
             [
-                'preferences' => [
-                    'phoneAlertsEnabled' => (bool) ($candidate->phone_alerts_enabled ?? false),
-                    'emailNotificationsEnabled' => (bool) ($candidate->email_notifications_enabled ?? true),
-                    'showOnlineStatus' => (bool) ($candidate->show_online_status ?? false),
-                    'hidePhoneNumber' => (bool) ($candidate->hide_phone_number ?? true),
-                ],
+                'profile_status' => $newStatus,
+                'reason' => $request->validated('reason'),
             ],
-            'Preferences updated'
+            $request->ip(),
+            $request->userAgent()
         );
-    }
-
-    public function sectionProgress(
-        Request $request,
-        string $user,
-        CandidateProfileSectionService $sectionService
-    ): JsonResponse {
-        if (!$request->user()?->can('admin.candidates.view')) {
-            return $this->forbiddenResponse();
-        }
-        $candidate = $this->findCandidateByUuid($user);
-
-        if (!($candidate instanceof User)) {
-            return $this->notFoundResponse('Candidate not found');
-        }
+        LogUserActivityJob::dispatch(
+            (int) $request->user()->id,
+            'admin.candidates.profile_status',
+            'api_v1_admin',
+            ['user_id' => $updated->id, 'profile_status' => $newStatus],
+            $request->ip()
+        );
 
         return $this->successResponse(
-            $sectionService->progress($candidate),
-            'Candidate profile progress fetched successfully'
+            CandidateUserResource::make($updated),
+            'Candidate profile status updated successfully'
         );
     }
 
@@ -442,183 +573,34 @@ class CandidateUserController extends Controller
         );
     }
 
-    public function saveFullProfile(
-        SaveAdminCandidateFullProfileRequest $request,
-        string $user,
-        CandidateProfileSectionService $sectionService
-    ): JsonResponse {
-        if (!$request->user()?->can('admin.candidates.edit')) {
-            return $this->forbiddenResponse();
-        }
-        $candidate = $this->findCandidateByUuid($user);
-
-        if (!($candidate instanceof User)) {
-            return $this->notFoundResponse('Candidate not found');
-        }
-
-        $updated = $sectionService->saveAllSections($candidate, $request->validated());
-        LogAuditJob::dispatch(
-            (int) $request->user()->id,
-            'users',
-            (int) $candidate->id,
-            'candidate.full_profile.save',
-            null,
-            ['sections' => array_keys($request->validated())],
-            $request->ip(),
-            $request->userAgent()
-        );
-        LogUserActivityJob::dispatch(
-            (int) $request->user()->id,
-            'admin.candidates.full_profile.save',
-            'api_v1_admin',
-            ['candidate_id' => $candidate->id],
-            $request->ip()
-        );
-
-        return $this->successResponse(
-            CandidateUserResource::make($updated),
-            'Candidate full profile saved successfully'
-        );
-    }
-
-    public function saveCompleteProfile(
-        SaveAdminCandidateFullProfileRequest $request,
-        CandidateProfileSectionService $sectionService
-    ): JsonResponse {
-        if (!$request->user()?->can('admin.candidates.edit')) {
-            return $this->forbiddenResponse();
-        }
-
-        $payload = $request->validated();
-        $candidateUuid = (string) ($payload['candidate_uuid'] ?? '');
-        $candidate = $candidateUuid !== '' ? User::query()->candidates()->where('uuid', $candidateUuid)->first() : null;
-
-        if (!($candidate instanceof User)) {
-            $firstName = (string) data_get($payload, 'personal_details.first_name', 'Candidate');
-            $lastName = (string) data_get($payload, 'personal_details.last_name', 'User');
-            $email = (string) data_get($payload, 'basics.email');
-            $password = (string) ($payload['password'] ?? 'Password@123');
-            $candidateRoleId = (int) Role::query()->where('name', 'candidate')->value('id');
-
-            /** @var User $candidate */
-            $candidate = User::query()->create([
-                'first_name' => $firstName !== '' ? $firstName : 'Candidate',
-                'last_name' => $lastName !== '' ? $lastName : 'User',
-                'email' => $email,
-                'password' => $password,
-                'status' => 'active',
-                'role_id' => $candidateRoleId > 0 ? $candidateRoleId : null,
-            ]);
-            $candidate->syncRoles(['candidate']);
-        }
-
-        $updated = $sectionService->saveAllSections($candidate, $payload);
-        LogAuditJob::dispatch(
-            (int) $request->user()->id,
-            'users',
-            (int) $candidate->id,
-            'candidate.complete_profile.save',
-            null,
-            ['sections' => array_keys($payload)],
-            $request->ip(),
-            $request->userAgent()
-        );
-        LogUserActivityJob::dispatch(
-            (int) $request->user()->id,
-            'admin.candidates.complete_profile.save',
-            'api_v1_admin',
-            ['candidate_id' => $candidate->id],
-            $request->ip()
-        );
-
-        return $this->successResponse(
-            CandidateUserResource::make($updated),
-            'Candidate complete profile saved successfully'
-        );
-    }
-
-    private function saveSection(
-        FormRequest $request,
-        string $user,
-        string $section,
-        CandidateProfileSectionService $sectionService
-    ): JsonResponse {
-        if (!$request->user()?->can('admin.candidates.edit')) {
-            return $this->forbiddenResponse();
-        }
-        $candidate = $this->findCandidateByUuid($user);
-
-        if (!($candidate instanceof User)) {
-            return $this->notFoundResponse('Candidate not found');
-        }
-
-        if (!$this->actorMayEditThisCandidateProfile($request, $candidate)) {
-            return $this->forbiddenResponse('You can only edit your own candidate profile.');
-        }
-        $updated = $sectionService->saveSection($candidate, $section, $request->validated());
-        LogAuditJob::dispatch(
-            (int) $request->user()->id,
-            'users',
-            (int) $candidate->id,
-            'candidate.section.save',
-            null,
-            ['section' => $section],
-            $request->ip(),
-            $request->userAgent()
-        );
-        LogUserActivityJob::dispatch(
-            (int) $request->user()->id,
-            'admin.candidates.section.save',
-            'api_v1_admin',
-            ['candidate_id' => $candidate->id, 'section' => $section],
-            $request->ip()
-        );
-
-        return $this->successResponse(
-            ['section' => $section, 'completedSections' => $updated->completed_sections_json],
-            'Candidate section saved successfully'
-        );
-    }
-
-    private function findCandidateByUuid(string $uuid): ?User
+    private function findCandidateByUuid(string $uuid, bool $withTrashed = false): ?User
     {
-        return User::query()->candidates()->where('uuid', $uuid)->first();
+        $query = User::query()->candidates()->where('uuid', $uuid);
+
+        if ($withTrashed) {
+            $query->withTrashed();
+        }
+
+        return $query->first();
     }
 
     /**
-     * Staff with `admin.candidates.view` may read any candidate; any user with the `candidate` role may read
-     * any candidate's profile details (read-only payload for in-app profile viewing).
+     * @return array{ip: string|null, ua: string, device_id: string, device_name: string, os_name: string}
      */
-    private function actorMayViewCandidateProfileDetails(Request $request): bool
+    private function requestMeta(Request $request): array
     {
-        $actor = $request->user();
+        $ua = (string) ($request->userAgent() ?? 'unknown');
 
-        if (!($actor instanceof User)) {
-            return false;
-        }
-
-        if ($actor->can('admin.candidates.view')) {
-            return true;
-        }
-
-        return $actor->hasRole('candidate');
-    }
-
-    /**
-     * Candidates may only save sections for their own user record; staff (admin/reviewer) may edit any candidate.
-     */
-    private function actorMayEditThisCandidateProfile(Request $request, User $candidate): bool
-    {
-        $actor = $request->user();
-
-        if (!($actor instanceof User)) {
-            return false;
-        }
-
-        if ((int) $actor->id === (int) $candidate->id) {
-            return true;
-        }
-
-        return $actor->hasAnyRole(['admin', 'reviewer']);
+        return [
+            'ip' => $request->ip(),
+            'ua' => $ua,
+            'device_id' => hash('sha256', $ua . '|' . (string) $request->ip()),
+            'device_name' => str($ua)->limit(120, '')->toString(),
+            'os_name' => str($ua)->contains('Windows')
+                ? 'Windows'
+                : (str($ua)->contains('Macintosh')
+                    ? 'macOS'
+                    : 'Web'),
+        ];
     }
 }

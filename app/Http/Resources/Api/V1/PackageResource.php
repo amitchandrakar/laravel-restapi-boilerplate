@@ -24,7 +24,7 @@ class PackageResource extends JsonResource
         $pricePerDay = round($displayPrice / $durationDays, 2);
         $featurePermissions = $package
             ->permissions()
-            ->where('permissions.name', 'like', 'candidate.%')
+            ->whereNull('permissions.module_id')
             ->orderBy('permissions.name')
             ->get(['permissions.id', 'permissions.name', 'permissions.title'])
             ->map(

@@ -9,7 +9,6 @@ it('persists birth geography IDs from the admin horoscope patch when the chain i
     $this->seed(RbacSeeder::class);
     $this->seed(ChhattisgarhMasterGeoSeeder::class);
 
-    $admin = $this->createUserWithRole('admin', 'admin-horoscope-geo@example.com');
     $candidate = $this->createUserWithRole('candidate', 'candidate-horoscope-geo@example.com');
 
     $countryId = (int) DB::table('countries')->where('iso2', 'IN')->value('id');
@@ -20,8 +19,8 @@ it('persists birth geography IDs from the admin horoscope patch when the chain i
     expect($stateId)->toBeGreaterThan(0);
     expect($cityId)->toBeGreaterThan(0);
 
-    $this->actingAs($admin, 'sanctum')
-        ->patchJson('/api/v1/admin/candidates/' . $candidate->uuid . '/sections/horoscope', [
+    $this->actingAs($candidate, 'sanctum')
+        ->patchJson('/api/v1/app/auth/candidate/profile/horoscope', [
             'date_of_birth' => '1995-08-07',
             'time_of_birth' => '11:00',
             'zodiac_sign' => 'Scorpio',
@@ -32,11 +31,12 @@ it('persists birth geography IDs from the admin horoscope patch when the chain i
         ])
         ->assertStatus(200);
 
-    $this->actingAs($admin, 'sanctum')
-        ->getJson('/api/v1/admin/candidates/' . $candidate->uuid)
+    $countryName = (string) DB::table('countries')->where('id', $countryId)->value('name');
+
+    $this->actingAs($candidate, 'sanctum')
+        ->getJson('/api/v1/app/auth/candidate/profile/details')
         ->assertStatus(200)
-        ->assertJsonPath('data.sections.horoscopeDetails.birthCountryId', $countryId)
-        ->assertJsonPath('data.sections.horoscopeDetails.birthCityId', $cityId);
+        ->assertJsonPath('data.sections.horoscopeDetails.birthPlace.country', $countryName);
 
     $candidate->refresh();
     expect($candidate->date_of_birth?->format('Y-m-d'))->toBe('1995-08-07');
@@ -51,7 +51,6 @@ it('rejects a horoscope birth city outside the submitted state', function () {
     $this->seed(RbacSeeder::class);
     $this->seed(ChhattisgarhMasterGeoSeeder::class);
 
-    $admin = $this->createUserWithRole('admin', 'admin-horoscope-bad@example.com');
     $candidate = $this->createUserWithRole('candidate', 'candidate-horoscope-bad@example.com');
 
     $countryId = (int) DB::table('countries')->where('iso2', 'IN')->value('id');
@@ -75,8 +74,8 @@ it('rejects a horoscope birth city outside the submitted state', function () {
         'updated_at' => now(),
     ]);
 
-    $this->actingAs($admin, 'sanctum')
-        ->patchJson('/api/v1/admin/candidates/' . $candidate->uuid . '/sections/horoscope', [
+    $this->actingAs($candidate, 'sanctum')
+        ->patchJson('/api/v1/app/auth/candidate/profile/horoscope', [
             'birth_country_id' => $countryId,
             'birth_state_id' => $stateId,
             'birth_city_id' => $badCityId,

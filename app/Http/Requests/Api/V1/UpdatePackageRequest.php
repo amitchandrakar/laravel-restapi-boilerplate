@@ -52,7 +52,7 @@ class UpdatePackageRequest extends ApiFormRequest
             'permission_ids.*' => [
                 'integer',
                 Rule::exists('permissions', 'id')->where(static function ($query) {
-                    return $query->where('name', 'like', 'candidate.%');
+                    return $query->whereNull('module_id')->where('guard_name', 'web');
                 }),
             ],
             'sort_order' => ['sometimes', 'integer', 'min:0'],

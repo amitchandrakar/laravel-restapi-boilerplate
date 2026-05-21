@@ -7,11 +7,22 @@ namespace App\Services;
 use App\Models\Package;
 use App\Models\Permission;
 use App\Models\User;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Facades\DB;
 
 class PackagePermissionService
 {
+    /**
+     * Package-feature permissions have no module (catalog checkbox list).
+     *
+     * @return Builder<Permission>
+     */
+    public function packageFeaturePermissionQuery(): Builder
+    {
+        return Permission::query()->where('guard_name', 'web')->whereNull('module_id');
+    }
+
     public function syncCandidatePermissions(User $user): void
     {
         if (!$user->hasRole('candidate')) {
@@ -21,7 +32,7 @@ class PackagePermissionService
         $activePackageId = (int) DB::table('subscriptions')
             ->where('subscriptions.user_id', $user->id)
             ->where('subscriptions.subscription_status', 'active')
-            ->whereExists(function (Builder $query): void {
+            ->whereExists(function (QueryBuilder $query): void {
                 $query
                     ->select(DB::raw(1))
                     ->from('packages')
@@ -33,7 +44,7 @@ class PackagePermissionService
             ->value('subscriptions.package_id');
 
         $targetPermissions = $this->permissionNamesForPackageId($activePackageId);
-        $packagePermissionUniverse = $this->allCandidatePackagePermissionNames();
+        $packagePermissionUniverse = $this->allPackageFeaturePermissionNames();
 
         $existingPackageDirectPermissions = $user
             ->permissions()
@@ -57,7 +68,7 @@ class PackagePermissionService
     }
 
     /**
-     * @return array<int, string>
+     * @return list<string>
      */
     public function permissionNamesForPackageId(int $packageId): array
     {
@@ -68,13 +79,14 @@ class PackagePermissionService
         return DB::table('package_permissions')
             ->join('permissions', 'permissions.id', '=', 'package_permissions.permission_id')
             ->where('package_permissions.package_id', $packageId)
-            ->where('permissions.name', 'like', 'candidate.%')
+            ->whereNull('permissions.module_id')
+            ->where('permissions.guard_name', 'web')
             ->pluck('permissions.name')
             ->all();
     }
 
     /**
-     * @return array<int, string>
+     * @return list<string>
      */
     public function permissionNamesForPackageCode(string $code): array
     {
@@ -84,11 +96,11 @@ class PackagePermissionService
     }
 
     /**
-     * @return array<int, string>
+     * @return list<string>
      */
-    public function allCandidatePackagePermissionNames(): array
+    public function allPackageFeaturePermissionNames(): array
     {
-        return Permission::query()->where('name', 'like', 'candidate.%')->pluck('name')->all();
+        return $this->packageFeaturePermissionQuery()->pluck('name')->all();
     }
 
     public function syncCandidatesForPackage(Package $package): void
@@ -118,12 +130,11 @@ class PackagePermissionService
     }
 
     /**
-     * @return array<int, array{id:int,name:string,title:string}>
+     * @return list<array{id: int, name: string, title: string}>
      */
     public function candidatePermissionOptions(): array
     {
-        return Permission::query()
-            ->where('name', 'like', 'candidate.%')
+        return $this->packageFeaturePermissionQuery()
             ->orderBy('name')
             ->get(['id', 'name', 'title'])
             ->map(

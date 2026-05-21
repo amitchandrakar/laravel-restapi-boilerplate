@@ -351,7 +351,7 @@ class MemberNotificationFeedService
                     'action' => 'open_profile',
                     'label' => 'View profile',
                     'method' => 'GET',
-                    'path' => '/api/v1/admin/candidates/' . $viewerUuid . '/profile-details',
+                    'path' => '/api/v1/app/auth/candidate/' . $viewerUuid . '/profile-details',
                     'body' => null,
                 ],
             ];
@@ -369,7 +369,7 @@ class MemberNotificationFeedService
                     'action' => 'open_profile',
                     'label' => 'View profile',
                     'method' => 'GET',
-                    'path' => '/api/v1/admin/candidates/' . $toUuid . '/profile-details',
+                    'path' => '/api/v1/app/auth/candidate/' . $toUuid . '/profile-details',
                     'body' => null,
                 ],
             ];

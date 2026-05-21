@@ -19,10 +19,12 @@ it('allows admins to list and inspect payments', function (): void {
     $payment = paymentCrudMakePayment($candidate, $package);
 
     $this->actingAs($admin, 'sanctum')
-        ->getJson('/api/v1/admin/payments?perPage=10')
+        ->getJson('/api/v1/admin/payments?perPage=10&payment_status=pending&user_id=' . $candidate->id)
         ->assertStatus(200)
         ->assertJsonPath('success', true)
-        ->assertJsonPath('data.0.id', $payment->id);
+        ->assertJsonPath('data.0.id', $payment->id)
+        ->assertJsonPath('data.0.candidate.uuid', $candidate->uuid)
+        ->assertJsonPath('data.0.packageName', 'PAYMENT_LIST_PLAN Name');
 
     $this->actingAs($admin, 'sanctum')
         ->getJson('/api/v1/admin/payments/' . $payment->uuid)

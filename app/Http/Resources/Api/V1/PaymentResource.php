@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api\V1;
 
+use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,8 +16,16 @@ class PaymentResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        /** @var Payment $payment */
+        if (!$this->resource instanceof Payment) {
+            return [];
+        }
+
         $payment = $this->resource;
+        $user = null;
+
+        if ($payment->relationLoaded('user') && $payment->user instanceof User) {
+            $user = $payment->user;
+        }
 
         return [
             'id' => $payment->id,
@@ -23,6 +33,13 @@ class PaymentResource extends JsonResource
             'userId' => $payment->user_id,
             'subscriptionId' => $payment->subscription_id,
             'packageId' => $payment->package_id,
+            'packageName' => data_get($payment, 'package.name'),
+            'candidate' => [
+                'uuid' => $user?->uuid,
+                'fullName' => trim(($user?->first_name ?? '') . ' ' . ($user?->last_name ?? '')),
+                'profilePhoto' => $user?->profile_photo_url,
+                'email' => $user?->email,
+            ],
             'gatewayName' => $payment->gateway_name,
             'gatewayOrderId' => $payment->gateway_order_id,
             'gatewayPaymentId' => $payment->gateway_payment_id,

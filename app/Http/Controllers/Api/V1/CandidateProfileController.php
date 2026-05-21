@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Http\Requests\Api\V1\Candidate\SaveAdminCandidateFullProfileRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidateBasicsRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidateCareerEducationRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidateFamilyBackgroundRequest;
@@ -13,11 +14,15 @@ use App\Http\Requests\Api\V1\Candidate\SaveCandidateLocationFamilyRootsRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidatePartnerPreferencesRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidatePersonalDetailsRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidatePhotosRequest;
+use App\Http\Requests\Api\V1\Candidate\SaveCandidatePreferencesRequest;
 use App\Http\Requests\Api\V1\Candidate\UploadCandidateProfileImageRequest;
+use App\Http\Resources\Api\V1\AdminCandidateProfileDetailsResource;
+use App\Http\Resources\Api\V1\CandidateUserResource;
 use App\Jobs\LogAuditJob;
 use App\Jobs\LogUserActivityJob;
 use App\Models\User;
 use App\Services\CandidateProfileSectionService;
+use App\Services\ProfileViewService;
 use App\Services\UserImageManageService;
 use App\Services\UserImageUploadService;
 use App\Support\UserProfilePhotos;
@@ -30,8 +35,133 @@ class CandidateProfileController extends Controller
     public function __construct(
         private readonly CandidateProfileSectionService $service,
         private readonly UserImageUploadService $userImageUploads,
-        private readonly UserImageManageService $userImageManage
+        private readonly UserImageManageService $userImageManage,
+        private readonly ProfileViewService $profileViewService
     ) {}
+
+    /**
+     * Full profile read model for the authenticated candidate (own profile only).
+     */
+    public function profileDetails(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user?->hasRole('candidate')) {
+            return $this->forbiddenResponse();
+        }
+
+        return $this->successResponse(
+            AdminCandidateProfileDetailsResource::make($user),
+            'Candidate profile details fetched successfully'
+        );
+    }
+
+    /**
+     * Read another candidate's profile (discovery / contact flows).
+     */
+    public function peerProfileDetails(Request $request, User $candidate): JsonResponse
+    {
+        $actor = $request->user();
+
+        if (!$actor?->hasRole('candidate')) {
+            return $this->forbiddenResponse();
+        }
+
+        if (!$candidate->hasRole('candidate')) {
+            return $this->notFoundResponse('Candidate not found');
+        }
+
+        $this->profileViewService->recordCandidatePeerView($actor, $candidate);
+
+        return $this->successResponse(
+            AdminCandidateProfileDetailsResource::make($candidate),
+            'Candidate profile details fetched successfully'
+        );
+    }
+
+    /**
+     * Save multiple profile sections in one request (own profile only).
+     */
+    public function saveFullProfile(SaveAdminCandidateFullProfileRequest $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user?->hasRole('candidate')) {
+            return $this->forbiddenResponse();
+        }
+
+        $updated = $this->service->saveAllSections($user, $request->validated());
+        LogAuditJob::dispatch(
+            (int) $user->id,
+            'users',
+            (int) $user->id,
+            'candidate.full_profile.save',
+            null,
+            ['sections' => array_keys($request->validated())],
+            $request->ip(),
+            $request->userAgent()
+        );
+        LogUserActivityJob::dispatch(
+            (int) $user->id,
+            'candidate.full_profile.save',
+            'api_v1_candidate',
+            ['user_id' => $updated->id],
+            $request->ip()
+        );
+
+        return $this->successResponse(
+            CandidateUserResource::make($updated),
+            'Candidate full profile saved successfully'
+        );
+    }
+
+    /**
+     * Notification / privacy preferences for the authenticated candidate.
+     */
+    public function savePreferences(SaveCandidatePreferencesRequest $request): JsonResponse
+    {
+        $candidate = $request->user();
+
+        if (!$candidate?->hasRole('candidate')) {
+            return $this->forbiddenResponse();
+        }
+
+        $payload = $request->validated();
+        $updates = [];
+
+        if (array_key_exists('phoneAlertsEnabled', $payload)) {
+            $updates['phone_alerts_enabled'] = (bool) $payload['phoneAlertsEnabled'];
+        }
+
+        if (array_key_exists('emailNotificationsEnabled', $payload)) {
+            $updates['email_notifications_enabled'] = (bool) $payload['emailNotificationsEnabled'];
+        }
+
+        if (array_key_exists('showOnlineStatus', $payload)) {
+            $updates['show_online_status'] = (bool) $payload['showOnlineStatus'];
+        }
+
+        if (array_key_exists('hidePhoneNumber', $payload)) {
+            $updates['hide_phone_number'] = (bool) $payload['hidePhoneNumber'];
+        }
+
+        if ($updates !== []) {
+            $candidate->forceFill($updates)->save();
+            $candidate->refresh();
+        }
+
+        return $this->successResponse(
+            [
+                'preferences' => [
+                    'phoneAlertsEnabled' => (bool) ($candidate->phone_alerts_enabled ?? false),
+                    'emailNotificationsEnabled' => (bool) ($candidate->email_notifications_enabled ?? true),
+                    'showOnlineStatus' => (bool) ($candidate->show_online_status ?? false),
+                    'hidePhoneNumber' => (bool) ($candidate->hide_phone_number ?? true),
+                ],
+            ],
+            'Preferences updated'
+        );
+    }
 
     public function saveBasics(SaveCandidateBasicsRequest $request): JsonResponse
     {

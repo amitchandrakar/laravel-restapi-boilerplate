@@ -8,6 +8,11 @@ use App\Http\Requests\Api\ApiFormRequest;
 
 class SaveCandidatePreferencesRequest extends ApiFormRequest
 {
+    public function authorize(): bool
+    {
+        return $this->user()?->hasRole('candidate') ?? false;
+    }
+
     public function rules(): array
     {
         return [

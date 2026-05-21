@@ -6,12 +6,23 @@ namespace App\Services;
 
 use App\Models\Payment;
 use App\Models\Subscription;
+use App\Models\User;
+use App\Support\QuerySearch;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class PaymentService
 {
+    public const PAYMENT_STATUSES = ['pending', 'success', 'failed', 'refunded', 'cancelled'];
+
+    public const PAYMENT_METHODS = ['upi', 'card', 'netbanking', 'wallet', 'cash', 'manual'];
+
+    public const SORT_OPTIONS = ['latest', 'oldest', 'amount'];
+
     /**
      * @param  array<string, mixed>  $data
      */
@@ -23,7 +34,9 @@ class PaymentService
             $this->syncSubscriptionForPayment($payment);
             $this->appendPaymentHistory($payment, null);
 
-            return $payment->refresh();
+            Log::info('PaymentService: payment created', ['payment_id' => $payment->id]);
+
+            return $payment->refresh()->load(['user', 'package']);
         });
     }
 
@@ -39,20 +52,94 @@ class PaymentService
             $this->syncSubscriptionForPayment($payment);
             $this->appendPaymentHistory($payment, $previousStatus);
 
-            return $payment;
+            Log::info('PaymentService: payment updated', ['payment_id' => $payment->id]);
+
+            return $payment->load(['user', 'package']);
         });
     }
 
     public function deletePayment(Payment $payment): void
     {
         $payment->delete();
+        Log::info('PaymentService: payment deleted', ['payment_id' => $payment->id]);
     }
 
-    public function paginatePayments(int $perPage = 15): LengthAwarePaginator
+    /**
+     * @param  array<string, mixed>  $filters
+     *
+     * @return LengthAwarePaginator<int, Payment>
+     */
+    public function list(array $filters = []): LengthAwarePaginator
     {
-        $perPage = max(1, min(100, $perPage));
+        $perPage = min(100, max(1, (int) ($filters['perPage'] ?? 15)));
 
-        return Payment::query()->orderByDesc('id')->paginate($perPage);
+        return $this->buildListQuery($filters)
+            ->with(['user', 'package'])
+            ->paginate($perPage);
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     *
+     * @return Builder<Payment>
+     */
+    public function buildListQuery(array $filters = []): Builder
+    {
+        $query = Payment::query();
+
+        if (!empty($filters['search'])) {
+            $search = (string) $filters['search'];
+            $query->where(static function (Builder $builder) use ($search): void {
+                QuerySearch::whereContainsAny(
+                    $builder,
+                    ['gateway_order_id', 'gateway_payment_id', 'gateway_reference_id'],
+                    $search
+                );
+                $builder->orWhereHas('user', static function (Builder $userQuery) use ($search): void {
+                    if (!$userQuery->getModel() instanceof User) {
+                        return;
+                    }
+
+                    QuerySearch::whereContainsAny($userQuery, ['email'], $search);
+                });
+            });
+        }
+
+        if (!empty($filters['user_id'])) {
+            $query->where('user_id', (int) $filters['user_id']);
+        }
+
+        if (!empty($filters['package_id'])) {
+            $query->where('package_id', (int) $filters['package_id']);
+        }
+
+        if (!empty($filters['payment_status'])) {
+            $query->where('payment_status', (string) $filters['payment_status']);
+        }
+
+        if (!empty($filters['gateway_name'])) {
+            $query->where('gateway_name', (string) $filters['gateway_name']);
+        }
+
+        if (!empty($filters['payment_method'])) {
+            $query->where('payment_method', (string) $filters['payment_method']);
+        }
+
+        if (!empty($filters['paid_from'])) {
+            $query->where('paid_at', '>=', Carbon::parse((string) $filters['paid_from'])->startOfDay());
+        }
+
+        if (!empty($filters['paid_to'])) {
+            $query->where('paid_at', '<=', Carbon::parse((string) $filters['paid_to'])->endOfDay());
+        }
+
+        $sort = (string) ($filters['sort'] ?? 'latest');
+
+        return match ($sort) {
+            'oldest' => $query->orderBy('id'),
+            'amount' => $query->orderByDesc('amount')->orderByDesc('id'),
+            default => $query->orderByDesc('id'),
+        };
     }
 
     /**

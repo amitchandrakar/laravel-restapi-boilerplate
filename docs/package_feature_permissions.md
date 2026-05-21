@@ -12,7 +12,7 @@ Default package mappings are seeded by `PackageCatalogSeeder`, but they can be c
 
 ## Candidate Permission Catalog
 
-Selectable permissions are loaded from the permissions table using `name LIKE 'candidate.%'`.
+Selectable permissions are loaded from the permissions table where `module_id` IS NULL (package features catalog). In this project those rows use `candidate.*` permission names but are not tied to an admin module.
 
 ## Sync Lifecycle
 

@@ -111,25 +111,31 @@ parameters:
 		-
 			message: '#^Cannot access property \$id on App\\Models\\User\|null\.$#'
 			identifier: property.nonObject
-			count: 2
-			path: app/Http/Controllers/Api/V1/Admin/CandidateUserController.php
-
-		-
-			message: '#^Casting to bool something that''s already bool\.$#'
-			identifier: cast.useless
-			count: 4
+			count: 8
 			path: app/Http/Controllers/Api/V1/Admin/CandidateUserController.php
 
 		-
 			message: '#^Casting to int something that''s already int\.$#'
 			identifier: cast.useless
-			count: 29
+			count: 28
+			path: app/Http/Controllers/Api/V1/Admin/CandidateUserController.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 3
 			path: app/Http/Controllers/Api/V1/Admin/CandidateUserController.php
 
 		-
 			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:candidates\(\)\.$#'
 			identifier: staticMethod.dynamicCall
-			count: 2
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/CandidateUserController.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:withTrashed\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/CandidateUserController.php
 
 		-
@@ -159,13 +165,13 @@ parameters:
 		-
 			message: '#^Casting to int something that''s already int\.$#'
 			identifier: cast.useless
-			count: 12
+			count: 11
 			path: app/Http/Controllers/Api/V1/Admin/PackageController.php
 
 		-
 			message: '#^Casting to int something that''s already int\.$#'
 			identifier: cast.useless
-			count: 12
+			count: 11
 			path: app/Http/Controllers/Api/V1/Admin/PaymentController.php
 
 		-
@@ -195,13 +201,13 @@ parameters:
 		-
 			message: '#^Casting to int something that''s already int\.$#'
 			identifier: cast.useless
-			count: 12
+			count: 3
 			path: app/Http/Controllers/Api/V1/Admin/TeamUserController.php
 
 		-
 			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:teamUsers\(\)\.$#'
 			identifier: staticMethod.dynamicCall
-			count: 3
+			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/TeamUserController.php
 
 		-
@@ -307,9 +313,15 @@ parameters:
 			path: app/Http/Controllers/Api/V1/CandidateProfileController.php
 
 		-
+			message: '#^Casting to bool something that''s already bool\.$#'
+			identifier: cast.useless
+			count: 4
+			path: app/Http/Controllers/Api/V1/CandidateProfileController.php
+
+		-
 			message: '#^Casting to int something that''s already int\.$#'
 			identifier: cast.useless
-			count: 12
+			count: 15
 			path: app/Http/Controllers/Api/V1/CandidateProfileController.php
 
 		-
@@ -547,6 +559,12 @@ parameters:
 			path: app/Http/Middleware/VerifyCsrfToken.php
 
 		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Http/Requests/Api/V1/Admin/UpdateTeamUserRequest.php
+
+		-
 			message: '#^Method App\\Http\\Requests\\Api\\V1\\Candidate\\ListCandidateDiscoveryRequest\:\:rules\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -727,12 +745,6 @@ parameters:
 			path: app/Http/Requests/Api/V1/StoreAdminRoleRequest.php
 
 		-
-			message: '#^Method App\\Http\\Requests\\Api\\V1\\StoreCandidateUserRequest\:\:rules\(\) has invalid return type App\\Http\\Requests\\Api\\V1\\ValidationRule\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Requests/Api/V1/StoreCandidateUserRequest.php
-
-		-
 			message: '#^Method App\\Http\\Requests\\Api\\V1\\StorePackageRequest\:\:rules\(\) has invalid return type App\\Http\\Requests\\Api\\V1\\ValidationRule\.$#'
 			identifier: class.notFound
 			count: 1
@@ -743,12 +755,6 @@ parameters:
 			identifier: class.notFound
 			count: 1
 			path: app/Http/Requests/Api/V1/StorePaymentRequest.php
-
-		-
-			message: '#^Method App\\Http\\Requests\\Api\\V1\\StoreTeamUserRequest\:\:rules\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Http/Requests/Api/V1/StoreTeamUserRequest.php
 
 		-
 			message: '#^Method App\\Http\\Requests\\Api\\V1\\StoreUserRequest\:\:rules\(\) has invalid return type App\\Http\\Requests\\Api\\V1\\ValidationRule\.$#'
@@ -827,18 +833,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Http/Requests/Api/V1/UpdateSocialLoginSettingsRequest.php
-
-		-
-			message: '#^Casting to int something that''s already int\.$#'
-			identifier: cast.useless
-			count: 1
-			path: app/Http/Requests/Api/V1/UpdateTeamUserRequest.php
-
-		-
-			message: '#^Method App\\Http\\Requests\\Api\\V1\\UpdateTeamUserRequest\:\:rules\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Http/Requests/Api/V1/UpdateTeamUserRequest.php
 
 		-
 			message: '#^Method App\\Http\\Requests\\Api\\V1\\UpdateUserRequest\:\:rules\(\) has invalid return type App\\Http\\Requests\\Api\\V1\\ValidationRule\.$#'
@@ -923,6 +917,60 @@ parameters:
 			identifier: class.notFound
 			count: 1
 			path: app/Http/Resources/Api/V1/AdminPendingKycDocumentResource.php
+
+		-
+			message: '#^Casting to bool something that''s already bool\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminSubscriptionResource.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminSubscriptionResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>currency" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminSubscriptionResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>duration_unit" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminSubscriptionResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>first_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminSubscriptionResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>last_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminSubscriptionResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>monthly_price" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminSubscriptionResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>price" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Resources/Api/V1/AdminSubscriptionResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>yearly_price" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Resources/Api/V1/AdminSubscriptionResource.php
 
 		-
 			message: '#^Access to property \$current_city on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
@@ -1279,116 +1327,20 @@ parameters:
 			path: app/Http/Resources/Api/V1/PackageResource.php
 
 		-
-			message: '#^Access to property \$amount on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
-			identifier: class.notFound
+			message: '#^Casting to float something that''s already float\.$#'
+			identifier: cast.useless
 			count: 1
 			path: app/Http/Resources/Api/V1/PaymentResource.php
 
 		-
-			message: '#^Access to property \$created_at on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
-			identifier: class.notFound
+			message: '#^Using nullsafe property access "\?\-\>first_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Resources/Api/V1/PaymentResource.php
 
 		-
-			message: '#^Access to property \$currency on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Resources/Api/V1/PaymentResource.php
-
-		-
-			message: '#^Access to property \$failed_reason on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Resources/Api/V1/PaymentResource.php
-
-		-
-			message: '#^Access to property \$gateway_name on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Resources/Api/V1/PaymentResource.php
-
-		-
-			message: '#^Access to property \$gateway_order_id on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Resources/Api/V1/PaymentResource.php
-
-		-
-			message: '#^Access to property \$gateway_payment_id on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Resources/Api/V1/PaymentResource.php
-
-		-
-			message: '#^Access to property \$gateway_reference_id on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Resources/Api/V1/PaymentResource.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Resources/Api/V1/PaymentResource.php
-
-		-
-			message: '#^Access to property \$package_id on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Resources/Api/V1/PaymentResource.php
-
-		-
-			message: '#^Access to property \$paid_at on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Resources/Api/V1/PaymentResource.php
-
-		-
-			message: '#^Access to property \$payment_method on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Resources/Api/V1/PaymentResource.php
-
-		-
-			message: '#^Access to property \$payment_status on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Resources/Api/V1/PaymentResource.php
-
-		-
-			message: '#^Access to property \$raw_response_json on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Resources/Api/V1/PaymentResource.php
-
-		-
-			message: '#^Access to property \$subscription_id on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Resources/Api/V1/PaymentResource.php
-
-		-
-			message: '#^Access to property \$updated_at on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Resources/Api/V1/PaymentResource.php
-
-		-
-			message: '#^Access to property \$user_id on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Resources/Api/V1/PaymentResource.php
-
-		-
-			message: '#^Access to property \$uuid on an unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Resources/Api/V1/PaymentResource.php
-
-		-
-			message: '#^PHPDoc tag @var for variable \$payment contains unknown class App\\Http\\Resources\\Api\\V1\\Payment\.$#'
-			identifier: class.notFound
+			message: '#^Using nullsafe property access "\?\-\>last_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Resources/Api/V1/PaymentResource.php
 
@@ -1441,7 +1393,25 @@ parameters:
 			path: app/Http/Resources/Api/V1/PublicFeaturedCandidateResource.php
 
 		-
+			message: '#^Access to property \$about_me on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TeamUserResource.php
+
+		-
 			message: '#^Access to property \$current_city on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TeamUserResource.php
+
+		-
+			message: '#^Access to property \$current_country on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TeamUserResource.php
+
+		-
+			message: '#^Access to property \$current_state on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
 			identifier: class.notFound
 			count: 1
 			path: app/Http/Resources/Api/V1/TeamUserResource.php
@@ -1461,7 +1431,7 @@ parameters:
 		-
 			message: '#^Access to property \$first_name on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
 			identifier: class.notFound
-			count: 1
+			count: 2
 			path: app/Http/Resources/Api/V1/TeamUserResource.php
 
 		-
@@ -1484,6 +1454,12 @@ parameters:
 
 		-
 			message: '#^Access to property \$last_name on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/TeamUserResource.php
+
+		-
+			message: '#^Access to property \$permissions on an unknown class App\\Http\\Resources\\Api\\V1\\User\.$#'
 			identifier: class.notFound
 			count: 1
 			path: app/Http/Resources/Api/V1/TeamUserResource.php
@@ -1579,6 +1555,12 @@ parameters:
 			path: app/Http/Resources/Api/V1/UserResource.php
 
 		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:teamUsers\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Jobs/ProcessTeamUserProfilePhotoJob.php
+
+		-
 			message: '#^Parameter \$models of method App\\Jobs\\Scout\\MakeSearchableOnLowQueue\:\:__construct\(\) has invalid type App\\Jobs\\Scout\\Model\.$#'
 			identifier: class.notFound
 			count: 1
@@ -1607,6 +1589,24 @@ parameters:
 			identifier: staticMethod.dynamicCall
 			count: 1
 			path: app/Listeners/PackageCreatedListener.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:role\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Listeners/PackageUpdatedListener.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Listeners/TeamMemberLifecycleListener.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:teamUsers\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Listeners/TeamMemberLifecycleListener.php
 
 		-
 			message: '#^Iterating over an object of an unknown class App\\Listeners\\Collection\.$#'
@@ -1777,30 +1777,6 @@ parameters:
 			path: app/Models/User.php
 
 		-
-			message: '#^Method App\\Models\\User\:\:scopeCandidates\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: app/Models/User.php
-
-		-
-			message: '#^Method App\\Models\\User\:\:scopeCandidates\(\) has parameter \$query with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: app/Models/User.php
-
-		-
-			message: '#^Method App\\Models\\User\:\:scopeTeamUsers\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: app/Models/User.php
-
-		-
-			message: '#^Method App\\Models\\User\:\:scopeTeamUsers\(\) has parameter \$query with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: app/Models/User.php
-
-		-
 			message: '#^Method App\\Models\\User\:\:verificationDocuments\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -1933,6 +1909,12 @@ parameters:
 			path: app/Observers/SubscriptionObserver.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Observers/UserObserver.php
+
+		-
 			message: '#^Casting to int something that''s already int\.$#'
 			identifier: cast.useless
 			count: 2
@@ -1949,6 +1931,18 @@ parameters:
 			identifier: cast.useless
 			count: 1
 			path: app/Policies/ContactRequestPolicy.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:exists\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Policies/TeamUserPolicy.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:teamUsers\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Policies/TeamUserPolicy.php
 
 		-
 			message: '#^Casting to int something that''s already int\.$#'
@@ -2075,6 +2069,36 @@ parameters:
 			identifier: return.type
 			count: 1
 			path: app/Services/AdminRoleService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Subscription\>\:\:orderByDesc\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 2
+			path: app/Services/AdminSubscriptionService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Subscription\>\:\:whereBetween\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/AdminSubscriptionService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Subscription\>\:\:whereNotNull\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 2
+			path: app/Services/AdminSubscriptionService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Subscription\>\:\:whereNull\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/AdminSubscriptionService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:candidates\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 2
+			path: app/Services/AdminSubscriptionService.php
 
 		-
 			message: '#^Casting to bool something that''s already bool\.$#'
@@ -2353,6 +2377,30 @@ parameters:
 			path: app/Services/CandidateCardDataService.php
 
 		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Services/CandidateCsvExportService.php
+
+		-
+			message: '#^Method App\\Services\\CandidateCsvExportService\:\:rowsForCsv\(\) has parameter \$candidates with generic class Illuminate\\Database\\Eloquent\\Collection but does not specify its types\: TKey, TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Services/CandidateCsvExportService.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 9
+			path: app/Services/CandidateCsvImportService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:exists\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/CandidateCsvImportService.php
+
+		-
 			message: '#^Casting to int something that''s already int\.$#'
 			identifier: cast.useless
 			count: 3
@@ -2545,15 +2593,45 @@ parameters:
 			path: app/Services/CandidateProfileSectionService.php
 
 		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Services/CandidateUserService.php
+
+		-
+			message: '#^Dynamic call to static method App\\Models\\User\:\:restore\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/CandidateUserService.php
+
+		-
 			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:candidates\(\)\.$#'
 			identifier: staticMethod.dynamicCall
 			count: 1
 			path: app/Services/CandidateUserService.php
 
 		-
-			message: '#^Method App\\Services\\CandidateUserService\:\:create\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:count\(\)\.$#'
+			identifier: staticMethod.dynamicCall
 			count: 1
+			path: app/Services/CandidateUserService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:onlyTrashed\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/CandidateUserService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:orderBy\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 2
+			path: app/Services/CandidateUserService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:orderByDesc\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 2
 			path: app/Services/CandidateUserService.php
 
 		-
@@ -2563,8 +2641,8 @@ parameters:
 			path: app/Services/CandidateUserService.php
 
 		-
-			message: '#^Method App\\Services\\CandidateUserService\:\:update\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
+			message: '#^Strict comparison using \!\=\= between ''draft''\|''published''\|''spam''\|''under_review'' and ''suspended'' will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: app/Services/CandidateUserService.php
 
@@ -2637,13 +2715,13 @@ parameters:
 		-
 			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\UserVerificationDocument\>\:\:orderBy\(\)\.$#'
 			identifier: staticMethod.dynamicCall
-			count: 1
+			count: 2
 			path: app/Services/KycDocumentService.php
 
 		-
 			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\UserVerificationDocument\>\:\:orderByDesc\(\)\.$#'
 			identifier: staticMethod.dynamicCall
-			count: 1
+			count: 2
 			path: app/Services/KycDocumentService.php
 
 		-
@@ -2767,6 +2845,12 @@ parameters:
 			path: app/Services/PackagePermissionService.php
 
 		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Permission\>\:\:whereNull\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/PackagePermissionService.php
+
+		-
 			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:pluck\(\)\.$#'
 			identifier: staticMethod.dynamicCall
 			count: 1
@@ -2779,27 +2863,39 @@ parameters:
 			path: app/Services/PackagePermissionService.php
 
 		-
+			message: '#^Method App\\Services\\PackagePermissionService\:\:allPackageFeaturePermissionNames\(\) should return list\<string\> but returns array\<mixed\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/PackagePermissionService.php
+
+		-
+			message: '#^Method App\\Services\\PackagePermissionService\:\:candidatePermissionOptions\(\) should return list\<array\{id\: int, name\: string, title\: string\}\> but returns array\<int, array\{id\: int, name\: string, title\: string\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/PackagePermissionService.php
+
+		-
+			message: '#^Method App\\Services\\PackagePermissionService\:\:permissionNamesForPackageId\(\) should return list\<string\> but returns array\<mixed\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/PackagePermissionService.php
+
+		-
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 2
+			path: app/Services/PackageService.php
+
+		-
 			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Package\>\:\:orderBy\(\)\.$#'
 			identifier: staticMethod.dynamicCall
-			count: 1
+			count: 2
 			path: app/Services/PackageService.php
 
 		-
 			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Package\>\:\:orderByDesc\(\)\.$#'
 			identifier: staticMethod.dynamicCall
-			count: 1
-			path: app/Services/PackageService.php
-
-		-
-			message: '#^Method App\\Services\\PackageService\:\:paginatePackages\(\) return type with generic interface Illuminate\\Contracts\\Pagination\\LengthAwarePaginator does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Services/PackageService.php
-
-		-
-			message: '#^Method App\\Services\\PackageService\:\:updatePackage\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
+			count: 2
 			path: app/Services/PackageService.php
 
 		-
@@ -2857,15 +2953,15 @@ parameters:
 			path: app/Services/PaymentService.php
 
 		-
-			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Payment\>\:\:orderByDesc\(\)\.$#'
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Payment\>\:\:orderBy\(\)\.$#'
 			identifier: staticMethod.dynamicCall
 			count: 1
 			path: app/Services/PaymentService.php
 
 		-
-			message: '#^Method App\\Services\\PaymentService\:\:paginatePayments\(\) return type with generic interface Illuminate\\Contracts\\Pagination\\LengthAwarePaginator does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Payment\>\:\:orderByDesc\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 3
 			path: app/Services/PaymentService.php
 
 		-
@@ -2917,14 +3013,50 @@ parameters:
 			path: app/Services/ReportService.php
 
 		-
-			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:teamUsers\(\)\.$#'
+			message: '#^Casting to int something that''s already int\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Services/TeamUserPermissionService.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Services/TeamUserPermissionService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Permission\>\:\:orderBy\(\)\.$#'
 			identifier: staticMethod.dynamicCall
 			count: 1
+			path: app/Services/TeamUserPermissionService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Permission\>\:\:whereIn\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Services/TeamUserPermissionService.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Services/TeamUserProfilePhotoService.php
+
+		-
+			message: '#^Method App\\Services\\TeamUserProfilePhotoService\:\:store\(\) should return string but returns string\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/TeamUserProfilePhotoService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:orderBy\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 2
 			path: app/Services/TeamUserService.php
 
 		-
-			message: '#^Method App\\Services\\TeamUserService\:\:create\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:teamUsers\(\)\.$#'
+			identifier: staticMethod.dynamicCall
 			count: 1
 			path: app/Services/TeamUserService.php
 
@@ -2935,26 +3067,20 @@ parameters:
 			path: app/Services/TeamUserService.php
 
 		-
-			message: '#^Method App\\Services\\TeamUserService\:\:mapPayload\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/TeamUserService.php
-
-		-
 			message: '#^Method App\\Services\\TeamUserService\:\:mapPayload\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Services/TeamUserService.php
 
 		-
-			message: '#^Method App\\Services\\TeamUserService\:\:resolveAssignableRole\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
+			message: '#^Parameter \#2 \$permissionIds of method App\\Services\\TeamUserPermissionService\:\:syncDirectPermissions\(\) expects list\<int\>, array\<int\> given\.$#'
+			identifier: argument.type
 			count: 1
 			path: app/Services/TeamUserService.php
 
 		-
-			message: '#^Method App\\Services\\TeamUserService\:\:update\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: app/Services/TeamUserService.php
 
@@ -3089,6 +3215,78 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: app/Support/GdWebpEncoder.php
+
+		-
+			message: '#^Method App\\Support\\Postman\\PostmanCollectionWriter\:\:collection\(\) has parameter \$auth with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Support/Postman/PostmanCollectionWriter.php
+
+		-
+			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Support/Postman/PostmanFormRequestParser.php
+
+		-
+			message: '#^Call to method rules\(\) on an unknown class App\\Support\\Postman\\FormRequest\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Support/Postman/PostmanFormRequestParser.php
+
+		-
+			message: '#^Casting to string something that''s already string\.$#'
+			identifier: cast.useless
+			count: 1
+			path: app/Support/Postman/PostmanFormRequestParser.php
+
+		-
+			message: '#^Offset 0 on non\-empty\-list\<string\> on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Support/Postman/PostmanFormRequestParser.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$request contains unknown class App\\Support\\Postman\\FormRequest\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Support/Postman/PostmanFormRequestParser.php
+
+		-
+			message: '#^Argument of an invalid type Illuminate\\Routing\\RouteCollectionInterface supplied for foreach, only iterables are supported\.$#'
+			identifier: foreach.nonIterable
+			count: 1
+			path: app/Support/Postman/PostmanRouteCollector.php
+
+		-
+			message: '#^Call to an undefined method ReflectionType\:\:isBuiltin\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Support/Postman/PostmanRouteCollector.php
+
+		-
+			message: '#^Parameter \$middleware of class App\\Support\\Postman\\PostmanRouteRecord constructor expects list\<string\>, array\<int, string\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Support/Postman/PostmanRouteCollector.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$methods$#'
+			identifier: parameter.notFound
+			count: 1
+			path: app/Support/Postman/PostmanRouteRecord.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<TModel of Illuminate\\Database\\Eloquent\\Model\>\:\:getConnection\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Support/QuerySearch.php
+
+		-
+			message: '#^Variable method call on Illuminate\\Database\\Eloquent\\Builder\<TModel of Illuminate\\Database\\Eloquent\\Model\>\.$#'
+			identifier: method.dynamicName
+			count: 2
+			path: app/Support/QuerySearch.php
 
 		-
 			message: '#^Casting to string something that''s already string\.$#'

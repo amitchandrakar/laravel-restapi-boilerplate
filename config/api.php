@@ -48,6 +48,7 @@ return [
 
     'auth' => [
         'token_expiry_days' => (int) env('API_AUTH_TOKEN_EXPIRY_DAYS', 30),
+        'impersonation_token_ttl_minutes' => (int) env('API_IMPERSONATION_TOKEN_TTL_MINUTES', 60),
         'lockout' => [
             'max_attempts' => (int) env('API_AUTH_LOCKOUT_MAX_ATTEMPTS', 5),
             'decay_minutes' => (int) env('API_AUTH_LOCKOUT_DECAY_MINUTES', 15),
@@ -122,5 +123,18 @@ return [
         'DB_ERROR' => 'DB_ERROR',
         'INTERNAL_SERVER_ERROR' => 'INTERNAL_SERVER_ERROR',
         'BAD_REQUEST' => 'BAD_REQUEST',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin candidate CSV
+    |--------------------------------------------------------------------------
+    */
+
+    'candidates' => [
+        'export_max_rows' => (int) env('ADMIN_CANDIDATES_EXPORT_MAX_ROWS', 5000),
+        'import_max_file_kb' => (int) env('ADMIN_CANDIDATES_IMPORT_MAX_FILE_KB', 2048),
+        'import_sync_max_rows' => (int) env('ADMIN_CANDIDATES_IMPORT_SYNC_MAX_ROWS', 200),
+        'import_status_cache_ttl_seconds' => (int) env('ADMIN_CANDIDATES_IMPORT_STATUS_TTL', 86400),
     ],
 ];

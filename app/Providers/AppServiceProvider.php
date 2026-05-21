@@ -13,6 +13,8 @@ use App\Models\User;
 use App\Observers\PackageObserver;
 use App\Observers\SubscriptionObserver;
 use App\Observers\UserObserver;
+use App\Policies\SubscriptionPolicy;
+use App\Policies\TeamUserPolicy;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Http\Request;
@@ -46,6 +48,13 @@ class AppServiceProvider extends ServiceProvider
 
             return null;
         });
+
+        Gate::define('viewAnyTeamMember', [TeamUserPolicy::class, 'viewAnyTeamMember']);
+        Gate::define('viewTeamMember', [TeamUserPolicy::class, 'viewTeamMember']);
+        Gate::define('createTeamMember', [TeamUserPolicy::class, 'createTeamMember']);
+        Gate::define('updateTeamMember', [TeamUserPolicy::class, 'updateTeamMember']);
+        Gate::define('deleteTeamMember', [TeamUserPolicy::class, 'deleteTeamMember']);
+        Gate::define('viewAdminSubscriptions', [SubscriptionPolicy::class, 'viewAdminSubscriptions']);
 
         User::observe(UserObserver::class);
         Package::observe(PackageObserver::class);
