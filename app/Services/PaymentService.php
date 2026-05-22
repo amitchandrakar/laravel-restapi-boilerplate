@@ -96,7 +96,7 @@ class PaymentService
                     $search
                 );
                 $builder->orWhereHas('user', static function (Builder $userQuery) use ($search): void {
-                    if (!$userQuery->getModel() instanceof User) {
+                    if (!($userQuery->getModel() instanceof User)) {
                         return;
                     }
 

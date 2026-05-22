@@ -27,7 +27,7 @@ class Controller extends BaseController
     {
         $user = $request->user();
 
-        if (!$user instanceof User) {
+        if (!($user instanceof User)) {
             abort(401, 'Unauthenticated');
         }
 

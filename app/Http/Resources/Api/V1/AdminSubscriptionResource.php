@@ -17,7 +17,7 @@ class AdminSubscriptionResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        if (!$this->resource instanceof Subscription) {
+        if (!($this->resource instanceof Subscription)) {
             return [];
         }
 
