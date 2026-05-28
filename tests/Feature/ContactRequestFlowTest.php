@@ -235,7 +235,7 @@ function contactRequestSubscribeToTalash(User $user): void
 }
 function contactRequestLoginToken(string $email): string
 {
-    $login = test()->postJson('/api/v1/app/auth/login', [
+    $login = test()->postJson('/api/v1/auth/login', [
         'username' => $email,
         'password' => CONTACT_REQUEST_TEST_PW,
     ]);

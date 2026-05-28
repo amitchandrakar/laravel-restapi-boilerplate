@@ -8,6 +8,7 @@ use App\Support\CacheKeys;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class ReportService
 {
@@ -16,7 +17,7 @@ class ReportService
      */
     public function dashboardStats(): array
     {
-        $ttl = max(60, (int) config('cache_strategy.dashboard_metrics_seconds', 900));
+        $ttl = max(60, (int) config('cache_strategy.dashboard_metrics_seconds', 3600));
 
         return Cache::remember(
             CacheKeys::dashboardMetricsOverview(),
@@ -83,11 +84,7 @@ class ReportService
             ->count();
         $contactActionsTotal = (int) DB::table('contact_requests')->count();
 
-        $successStories =
-            (int) (DB::table('settings')
-                ->where('group_key', 'metrics')
-                ->whereIn('setting_key', ['success_stories_landing', 'success_stories_count'])
-                ->value('setting_value') ?? 0);
+        $successStories = (int) (DB::table('site_settings')->where('id', 1)->value('success_stories_count') ?? 0);
 
         $maleCount = (int) (clone $candidateBaseQuery)->whereRaw('LOWER(users.gender) = ?', ['male'])->count();
         $femaleCount = (int) (clone $candidateBaseQuery)->whereRaw('LOWER(users.gender) = ?', ['female'])->count();
@@ -147,6 +144,21 @@ class ReportService
             ->values()
             ->all();
 
+        $candidatesByLocationRaw = (clone $candidateBaseQuery)
+            ->selectRaw("COALESCE(NULLIF(TRIM(users.current_city), ''), 'Other') as location, COUNT(*) as total")
+            ->groupBy('location')
+            ->orderByDesc('total')
+            ->limit(10)
+            ->get();
+        $candidatesByLocationTop10 = $candidatesByLocationRaw
+            ->map(static fn($row): array => ['location' => (string) $row->location, 'total' => (int) $row->total])
+            ->values()
+            ->all();
+
+        $totalPayments = (int) DB::table('payments')->count();
+        $totalReferrals = $this->countReferrals();
+        $totalUsers = $totalCandidates + $teamsCount;
+
         return [
             'totals' => [
                 'candidates' => $totalCandidates,
@@ -156,6 +168,9 @@ class ReportService
                 'freeMembers' => $freeMembers,
                 'revenueDemo' => $revenueDemo,
                 'teams' => $teamsCount,
+                'totalUsers' => $totalUsers,
+                'totalPayments' => $totalPayments,
+                'totalReferrals' => $totalReferrals,
                 'reportsGeneratedTotal' => $reportsGeneratedTotal,
                 'reportsGenerated7Days' => $reportsGenerated7Days,
                 'reportsGenerated30Days' => $reportsGenerated30Days,
@@ -169,8 +184,245 @@ class ReportService
             'genderSplit' => $genderSplit,
             'candidatesByAge' => $candidatesByAge,
             'teamsByLocation' => $teamsByLocation,
+            'candidatesByLocationTop10' => $candidatesByLocationTop10,
             'topSubCastes' => $topSubCastes,
+            'revenue' => [
+                'monthOnMonth' => $this->revenueMonthOnMonth(),
+                'yearOnYear' => $this->revenueYearOnYear(),
+                'bySubscriptionType' => $this->revenueBySubscriptionType(),
+            ],
+            'registrations' => [
+                'monthOnMonth' => $this->registrationsMonthOnMonth(),
+                'yearOnYear' => $this->registrationsYearOnYear(),
+            ],
+            'activeSubscriptions' => [
+                'monthOnMonth' => $this->subscriptionsMonthOnMonth(),
+                'yearOnYear' => $this->subscriptionsYearOnYear(),
+            ],
         ];
+    }
+
+    private function countReferrals(): int
+    {
+        if (!Schema::hasTable('referral_entries')) {
+            return 0;
+        }
+
+        return (int) DB::table('referral_entries')->count();
+    }
+
+    private function isSqlite(): bool
+    {
+        return DB::getDriverName() === 'sqlite';
+    }
+
+    /**
+     * @return list<array{label: string, period: string}>
+     */
+    private function lastMonthPeriods(int $count): array
+    {
+        $periods = [];
+
+        for ($i = $count - 1; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $periods[] = [
+                'label' => $date->format('M'),
+                'period' => $date->format('Y-m'),
+            ];
+        }
+
+        return $periods;
+    }
+
+    /**
+     * @return list<array{label: string, period: string}>
+     */
+    private function lastYearPeriods(int $count): array
+    {
+        $periods = [];
+
+        for ($i = $count - 1; $i >= 0; $i--) {
+            $date = now()->subYears($i);
+            $periods[] = [
+                'label' => $date->format('Y'),
+                'period' => $date->format('Y'),
+            ];
+        }
+
+        return $periods;
+    }
+
+    private function monthPeriodExpression(string $tableColumn): string
+    {
+        return $this->isSqlite() ? "strftime('%Y-%m', $tableColumn)" : "DATE_FORMAT($tableColumn, '%Y-%m')";
+    }
+
+    private function yearPeriodExpression(string $tableColumn): string
+    {
+        return $this->isSqlite() ? "strftime('%Y', $tableColumn)" : "DATE_FORMAT($tableColumn, '%Y')";
+    }
+
+    /**
+     * @param  list<array{label: string, period: string}>  $periods
+     * @param  array<string, float|int|string>  $totalsByPeriod
+     *
+     * @return list<array{label: string, value: int}>
+     */
+    private function mapPeriodSeries(array $periods, array $totalsByPeriod): array
+    {
+        $series = [];
+
+        foreach ($periods as $period) {
+            $raw = $totalsByPeriod[$period['period']] ?? 0;
+            $series[] = [
+                'label' => $period['label'],
+                'value' => (int) round((float) $raw),
+            ];
+        }
+
+        return $series;
+    }
+
+    /**
+     * @return list<array{label: string, value: int}>
+     */
+    private function revenueMonthOnMonth(): array
+    {
+        $periodExpr = $this->monthPeriodExpression('payments.created_at');
+        $since = now()->subMonths(11)->startOfMonth();
+
+        $rows = DB::table('payments')
+            ->where('payment_status', 'success')
+            ->where('payments.created_at', '>=', $since)
+            ->selectRaw("$periodExpr as period, SUM(amount) as total")
+            ->groupBy('period')
+            ->pluck('total', 'period')
+            ->all();
+
+        return $this->mapPeriodSeries($this->lastMonthPeriods(12), $rows);
+    }
+
+    /**
+     * @return list<array{label: string, value: int}>
+     */
+    private function revenueYearOnYear(): array
+    {
+        $periodExpr = $this->yearPeriodExpression('payments.created_at');
+        $since = now()->subYears(4)->startOfYear();
+
+        $rows = DB::table('payments')
+            ->where('payment_status', 'success')
+            ->where('payments.created_at', '>=', $since)
+            ->selectRaw("$periodExpr as period, SUM(amount) as total")
+            ->groupBy('period')
+            ->pluck('total', 'period')
+            ->all();
+
+        return $this->mapPeriodSeries($this->lastYearPeriods(5), $rows);
+    }
+
+    /**
+     * @return list<array{name: string, count: int}>
+     */
+    private function revenueBySubscriptionType(): array
+    {
+        $rows = DB::table('payments')
+            ->join('packages', 'packages.id', '=', 'payments.package_id')
+            ->where('payments.payment_status', 'success')
+            ->selectRaw('COALESCE(packages.name, \'Unknown\') as name, SUM(payments.amount) as total')
+            ->groupBy('packages.name')
+            ->orderByDesc('total')
+            ->limit(10)
+            ->get();
+
+        $series = [];
+
+        foreach ($rows as $row) {
+            $series[] = [
+                'name' => (string) $row->name,
+                'count' => (int) round((float) $row->total),
+            ];
+        }
+
+        return $series;
+    }
+
+    /**
+     * @return list<array{label: string, value: int}>
+     */
+    private function registrationsMonthOnMonth(): array
+    {
+        $periodExpr = $this->monthPeriodExpression('users.created_at');
+        $since = now()->subMonths(11)->startOfMonth();
+
+        $rows = DB::table('users')
+            ->join('roles', 'roles.id', '=', 'users.role_id')
+            ->where('roles.name', 'candidate')
+            ->whereNull('users.deleted_at')
+            ->where('users.created_at', '>=', $since)
+            ->selectRaw("$periodExpr as period, COUNT(*) as total")
+            ->groupBy('period')
+            ->pluck('total', 'period')
+            ->all();
+
+        return $this->mapPeriodSeries($this->lastMonthPeriods(12), $rows);
+    }
+
+    /**
+     * @return list<array{label: string, value: int}>
+     */
+    private function registrationsYearOnYear(): array
+    {
+        $periodExpr = $this->yearPeriodExpression('users.created_at');
+        $since = now()->subYears(4)->startOfYear();
+
+        $rows = DB::table('users')
+            ->join('roles', 'roles.id', '=', 'users.role_id')
+            ->where('roles.name', 'candidate')
+            ->whereNull('users.deleted_at')
+            ->where('users.created_at', '>=', $since)
+            ->selectRaw("$periodExpr as period, COUNT(*) as total")
+            ->groupBy('period')
+            ->pluck('total', 'period')
+            ->all();
+
+        return $this->mapPeriodSeries($this->lastYearPeriods(5), $rows);
+    }
+
+    /**
+     * @return list<array{label: string, value: int}>
+     */
+    private function subscriptionsMonthOnMonth(): array
+    {
+        $periodExpr = $this->monthPeriodExpression('subscriptions.created_at');
+        $since = now()->subMonths(11)->startOfMonth();
+
+        $rows = DB::table('subscriptions')
+            ->where('subscriptions.created_at', '>=', $since)
+            ->selectRaw("$periodExpr as period, COUNT(*) as total")
+            ->groupBy('period')
+            ->pluck('total', 'period')
+            ->all();
+
+        return $this->mapPeriodSeries($this->lastMonthPeriods(12), $rows);
+    }
+
+    /**
+     * @return list<array{label: string, value: int}>
+     */
+    private function subscriptionsYearOnYear(): array
+    {
+        $periodExpr = $this->yearPeriodExpression('subscriptions.created_at');
+        $since = now()->subYears(4)->startOfYear();
+
+        $rows = DB::table('subscriptions')
+            ->where('subscriptions.created_at', '>=', $since)
+            ->selectRaw("$periodExpr as period, COUNT(*) as total")
+            ->groupBy('period')
+            ->pluck('total', 'period')
+            ->all();
+
+        return $this->mapPeriodSeries($this->lastYearPeriods(5), $rows);
     }
 
     /**
@@ -197,7 +449,7 @@ class ReportService
 
         return [
             'groupBy' => $groupBy,
-            'totalCandidates' => (int) DB::table('users')
+            'totalCandidates' => DB::table('users')
                 ->join('roles', 'roles.id', '=', 'users.role_id')
                 ->where('roles.name', 'candidate')
                 ->whereNull('users.deleted_at')
@@ -222,7 +474,7 @@ class ReportService
             ->get();
 
         return [
-            'totalCandidates' => (int) DB::table('users')
+            'totalCandidates' => DB::table('users')
                 ->join('roles', 'roles.id', '=', 'users.role_id')
                 ->where('roles.name', 'candidate')
                 ->whereNull('users.deleted_at')

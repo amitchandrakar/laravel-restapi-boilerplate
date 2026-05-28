@@ -27,12 +27,16 @@ Auth for all endpoints: `Bearer` Sanctum token required.
         "Deshmukh",
         "Chauhan"
     ],
+    "contactEmail": "support@example.com",
+    "contactPhone": "+91-9876543210",
+    "contactAddress": "Raipur, Chhattisgarh",
     "maintenanceMode": false,
-    "requireProfileApproval": true
+    "requireProfileApproval": true,
+    "successStoriesCount": 120
 }
 ```
 
-All fields are optional; only supplied keys are updated.
+All fields are optional; only supplied keys are updated. Values are stored in the `site_settings` singleton table (not EAV `settings`).
 
 ## Test command
 

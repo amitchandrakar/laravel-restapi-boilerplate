@@ -2,44 +2,29 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\V1\Admin\AdminCandidateProfileController;
 use App\Http\Controllers\Api\V1\Admin\AdminRoleController;
 use App\Http\Controllers\Api\V1\Admin\AdminSubscriptionController;
 use App\Http\Controllers\Api\V1\Admin\CandidateUserController;
 use App\Http\Controllers\Api\V1\Admin\KycDocumentController;
+use App\Http\Controllers\Api\V1\Admin\LegalPageController;
+use App\Http\Controllers\Api\V1\Admin\NotificationSettingsController;
 use App\Http\Controllers\Api\V1\Admin\PackageController;
 use App\Http\Controllers\Api\V1\Admin\PaymentController;
+use App\Http\Controllers\Api\V1\Admin\PaymentGatewaySettingsController;
+use App\Http\Controllers\Api\V1\Admin\RedisSettingsController;
 use App\Http\Controllers\Api\V1\Admin\ReportController;
+use App\Http\Controllers\Api\V1\Admin\SearchSettingsController;
 use App\Http\Controllers\Api\V1\Admin\SeoSettingsController;
 use App\Http\Controllers\Api\V1\Admin\SiteSettingsController;
 use App\Http\Controllers\Api\V1\Admin\SocialLoginSettingsController;
+use App\Http\Controllers\Api\V1\Admin\StorageSettingsController;
 use App\Http\Controllers\Api\V1\Admin\SystemHealthController;
 use App\Http\Controllers\Api\V1\Admin\TeamUserController;
-use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
 
 $sanctumWithTrackedSession = ['auth:sanctum', 'tracked.session'];
-
-Route::prefix('auth')->group(function () use ($sanctumWithTrackedSession): void {
-    Route::middleware('throttle:api-auth-strict')->group(function (): void {
-        Route::post('login', [AuthController::class, 'login']);
-        Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
-    });
-
-    Route::post('reset-password', [AuthController::class, 'resetPassword'])->middleware([
-        'throttle:api-auth-strict',
-        'optional.sanctum',
-        'tracked.session',
-    ]);
-
-    Route::middleware($sanctumWithTrackedSession)->group(function (): void {
-        Route::post('logout', [AuthController::class, 'logout']);
-        Route::post('refresh', [AuthController::class, 'refresh']);
-        Route::get('me', [AuthController::class, 'me']);
-        Route::patch('profile', [AuthController::class, 'updateProfile']);
-        Route::post('change-password', [AuthController::class, 'changePassword']);
-    });
-});
 
 Route::middleware($sanctumWithTrackedSession)->group(function (): void {
     Route::get('users', [UserController::class, 'index'])->middleware('permission:admin.users.view');
@@ -129,6 +114,45 @@ Route::middleware($sanctumWithTrackedSession)->group(function (): void {
     Route::put('settings/social-login', [SocialLoginSettingsController::class, 'update'])->middleware(
         'permission:admin.settings.social.edit'
     );
+    Route::get('settings/payments', [PaymentGatewaySettingsController::class, 'show'])->middleware(
+        'permission:admin.settings.payments.view'
+    );
+    Route::put('settings/payments', [PaymentGatewaySettingsController::class, 'update'])->middleware(
+        'permission:admin.settings.payments.edit'
+    );
+    Route::get('settings/notifications', [NotificationSettingsController::class, 'show'])->middleware(
+        'permission:admin.settings.notifications.view'
+    );
+    Route::put('settings/notifications', [NotificationSettingsController::class, 'update'])->middleware(
+        'permission:admin.settings.notifications.edit'
+    );
+    Route::get('settings/storage', [StorageSettingsController::class, 'show'])->middleware(
+        'permission:admin.settings.storage.view'
+    );
+    Route::put('settings/storage', [StorageSettingsController::class, 'update'])->middleware(
+        'permission:admin.settings.storage.edit'
+    );
+    Route::get('settings/redis', [RedisSettingsController::class, 'show'])->middleware(
+        'permission:admin.settings.redis.view'
+    );
+    Route::put('settings/redis', [RedisSettingsController::class, 'update'])->middleware(
+        'permission:admin.settings.redis.edit'
+    );
+    Route::get('settings/search', [SearchSettingsController::class, 'show'])->middleware(
+        'permission:admin.settings.search.view'
+    );
+    Route::put('settings/search', [SearchSettingsController::class, 'update'])->middleware(
+        'permission:admin.settings.search.edit'
+    );
+    Route::get('settings/legal-pages', [LegalPageController::class, 'index'])->middleware(
+        'permission:admin.settings.legal.view'
+    );
+    Route::get('settings/legal-pages/{legalPage:slug}', [LegalPageController::class, 'show'])->middleware(
+        'permission:admin.settings.legal.view'
+    );
+    Route::put('settings/legal-pages/{legalPage:slug}', [LegalPageController::class, 'update'])->middleware(
+        'permission:admin.settings.legal.edit'
+    );
     Route::get('settings/roles', [AdminRoleController::class, 'index'])->middleware(
         'permission:admin.settings.roles.view'
     );
@@ -186,6 +210,54 @@ Route::middleware($sanctumWithTrackedSession)->group(function (): void {
     Route::post('candidates/{user:uuid}/impersonate', [CandidateUserController::class, 'impersonate'])->middleware(
         'permission:admin.candidates.impersonate'
     );
+    Route::get('candidates/{user:uuid}/profile-details', [
+        AdminCandidateProfileController::class,
+        'profileDetails',
+    ])->middleware('permission:admin.candidates.view');
+    Route::get('candidates/{user:uuid}/section-progress', [
+        AdminCandidateProfileController::class,
+        'sectionProgress',
+    ])->middleware('permission:admin.candidates.view');
+    Route::put('candidates/{user:uuid}/profile', [
+        AdminCandidateProfileController::class,
+        'saveFullProfile',
+    ])->middleware('permission:admin.candidates.edit');
+    Route::patch('candidates/{user:uuid}/sections/basics', [
+        AdminCandidateProfileController::class,
+        'saveBasics',
+    ])->middleware('permission:admin.candidates.edit');
+    Route::patch('candidates/{user:uuid}/sections/photos', [
+        AdminCandidateProfileController::class,
+        'savePhotos',
+    ])->middleware('permission:admin.candidates.edit');
+    Route::patch('candidates/{user:uuid}/sections/personal-details', [
+        AdminCandidateProfileController::class,
+        'savePersonalDetails',
+    ])->middleware('permission:admin.candidates.edit');
+    Route::patch('candidates/{user:uuid}/sections/horoscope', [
+        AdminCandidateProfileController::class,
+        'saveHoroscope',
+    ])->middleware('permission:admin.candidates.edit');
+    Route::patch('candidates/{user:uuid}/sections/location-family-roots', [
+        AdminCandidateProfileController::class,
+        'saveLocationFamilyRoots',
+    ])->middleware('permission:admin.candidates.edit');
+    Route::patch('candidates/{user:uuid}/sections/career-education', [
+        AdminCandidateProfileController::class,
+        'saveCareerEducation',
+    ])->middleware('permission:admin.candidates.edit');
+    Route::patch('candidates/{user:uuid}/sections/family-background', [
+        AdminCandidateProfileController::class,
+        'saveFamilyBackground',
+    ])->middleware('permission:admin.candidates.edit');
+    Route::patch('candidates/{user:uuid}/sections/lifestyle', [
+        AdminCandidateProfileController::class,
+        'saveLifestyle',
+    ])->middleware('permission:admin.candidates.edit');
+    Route::patch('candidates/{user:uuid}/sections/partner-preferences', [
+        AdminCandidateProfileController::class,
+        'savePartnerPreferences',
+    ])->middleware('permission:admin.candidates.edit');
     Route::get('candidates/{user:uuid}', [CandidateUserController::class, 'show'])->middleware(
         'permission:admin.candidates.view'
     );

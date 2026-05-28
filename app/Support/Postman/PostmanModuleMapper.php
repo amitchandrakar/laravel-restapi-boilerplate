@@ -21,6 +21,14 @@ final class PostmanModuleMapper
             ];
         }
 
+        if (str_starts_with($uri, 'api/v1/auth/')) {
+            return [
+                'realm' => 'shared',
+                'module' => 'auth',
+                'folder' => 'Shared/Auth',
+            ];
+        }
+
         if (str_starts_with($uri, 'api/v1/admin/')) {
             $suffix = substr($uri, strlen('api/v1/admin/'));
 

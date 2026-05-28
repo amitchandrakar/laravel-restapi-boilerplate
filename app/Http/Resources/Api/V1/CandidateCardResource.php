@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api\V1;
 
+use App\Models\User;
+use App\Support\CandidateEntitlements;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,21 +21,34 @@ class CandidateCardResource extends JsonResource
         $u = $data['user'];
         $age = $u->date_of_birth !== null ? $u->date_of_birth->age : null;
 
-        $out = [
-            'uuid' => $u->uuid,
-            'fullName' => trim($u->first_name . ' ' . $u->last_name),
-            'firstName' => $u->first_name,
-            'lastName' => $u->last_name,
-            'age' => $age,
-            'currentCity' => $u->current_city,
-            'currentState' => $u->current_state,
-            'occupation' => $u->occupation,
-            'profileImageUrl' => $data['profileImageUrl'],
-            'educationSummary' => $data['educationSummary'],
-            'profileVerificationStatus' => $data['profileVerificationStatus'],
-        ];
+        $viewer = $request->user();
+        $limitedOnly = CandidateEntitlements::hasLimitedBrowseOnly($viewer);
 
-        if (array_key_exists('isFavorite', $data)) {
+        $out = $limitedOnly
+            ? [
+                'uuid' => $u->uuid,
+                'fullName' => trim($u->first_name . ' ' . $u->last_name),
+                'age' => $age,
+                'profileImageUrl' => $data['profileImageUrl'],
+                'educationSummary' => $data['educationSummary'],
+                'profileAccess' => 'limited',
+            ]
+            : [
+                'uuid' => $u->uuid,
+                'fullName' => trim($u->first_name . ' ' . $u->last_name),
+                'firstName' => $u->first_name,
+                'lastName' => $u->last_name,
+                'age' => $age,
+                'currentCity' => $u->current_city,
+                'currentState' => $u->current_state,
+                'occupation' => $u->occupation,
+                'profileImageUrl' => $data['profileImageUrl'],
+                'educationSummary' => $data['educationSummary'],
+                'profileVerificationStatus' => $data['profileVerificationStatus'],
+                'profileAccess' => 'full',
+            ];
+
+        if (array_key_exists('isFavorite', $data) && !$limitedOnly) {
             $out['isFavorite'] = (bool) $data['isFavorite'];
         }
 

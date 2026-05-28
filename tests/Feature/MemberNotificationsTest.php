@@ -170,6 +170,7 @@ it('hydrates a single feed item via the notification show endpoint', function ()
 it('deduplicates peer profile-view notifications within the configured cooldown window', function (): void {
     $a = memberNotificationsMakeCandidate('pv-a-' . uniqid('', true) . '@example.com');
     $b = memberNotificationsMakeCandidate('pv-b-' . uniqid('', true) . '@example.com');
+    memberNotificationsSubscribeToTalash($a);
     $tokenA = memberNotificationsLoginToken($a->email);
 
     $before = $b->notifications()->where('type', ProfileViewedNotification::class)->count();
@@ -261,7 +262,7 @@ function memberNotificationsSubscribeToTalash(User $user): void
 }
 function memberNotificationsLoginToken(string $email): string
 {
-    $login = test()->postJson('/api/v1/app/auth/login', [
+    $login = test()->postJson('/api/v1/auth/login', [
         'username' => $email,
         'password' => MEMBER_NOTIFICATIONS_TEST_PW,
     ]);

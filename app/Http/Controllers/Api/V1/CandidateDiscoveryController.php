@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\CandidateBrowseService;
 use App\Services\CandidateFavoriteService;
 use App\Services\CandidateMatchService;
+use App\Support\CandidateEntitlements;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 
@@ -29,6 +30,10 @@ class CandidateDiscoveryController extends Controller
 
         if ($user === null || !$user->hasRole('candidate')) {
             return $this->forbiddenResponse('Only candidates can browse profiles.');
+        }
+
+        if (!CandidateEntitlements::canBrowse($user)) {
+            return $this->forbiddenResponse('You do not have permission to browse profiles.');
         }
 
         $perPage = (int) $request->validated('perPage', 15);
@@ -49,6 +54,10 @@ class CandidateDiscoveryController extends Controller
             return $this->forbiddenResponse('Only candidates can view favorites.');
         }
 
+        if (!$user->can(CandidateEntitlements::MARK_FAVORITE)) {
+            return $this->forbiddenResponse('You do not have permission to view favorites.');
+        }
+
         $perPage = max(1, min(50, (int) $request->integer('perPage', 15)));
         $paginator = $this->favoriteService->paginateFavorites($user, $perPage, $request->filters());
 
@@ -64,6 +73,10 @@ class CandidateDiscoveryController extends Controller
 
         if ($viewer === null || !$viewer->hasRole('candidate')) {
             return $this->forbiddenResponse('Only candidates can manage favorites.');
+        }
+
+        if (!$viewer->can(CandidateEntitlements::MARK_FAVORITE)) {
+            return $this->forbiddenResponse('You do not have permission to favorite profiles.');
         }
 
         try {
@@ -84,6 +97,10 @@ class CandidateDiscoveryController extends Controller
 
         if ($user === null || !$user->hasRole('candidate')) {
             return $this->forbiddenResponse('Only candidates can view matches.');
+        }
+
+        if (!$user->can(CandidateEntitlements::VIEW_MATCHES)) {
+            return $this->forbiddenResponse('You do not have permission to view matches.');
         }
 
         $perPage = (int) $request->validated('perPage', 15);

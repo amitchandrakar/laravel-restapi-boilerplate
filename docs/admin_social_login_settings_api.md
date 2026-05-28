@@ -1,6 +1,6 @@
 # Admin Social Login Settings API
 
-Manage social login provider settings for Google, Facebook, and Instagram.
+Manage social login provider settings for Google, Facebook, and Instagram. Stored in `social_login_settings` (client secrets encrypted; masked on GET).
 
 ## Endpoints
 

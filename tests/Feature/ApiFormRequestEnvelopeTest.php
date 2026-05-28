@@ -8,7 +8,7 @@ beforeEach(function () {
 });
 
 it('wraps login validation errors in the standard API envelope', function () {
-    $response = $this->postJson('/api/v1/app/auth/login', []);
+    $response = $this->postJson('/api/v1/auth/login', []);
 
     $response
         ->assertStatus(422)

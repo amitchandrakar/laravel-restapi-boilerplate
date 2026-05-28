@@ -11,6 +11,11 @@ final class CacheKeys
         return 'dashboard:metrics:overview';
     }
 
+    public static function dashboardSystemHealth(): string
+    {
+        return 'dashboard:system-health';
+    }
+
     public static function candidateProfileOptions(): string
     {
         return 'master:candidate-profile-options';

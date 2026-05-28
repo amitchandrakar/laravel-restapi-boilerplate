@@ -24,10 +24,9 @@ class CandidateContactRequestController extends Controller
             return $this->forbiddenResponse('Only candidates can send contact requests.');
         }
 
-        // Permission check intentionally disabled for now (token + role only).
-        // if (!$from->can('candidate.send_contact_requests')) {
-        //     return $this->forbiddenResponse('You do not have permission to send contact requests.');
-        // }
+        if (!$from->can('candidate.send_contact_requests')) {
+            return $this->forbiddenResponse('You do not have permission to send contact requests.');
+        }
 
         $to = User::query()->where('uuid', $request->validated('candidateUuid'))->first();
 

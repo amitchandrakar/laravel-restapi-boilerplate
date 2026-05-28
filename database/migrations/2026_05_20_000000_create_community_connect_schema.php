@@ -849,19 +849,157 @@ return new class extends Migration {
             $table->index(['user_id', 'provider']);
         });
 
-        Schema::create('settings', function (Blueprint $table): void {
+        Schema::create('site_settings', function (Blueprint $table): void {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->string('group_key', 128)->comment('Namespace, e.g. site, branding.');
-            $table->string('setting_key', 128)->comment('Unique key within group_key.');
-            $table->text('setting_value')->nullable()->comment('Stored value; interpretation via value_type.');
-            $table->string('value_type', 16)->default('string')->comment('string|number|boolean|json');
-            $table->boolean('is_public')->default(false);
-            $table->boolean('is_active')->default(true);
+            $table->string('site_name', 255)->nullable();
+            $table->text('logo_url')->nullable();
+            $table->text('favicon_url')->nullable();
+            $table->string('contact_email', 255)->nullable();
+            $table->string('contact_phone', 64)->nullable();
+            $table->text('contact_address')->nullable();
+            $table->json('allowed_community_surnames')->nullable();
+            $table->boolean('maintenance_mode')->default(false);
+            $table->boolean('require_profile_approval')->default(false);
+            $table->unsignedInteger('success_stories_count')->default(0);
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
+        });
 
-            $table->unique(['group_key', 'setting_key']);
-            $table->index(['is_active', 'is_public']);
+        Schema::create('seo_global_settings', function (Blueprint $table): void {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->string('site_title', 512)->nullable();
+            $table->text('default_description')->nullable();
+            $table->text('default_keywords')->nullable();
+            $table->string('canonical_base_url', 2048)->nullable();
+            $table->boolean('google_analytics_enabled')->default(false);
+            $table->text('google_analytics_snippet')->nullable();
+            $table->boolean('robots_enabled')->default(false);
+            $table->text('robots_txt')->nullable();
+            $table->boolean('sitemap_enabled')->default(false);
+            $table->text('sitemap_urls')->nullable();
+            $table->string('og_image', 2048)->nullable();
+            $table->string('og_type', 64)->nullable();
+            $table->string('twitter_card', 64)->nullable();
+            $table->string('twitter_title', 512)->nullable();
+            $table->text('twitter_description')->nullable();
+            $table->string('twitter_image', 2048)->nullable();
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamps();
+        });
+
+        Schema::create('social_login_settings', function (Blueprint $table): void {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->boolean('google_enabled')->default(false);
+            $table->string('google_environment', 32)->default('live');
+            $table->string('google_live_client_id', 512)->nullable();
+            $table->text('google_live_client_secret')->nullable();
+            $table->string('google_live_redirect_url', 2048)->nullable();
+            $table->boolean('facebook_enabled')->default(false);
+            $table->string('facebook_environment', 32)->default('live');
+            $table->string('facebook_live_client_id', 512)->nullable();
+            $table->text('facebook_live_client_secret')->nullable();
+            $table->string('facebook_live_redirect_url', 2048)->nullable();
+            $table->boolean('instagram_enabled')->default(false);
+            $table->string('instagram_environment', 32)->default('live');
+            $table->string('instagram_live_client_id', 512)->nullable();
+            $table->text('instagram_live_client_secret')->nullable();
+            $table->string('instagram_live_redirect_url', 2048)->nullable();
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamps();
+        });
+
+        Schema::create('payment_gateway_settings', function (Blueprint $table): void {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->string('gateway', 64)->default('razorpay');
+            $table->boolean('is_enabled')->default(false);
+            $table->string('environment', 32)->default('sandbox');
+            $table->string('live_key_id', 255)->nullable();
+            $table->text('live_key_secret')->nullable();
+            $table->string('sandbox_key_id', 255)->nullable();
+            $table->text('sandbox_key_secret')->nullable();
+            $table->text('webhook_secret')->nullable();
+            $table->string('currency', 8)->default('INR');
+            $table->text('checkout_options_json')->nullable();
+            $table->string('webhook_url', 2048)->nullable();
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamps();
+        });
+
+        Schema::create('notification_settings', function (Blueprint $table): void {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->boolean('email_enabled')->default(false);
+            $table->string('mail_mailer', 64)->nullable();
+            $table->string('mail_host', 255)->nullable();
+            $table->unsignedSmallInteger('mail_port')->nullable();
+            $table->string('mail_username', 255)->nullable();
+            $table->text('mail_password')->nullable();
+            $table->string('mail_encryption', 32)->nullable();
+            $table->string('mail_from_address', 255)->nullable();
+            $table->string('mail_from_name', 255)->nullable();
+            $table->string('mail_reply_to_address', 255)->nullable();
+            $table->string('mail_reply_to_name', 255)->nullable();
+            $table->boolean('sms_enabled')->default(false);
+            $table->string('twilio_account_sid', 255)->nullable();
+            $table->text('twilio_auth_token')->nullable();
+            $table->string('twilio_from_number', 64)->nullable();
+            $table->boolean('push_enabled')->default(false);
+            $table->text('fcm_server_key')->nullable();
+            $table->string('fcm_sender_id', 128)->nullable();
+            $table->text('fcm_client_key')->nullable();
+            $table->string('fcm_topic', 128)->nullable();
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamps();
+        });
+
+        Schema::create('storage_settings', function (Blueprint $table): void {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->boolean('is_enabled')->default(false);
+            $table->string('driver', 32)->default('s3');
+            $table->string('bucket', 255)->nullable();
+            $table->string('region', 64)->nullable();
+            $table->string('access_key_id', 255)->nullable();
+            $table->text('secret_access_key')->nullable();
+            $table->string('endpoint', 2048)->nullable();
+            $table->string('url', 2048)->nullable();
+            $table->boolean('use_path_style_endpoint')->default(false);
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamps();
+        });
+
+        Schema::create('redis_settings', function (Blueprint $table): void {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->boolean('is_enabled')->default(false);
+            $table->string('client', 32)->default('predis');
+            $table->string('host', 255)->nullable();
+            $table->unsignedSmallInteger('port')->nullable();
+            $table->string('username', 128)->nullable();
+            $table->text('password')->nullable();
+            $table->unsignedTinyInteger('database')->default(0);
+            $table->boolean('use_tls')->default(true);
+            $table->string('cache_prefix', 128)->nullable();
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamps();
+        });
+
+        Schema::create('search_settings', function (Blueprint $table): void {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->boolean('is_enabled')->default(false);
+            $table->string('driver', 64)->default('algolia');
+            $table->string('app_id', 128)->nullable();
+            $table->text('admin_api_key')->nullable();
+            $table->text('search_api_key')->nullable();
+            $table->string('candidate_index_name', 128)->nullable();
+            $table->boolean('queue_indexing')->default(true);
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamps();
         });
 
         Schema::create('seo_settings', function (Blueprint $table): void {
@@ -1107,6 +1245,39 @@ return new class extends Migration {
         app('cache')
             ->store(config('permission.cache.store') != 'default' ? config('permission.cache.store') : null)
             ->forget(config('permission.cache.key'));
+
+        $schema = Schema::connection($this->getConnection());
+
+        $schema->create('telescope_entries', function (Blueprint $table) {
+            $table->bigIncrements('sequence');
+            $table->uuid('uuid');
+            $table->uuid('batch_id');
+            $table->string('family_hash')->nullable();
+            $table->boolean('should_display_on_index')->default(true);
+            $table->string('type', 20);
+            $table->longText('content');
+            $table->dateTime('created_at')->nullable();
+
+            $table->unique('uuid');
+            $table->index('batch_id');
+            $table->index('family_hash');
+            $table->index('created_at');
+            $table->index(['type', 'should_display_on_index']);
+        });
+
+        $schema->create('telescope_entries_tags', function (Blueprint $table) {
+            $table->uuid('entry_uuid');
+            $table->string('tag');
+
+            $table->primary(['entry_uuid', 'tag']);
+            $table->index('tag');
+
+            $table->foreign('entry_uuid')->references('uuid')->on('telescope_entries')->cascadeOnDelete();
+        });
+
+        $schema->create('telescope_monitoring', function (Blueprint $table) {
+            $table->string('tag')->primary();
+        });
     }
 
     public function down(): void
@@ -1128,7 +1299,14 @@ return new class extends Migration {
         Schema::dropIfExists('matches');
         Schema::dropIfExists('favorites');
         Schema::dropIfExists('seo_settings');
-        Schema::dropIfExists('settings');
+        Schema::dropIfExists('search_settings');
+        Schema::dropIfExists('redis_settings');
+        Schema::dropIfExists('storage_settings');
+        Schema::dropIfExists('notification_settings');
+        Schema::dropIfExists('payment_gateway_settings');
+        Schema::dropIfExists('social_login_settings');
+        Schema::dropIfExists('seo_global_settings');
+        Schema::dropIfExists('site_settings');
         Schema::dropIfExists('social_logins');
         Schema::dropIfExists('otp_requests');
         Schema::dropIfExists('data_erasure_requests');
@@ -1169,5 +1347,8 @@ return new class extends Migration {
         Schema::dropIfExists('failed_jobs');
         Schema::dropIfExists('jobs');
         Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('telescope_entries_tags');
+        Schema::dropIfExists('telescope_entries');
+        Schema::dropIfExists('telescope_monitoring');
     }
 };

@@ -5,12 +5,13 @@ Generated Postman artifacts for the Community Connect API. Regenerate after rout
 ## Quick start
 
 1. Import **Environment**: [`Community-Connect-API.postman_environment.json`](Community-Connect-API.postman_environment.json)
-2. Import **Master collection** (recommended): [`Community-Connect-API.postman_collection.json`](Community-Connect-API.postman_collection.json)  
+2. Import **Master collection** (recommended): [`Community-Connect-API.postman_collection.json`](Community-Connect-API.postman_collection.json)
    Or import individual module files under [`admin/`](admin/) and [`app/`](app/).
-3. Set `base_url` (default `http://localhost:8000`).
-4. Run **App → Auth → POST auth/login** or **Admin → Auth → POST auth/login**.
-5. Copy `data.token` into `app_token` or `admin_token` in the environment.
-6. Optionally copy `data.session_token_hash` into `session_token_hash` (client reference; auth still uses the Bearer token).
+3. Re-import the environment after `php artisan postman:generate` so `BASE_URL` reflects your `.env` `APP_URL` (origin only, no path suffix).
+4. Login credentials are pre-filled to match demo seeders: `ADMIN_*` for admin login, `CANDIDATE_*` for app login (override via `POSTMAN_*` in `.env` before generate).
+5. Run **Admin → Auth → POST auth/login** or **App → Auth → POST auth/login** — bodies use `{{ADMIN_USERNAME}}` / `{{CANDIDATE_USERNAME}}` and matching passwords.
+6. On success, the test script saves `data.token` into `AUTH_TOKEN` automatically (also `session_token_hash` and `candidate_uuid` when returned).
+7. Protected requests use **Bearer Token** auth with `{{AUTH_TOKEN}}`.
 
 ## Regenerate
 
@@ -43,11 +44,11 @@ php artisan postman:generate --output=docs/postman
 
 ## Authentication
 
-| Realm                      | Token variable    | Notes                                                   |
-| -------------------------- | ----------------- | ------------------------------------------------------- |
-| Admin                      | `{{admin_token}}` | Sanctum Bearer; requires admin role/permissions         |
-| App                        | `{{app_token}}`   | Sanctum Bearer; candidate/member routes                 |
-| Public / webhooks / health | none              | Login, register, featured candidates, Razorpay webhooks |
+| Realm                      | Token variable   | Notes                                                   |
+| -------------------------- | ---------------- | ------------------------------------------------------- |
+| Admin                      | `{{AUTH_TOKEN}}` | Sanctum Bearer; requires admin role/permissions         |
+| App                        | `{{AUTH_TOKEN}}` | Sanctum Bearer; candidate/member routes                 |
+| Public / webhooks / health | none (noauth)    | Login, register, featured candidates, Razorpay webhooks |
 
 ### Tracked session
 
@@ -78,22 +79,25 @@ Bodies follow [`ApiResponseBuilder`](../../app/Support/ApiResponseBuilder.php): 
 
 ## Environment variables
 
-| Variable                     | Usage                                              |
-| ---------------------------- | -------------------------------------------------- |
-| `base_url`                   | API origin (no trailing slash)                     |
-| `admin_token`                | Bearer token for `/api/v1/admin/*`                 |
-| `app_token`                  | Bearer token for `/api/v1/app/*`                   |
-| `session_token_hash`         | From login response (reference)                    |
-| `candidate_uuid`             | Path param `{user}`, `{candidate}`, profile header |
-| `package_uuid`               | Packages / registration                            |
-| `payment_uuid`               | Payments                                           |
-| `import_batch_id`            | CSV import status                                  |
-| `document_uuid`              | KYC documents                                      |
-| `role_uuid`                  | Admin roles                                        |
-| `notification_id`            | Member notifications                               |
-| `image_uuid`                 | Profile photos                                     |
-| `contact_request_uuid`       | Contact requests                                   |
-| `razorpay_webhook_signature` | `X-Razorpay-Signature` for webhooks                |
+| Variable                     | Usage                                                          |
+| ---------------------------- | -------------------------------------------------------------- |
+| `BASE_URL`                   | API origin from `APP_URL` at generate time (no trailing slash) |
+| `ADMIN_USERNAME`             | Admin login (`admin@example.com` by default)                   |
+| `ADMIN_PASSWORD`             | Admin login (`1234567890` by default)                          |
+| `CANDIDATE_USERNAME`         | App login (`candidate.parichay@example.com` by default)        |
+| `CANDIDATE_PASSWORD`         | App login (`1234567890` by default)                            |
+| `AUTH_TOKEN`                 | Bearer token (set automatically after login/register/refresh)  |
+| `session_token_hash`         | From login response (set automatically when present)           |
+| `candidate_uuid`             | Path param `{user}`, `{candidate}`, profile header             |
+| `package_uuid`               | Packages / registration                                        |
+| `payment_uuid`               | Payments                                                       |
+| `import_batch_id`            | CSV import status                                              |
+| `document_uuid`              | KYC documents                                                  |
+| `role_uuid`                  | Admin roles                                                    |
+| `notification_id`            | Member notifications                                           |
+| `image_uuid`                 | Profile photos                                                 |
+| `contact_request_uuid`       | Contact requests                                               |
+| `razorpay_webhook_signature` | `X-Razorpay-Signature` for webhooks                            |
 
 ## Candidate profile (app routes)
 

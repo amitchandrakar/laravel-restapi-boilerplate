@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Events\AdminSettingsUpdatedEvent;
 use App\Events\ForgotPasswordRequestedEvent;
 use App\Events\PackageCreatedEvent;
 use App\Events\PackageUpdatedEvent;
 use App\Events\TeamMemberLifecycleEvent;
 use App\Events\UserCreatedEvent;
 use App\Events\UserLifecycleEvent;
+use App\Listeners\AdminSettingsUpdatedListener;
 use App\Listeners\ForgotPasswordRequestedListener;
 use App\Listeners\PackageCreatedListener;
 use App\Listeners\PackageUpdatedListener;
@@ -31,6 +33,7 @@ class EventServiceProvider extends ServiceProvider
         ForgotPasswordRequestedEvent::class => [ForgotPasswordRequestedListener::class],
         PackageCreatedEvent::class => [PackageCreatedListener::class],
         PackageUpdatedEvent::class => [PackageUpdatedListener::class],
+        AdminSettingsUpdatedEvent::class => [AdminSettingsUpdatedListener::class],
         TeamMemberLifecycleEvent::class => [TeamMemberLifecycleListener::class],
     ];
 }

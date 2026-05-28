@@ -208,8 +208,8 @@ final class PostmanExampleResponses
                 'method' => 'GET',
                 'header' => [],
                 'url' => [
-                    'raw' => '{{base_url}}/',
-                    'host' => ['{{base_url}}'],
+                    'raw' => '{{BASE_URL}}/',
+                    'host' => ['{{BASE_URL}}'],
                     'path' => [''],
                 ],
             ],

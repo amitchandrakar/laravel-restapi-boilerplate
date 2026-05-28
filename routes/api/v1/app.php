@@ -13,6 +13,8 @@ use App\Http\Controllers\Api\V1\MemberNotificationController;
 use App\Http\Controllers\Api\V1\MeRegistrationController;
 use App\Http\Controllers\Api\V1\PublicCandidateProfileOptionsController;
 use App\Http\Controllers\Api\V1\PublicFeaturedCandidateController;
+use App\Http\Controllers\Api\V1\PublicLegalPageController;
+use App\Http\Controllers\Api\V1\PublicSiteSettingsController;
 use App\Http\Controllers\Api\V1\RegistrationPaymentController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,6 +25,8 @@ Route::prefix('public')
     ->group(function (): void {
         Route::get('featured-candidates', [PublicFeaturedCandidateController::class, 'index']);
         Route::get('candidate-profile-options', PublicCandidateProfileOptionsController::class);
+        Route::get('site-settings', [PublicSiteSettingsController::class, 'show']);
+        Route::get('legal-pages/{slug}', [PublicLegalPageController::class, 'show']);
     });
 
 Route::post('payment/razorpay/webhook', [RegistrationPaymentController::class, 'webhook'])->middleware(
@@ -52,23 +56,9 @@ Route::prefix('auth')->group(function () use ($sanctumWithTrackedSession): void 
     Route::middleware('throttle:api-auth-strict')->group(function (): void {
         Route::post('register', [AuthController::class, 'register']);
         Route::post('register-candidate', [AuthController::class, 'registerCandidate']);
-        Route::post('login', [AuthController::class, 'login']);
-        Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
     });
 
-    Route::post('reset-password', [AuthController::class, 'resetPassword'])->middleware([
-        'throttle:api-auth-strict',
-        'optional.sanctum',
-        'tracked.session',
-    ]);
-
     Route::middleware($sanctumWithTrackedSession)->group(function (): void {
-        Route::post('logout', [AuthController::class, 'logout']);
-        Route::post('refresh', [AuthController::class, 'refresh']);
-        Route::get('me', [AuthController::class, 'me']);
-        Route::patch('profile', [AuthController::class, 'updateProfile']);
-        Route::post('change-password', [AuthController::class, 'changePassword']);
-
         Route::post('payment/registration/confirm', [RegistrationPaymentController::class, 'confirm']);
         Route::get('payment/registration/{paymentUuid}/status', [
             RegistrationPaymentController::class,

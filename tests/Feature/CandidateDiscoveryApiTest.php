@@ -48,17 +48,44 @@ describe('candidate discovery API', function (): void {
         expect($found2['isFavorite'])->toBeTrue();
     });
 
-    it('still allows discovery browsing when the viewer has no package subscription', function (): void {
+    it('forbids discovery when the viewer has no package permissions', function (): void {
         $viewer = makeCandidate('browse-no-package@example.com');
         $other = makePublishedCandidate('browse-other-nopkg@example.com');
 
         $t = tokenFor($viewer);
-        $this->withToken($t)->getJson('/api/v1/app/auth/candidate/search')->assertStatus(200);
+        $this->withToken($t)->getJson('/api/v1/app/auth/candidate/search')->assertStatus(403);
         $this->withToken($t)
             ->patchJson('/api/v1/app/auth/candidate/favorites/' . $other->uuid, ['favorite' => true])
-            ->assertStatus(200);
-        $this->withToken($t)->getJson('/api/v1/app/auth/candidate/favorites')->assertStatus(200);
-        $this->withToken($t)->getJson('/api/v1/app/auth/candidate/matches')->assertStatus(200);
+            ->assertStatus(403);
+        $this->withToken($t)->getJson('/api/v1/app/auth/candidate/favorites')->assertStatus(403);
+        $this->withToken($t)->getJson('/api/v1/app/auth/candidate/matches')->assertStatus(403);
+    });
+
+    it('returns limited card fields for Parichay subscribers on browse', function (): void {
+        $viewer = makeCandidate('browse-parichay@example.com');
+        subscribe($viewer, 'PARICHAY_FREE');
+        app(PackagePermissionService::class)->syncCandidatePermissions($viewer->fresh());
+        makePublishedCandidate('browse-target-parichay@example.com');
+
+        $res = $this->withToken(tokenFor($viewer->fresh()))->getJson('/api/v1/app/auth/candidate/search');
+        $res->assertStatus(200);
+        $first = $res->json('data.0');
+        expect($first)->toHaveKey('profileAccess', 'limited');
+        expect($first)->not->toHaveKey('currentCity');
+    });
+
+    it('forbids favorites and matches for Parichay subscribers', function (): void {
+        $viewer = makeCandidate('parichay-no-fav@example.com');
+        subscribe($viewer, 'PARICHAY_FREE');
+        app(PackagePermissionService::class)->syncCandidatePermissions($viewer->fresh());
+        $other = makePublishedCandidate('parichay-fav-target@example.com');
+
+        $t = tokenFor($viewer->fresh());
+        $this->withToken($t)->getJson('/api/v1/app/auth/candidate/favorites')->assertStatus(403);
+        $this->withToken($t)
+            ->patchJson('/api/v1/app/auth/candidate/favorites/' . $other->uuid, ['favorite' => true])
+            ->assertStatus(403);
+        $this->withToken($t)->getJson('/api/v1/app/auth/candidate/matches')->assertStatus(403);
     });
 
     it('returns forbidden on discovery routes for non-candidate accounts', function (): void {
@@ -120,7 +147,7 @@ describe('candidate discovery API', function (): void {
 
     it('returns synthesized match rows for browsing candidates', function (): void {
         $viewer = makeCandidate('match-viewer@example.com');
-        subscribe($viewer, 'TALASH_BASIC');
+        subscribe($viewer, 'RISHTA_PRO');
         app(PackagePermissionService::class)->syncCandidatePermissions($viewer->fresh());
 
         $matched = makePublishedCandidate('match-target@example.com');
@@ -177,6 +204,8 @@ describe('candidate discovery API', function (): void {
         Carbon::setTestNow('2026-05-02 12:00:00');
 
         $viewer = makeCandidate('filter-viewer@example.com');
+        subscribe($viewer, 'RISHTA_PRO');
+        app(PackagePermissionService::class)->syncCandidatePermissions($viewer->fresh());
         $roleId = (int) Role::query()->where('name', 'candidate')->where('guard_name', 'web')->value('id');
 
         /** @var User $male */
@@ -288,7 +317,9 @@ describe('candidate discovery API', function (): void {
 
     it('rejects discovery filters when minimum age exceeds maximum age', function (): void {
         $viewer = makeCandidate('filter-age@example.com');
-        $this->withToken(tokenFor($viewer))
+        subscribe($viewer, 'PARICHAY_FREE');
+        app(PackagePermissionService::class)->syncCandidatePermissions($viewer->fresh());
+        $this->withToken(tokenFor($viewer->fresh()))
             ->getJson('/api/v1/app/auth/candidate/search?min_age=40&max_age=25')
             ->assertStatus(422);
     });
@@ -297,7 +328,9 @@ describe('candidate discovery API', function (): void {
         $this->seed(DemoMasterDataSeeder::class);
 
         $viewer = makeCandidate('blank-filters@example.com');
-        $t = tokenFor($viewer);
+        subscribe($viewer, 'RISHTA_PRO');
+        app(PackagePermissionService::class)->syncCandidatePermissions($viewer->fresh());
+        $t = tokenFor($viewer->fresh());
 
         $this->withToken($t)
             ->getJson('/api/v1/app/auth/candidate/favorites?perPage=10&education[]=&education[]=&occupation=')
@@ -321,7 +354,7 @@ describe('candidate discovery API', function (): void {
 
     it('shows verification badges and favorites on synthesized match payloads', function (): void {
         $viewer = makeCandidate('match-viewer2@example.com');
-        subscribe($viewer, 'PARICHAY_FREE');
+        subscribe($viewer, 'RISHTA_PRO');
         app(PackagePermissionService::class)->syncCandidatePermissions($viewer->fresh());
 
         $matched = makePublishedCandidate('match-target2@example.com');

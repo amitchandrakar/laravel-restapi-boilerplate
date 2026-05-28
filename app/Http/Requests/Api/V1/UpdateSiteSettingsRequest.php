@@ -12,12 +12,16 @@ class UpdateSiteSettingsRequest extends ApiFormRequest
     {
         return [
             'siteName' => ['sometimes', 'required', 'string', 'max:255'],
-            'logoUrl' => ['sometimes', 'nullable', 'string', 'max:2048'],
-            'faviconUrl' => ['sometimes', 'nullable', 'string', 'max:2048'],
+            'logoUrl' => ['sometimes', 'nullable', 'string', 'max:500000'],
+            'faviconUrl' => ['sometimes', 'nullable', 'string', 'max:500000'],
+            'contactEmail' => ['sometimes', 'nullable', 'email', 'max:255'],
+            'contactPhone' => ['sometimes', 'nullable', 'string', 'max:64'],
+            'contactAddress' => ['sometimes', 'nullable', 'string', 'max:5000'],
             'allowedCommunitySurnames' => ['sometimes', 'array'],
             'allowedCommunitySurnames.*' => ['string', 'max:128'],
             'maintenanceMode' => ['sometimes', 'boolean'],
             'requireProfileApproval' => ['sometimes', 'boolean'],
+            'successStoriesCount' => ['sometimes', 'integer', 'min:0'],
         ];
     }
 }

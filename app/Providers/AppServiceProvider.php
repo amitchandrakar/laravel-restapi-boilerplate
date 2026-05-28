@@ -15,11 +15,13 @@ use App\Observers\SubscriptionObserver;
 use App\Observers\UserObserver;
 use App\Policies\SubscriptionPolicy;
 use App\Policies\TeamUserPolicy;
+use App\Services\Settings\SettingsRuntimeBootstrap;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Scout\Scout;
 
@@ -40,6 +42,10 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureRateLimiting();
         $this->configureScoutQueues();
+
+        if (Schema::hasTable('site_settings')) {
+            $this->app->make(SettingsRuntimeBootstrap::class)->apply();
+        }
 
         Gate::before(static function ($user, string $ability): ?bool {
             if ($user instanceof User && $user->hasRole('admin')) {

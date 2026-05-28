@@ -25,6 +25,7 @@ class AuthLoginResource extends JsonResource
 
         $out = [
             'user' => $user,
+            'userType' => $data['userType'] ?? (is_array($user) ? $user['userType'] ?? null : null),
             'token' => $data['token'] ?? null,
             'token_type' => $data['token_type'] ?? 'Bearer',
             'permissions' => $data['permissions'] ?? [],

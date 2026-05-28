@@ -14,6 +14,7 @@ use App\Http\Requests\Api\V1\RegisterRequest;
 use App\Http\Requests\Api\V1\ResetPasswordRequest;
 use App\Http\Requests\Api\V1\UpdateProfileRequest;
 use App\Http\Resources\Api\V1\AuthLoginResource;
+use App\Http\Resources\Api\V1\AuthMeResource;
 use App\Http\Resources\Api\V1\TokenResource;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Jobs\EndUserSessionJob;
@@ -23,6 +24,7 @@ use App\Jobs\StartUserSessionJob;
 use App\Jobs\UpsertUserDeviceLogJob;
 use App\Models\User;
 use App\Services\AuthService;
+use App\Support\AuthUserType;
 use App\Support\SanctumPlainTokenHasher;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -87,6 +89,7 @@ class AuthController extends Controller
 
         $loginPayload = [
             'user' => UserResource::make($user),
+            'userType' => AuthUserType::forUser($user),
             'token' => $result['token'],
             'token_type' => 'Bearer',
             'permissions' => $user->getAllPermissions()->pluck('name')->values()->all(),
@@ -152,6 +155,7 @@ class AuthController extends Controller
         return $this->createdResponse(
             AuthLoginResource::make([
                 'user' => UserResource::make($user),
+                'userType' => AuthUserType::forUser($user),
                 'token' => $result['token'],
                 'token_type' => 'Bearer',
                 'session_token_hash' => $tokenHash,
@@ -184,6 +188,7 @@ class AuthController extends Controller
         return $this->successResponse(
             AuthLoginResource::make([
                 'user' => UserResource::make($user),
+                'userType' => AuthUserType::forUser($user),
                 'token' => $result['token'],
                 'token_type' => 'Bearer',
                 'permissions' => $result['permissions'],
@@ -205,7 +210,17 @@ class AuthController extends Controller
             return $forbidden;
         }
 
-        return $this->successResponse(UserResource::make($request->user()), 'User retrieved successfully');
+        /** @var User $user */
+        $user = $request->user();
+
+        return $this->successResponse(
+            AuthMeResource::make([
+                'user' => UserResource::make($user),
+                'userType' => AuthUserType::forUser($user),
+                'permissions' => $user->getAllPermissions()->pluck('name')->values()->all(),
+            ]),
+            'User retrieved successfully'
+        );
     }
 
     /**

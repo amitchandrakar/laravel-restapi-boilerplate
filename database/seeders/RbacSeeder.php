@@ -139,6 +139,15 @@ class RbacSeeder extends Seeder
                 'sort_order' => ++$n,
             ],
             ['code' => 'admin_settings_seo', 'name' => 'Admin — Settings (SEO)', 'sort_order' => ++$n],
+            [
+                'code' => 'admin_settings_notifications',
+                'name' => 'Admin — Settings (Notifications)',
+                'sort_order' => ++$n,
+            ],
+            ['code' => 'admin_settings_storage', 'name' => 'Admin — Settings (Storage)', 'sort_order' => ++$n],
+            ['code' => 'admin_settings_redis', 'name' => 'Admin — Settings (Redis)', 'sort_order' => ++$n],
+            ['code' => 'admin_settings_search', 'name' => 'Admin — Settings (Search)', 'sort_order' => ++$n],
+            ['code' => 'admin_settings_legal', 'name' => 'Admin — Settings (Legal pages)', 'sort_order' => ++$n],
         ];
     }
 
@@ -401,6 +410,66 @@ class RbacSeeder extends Seeder
                     'action' => 'edit',
                     'title' => 'Edit SEO settings',
                 ],
+                [
+                    'name' => 'admin.settings.notifications.view',
+                    'module_code' => 'admin_settings_notifications',
+                    'action' => 'view',
+                    'title' => 'View notification settings',
+                ],
+                [
+                    'name' => 'admin.settings.notifications.edit',
+                    'module_code' => 'admin_settings_notifications',
+                    'action' => 'edit',
+                    'title' => 'Edit notification settings',
+                ],
+                [
+                    'name' => 'admin.settings.storage.view',
+                    'module_code' => 'admin_settings_storage',
+                    'action' => 'view',
+                    'title' => 'View storage settings',
+                ],
+                [
+                    'name' => 'admin.settings.storage.edit',
+                    'module_code' => 'admin_settings_storage',
+                    'action' => 'edit',
+                    'title' => 'Edit storage settings',
+                ],
+                [
+                    'name' => 'admin.settings.redis.view',
+                    'module_code' => 'admin_settings_redis',
+                    'action' => 'view',
+                    'title' => 'View Redis settings',
+                ],
+                [
+                    'name' => 'admin.settings.redis.edit',
+                    'module_code' => 'admin_settings_redis',
+                    'action' => 'edit',
+                    'title' => 'Edit Redis settings',
+                ],
+                [
+                    'name' => 'admin.settings.search.view',
+                    'module_code' => 'admin_settings_search',
+                    'action' => 'view',
+                    'title' => 'View search settings',
+                ],
+                [
+                    'name' => 'admin.settings.search.edit',
+                    'module_code' => 'admin_settings_search',
+                    'action' => 'edit',
+                    'title' => 'Edit search settings',
+                ],
+                [
+                    'name' => 'admin.settings.legal.view',
+                    'module_code' => 'admin_settings_legal',
+                    'action' => 'view',
+                    'title' => 'View legal pages',
+                ],
+                [
+                    'name' => 'admin.settings.legal.edit',
+                    'module_code' => 'admin_settings_legal',
+                    'action' => 'edit',
+                    'title' => 'Edit legal pages',
+                ],
             ],
             $this->candidateFeaturePermissionDefinitions()
         );
@@ -434,6 +503,11 @@ class RbacSeeder extends Seeder
             'admin.settings.payments.view',
             'admin.settings.social.view',
             'admin.settings.seo.view',
+            'admin.settings.notifications.view',
+            'admin.settings.storage.view',
+            'admin.settings.redis.view',
+            'admin.settings.search.view',
+            'admin.settings.legal.view',
         ];
     }
 

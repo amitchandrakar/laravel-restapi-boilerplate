@@ -1,5 +1,7 @@
 # Admin SEO Settings API
 
+Global SEO is stored in `seo_global_settings` (singleton). Per-page rows remain in `seo_settings` for future use.
+
 Manage global SEO defaults and related metadata used by web/app rendering.
 
 ## Endpoints
@@ -17,12 +19,12 @@ Auth for all endpoints: `Bearer` Sanctum token required.
     "defaultDescription": "Kurmi Samaj Matrimonial – Find your perfect life partner from the Kurmi community.",
     "defaultKeywords": "Kurmi matrimony, Kurmi Samaj, Kurmi marriage, Kurmi shaadi",
     "canonicalBaseUrl": "https://example.com",
-    "gaEnabled": true,
-    "gaTrackingCode": "<script async src=\"https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX\"></script>",
+    "googleAnalyticsEnabled": true,
+    "googleAnalyticsSnippet": "<script async src=\"https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX\"></script>",
     "robotsEnabled": true,
-    "robotsTxtContent": "User-agent: *\nDisallow:",
+    "robotsTxt": "User-agent: *\nDisallow:",
     "sitemapEnabled": true,
-    "sitemapUrls": ["/", "/browse", "/login", "/register", "/about", "/contact", "/privacy", "/terms"],
+    "sitemapUrls": "/\n/browse\n/login\n/register\n/about\n/contact\n/privacy\n/terms",
     "ogImage": "/og-image.jpg",
     "ogType": "website",
     "twitterCard": "summary_large_image",
@@ -33,6 +35,8 @@ Auth for all endpoints: `Bearer` Sanctum token required.
 ```
 
 All fields are optional; only supplied keys are updated.
+
+`sitemapUrls` is a newline-separated list of paths or full URLs (matches the admin UI textarea).
 
 ## Response
 

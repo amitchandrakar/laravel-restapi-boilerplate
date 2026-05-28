@@ -4,55 +4,38 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
+use App\Http\Controllers\Api\V1\Admin\Concerns\HandlesSingletonSettings;
 use App\Http\Controllers\Api\V1\Controller;
 use App\Http\Requests\Api\V1\UpdateSocialLoginSettingsRequest;
-use App\Jobs\LogAuditJob;
-use App\Jobs\LogUserActivityJob;
 use App\Services\SocialLoginSettingsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class SocialLoginSettingsController extends Controller
 {
+    use HandlesSingletonSettings;
+
     public function __construct(private readonly SocialLoginSettingsService $socialLoginSettingsService) {}
 
     public function show(Request $request): JsonResponse
     {
-        if (!$request->user()?->can('admin.settings.social.view')) {
-            return $this->forbiddenResponse();
-        }
-
-        return $this->successResponse(
-            $this->socialLoginSettingsService->all(),
+        return $this->showSettings(
+            $request,
+            $this->socialLoginSettingsService,
+            'admin.settings.social.view',
             'Social login settings fetched successfully'
         );
     }
 
     public function update(UpdateSocialLoginSettingsRequest $request): JsonResponse
     {
-        if (!$request->user()?->can('admin.settings.social.edit')) {
-            return $this->forbiddenResponse();
-        }
-
-        $updated = $this->socialLoginSettingsService->update($request->validated());
-        LogAuditJob::dispatch(
-            (int) $request->user()->id,
-            'settings',
-            0,
-            'update',
-            null,
-            $request->validated(),
-            $request->ip(),
-            $request->userAgent()
-        );
-        LogUserActivityJob::dispatch(
-            (int) $request->user()->id,
+        return $this->updateSettings(
+            $request,
+            $this->socialLoginSettingsService,
+            'admin.settings.social.edit',
             'admin.settings.social.update',
-            'api_v1_admin',
-            null,
-            $request->ip()
+            $request->validated(),
+            'Social login settings updated successfully'
         );
-
-        return $this->successResponse($updated, 'Social login settings updated successfully');
     }
 }

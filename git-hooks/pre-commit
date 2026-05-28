@@ -5,8 +5,17 @@ export PATH=$PATH:/usr/local/bin:/usr/local/sbin:/opt/homebrew/bin
 
 echo "Running pre-commit checks..."
 
-# 1. Auto-format with Prettier
+# 1. Auto-format with Prettier (project-local prettier + @prettier/plugin-php)
 echo "Running Prettier (Auto-format)..."
+if [ ! -f node_modules/.bin/prettier ]; then
+    echo "Installing npm dependencies (prettier, @prettier/plugin-php)..."
+    npm install
+    STATUS=$?
+    if [ $STATUS -ne 0 ]; then
+        echo "[ERROR] npm install failed!"
+        exit 1
+    fi
+fi
 npm run format
 STATUS=$?
 

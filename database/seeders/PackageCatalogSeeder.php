@@ -103,32 +103,47 @@ class PackageCatalogSeeder extends Seeder
         }
     }
 
+    /**
+     * @return list<string>
+     */
+    private function talashPermissionNames(): array
+    {
+        return [
+            'candidate.browse_profiles.full',
+            'candidate.view_full_profile_details',
+            'candidate.send_contact_requests',
+            'candidate.mark_profiles_favorite',
+            'candidate.view_partner_preferences_details',
+            'candidate.view_lifestyle_details',
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function rishtaPermissionNames(): array
+    {
+        return array_values(
+            array_unique([
+                ...$this->talashPermissionNames(),
+                'candidate.browse_profiles.limited',
+                'candidate.view_my_matches',
+                'candidate.view_profile_highlighting',
+                'candidate.view_instant_contact_access',
+                'candidate.view_contact_details',
+                'candidate.generate_kundali',
+                'candidate.view_kundali',
+                'candidate.view_kundali_matching_results',
+            ])
+        );
+    }
+
     private function syncPackagePermissions(int $packageId, string $packageCode): void
     {
         $permissionNames = match (strtoupper($packageCode)) {
             'PARICHAY_FREE' => ['candidate.browse_profiles.limited'],
-            'TALASH_BASIC' => [
-                'candidate.browse_profiles.full',
-                'candidate.view_full_profile_details',
-                'candidate.view_profile_highlighting',
-                'candidate.view_instant_contact_access',
-                'candidate.send_contact_requests',
-            ],
-            'RISHTA_PRO' => [
-                'candidate.browse_profiles.full',
-                'candidate.view_full_profile_details',
-                'candidate.view_profile_highlighting',
-                'candidate.view_instant_contact_access',
-                'candidate.send_contact_requests',
-                'candidate.view_partner_preferences_details',
-                'candidate.view_lifestyle_details',
-                'candidate.view_contact_details',
-                'candidate.mark_profiles_favorite',
-                'candidate.view_my_matches',
-                'candidate.generate_kundali',
-                'candidate.view_kundali',
-                'candidate.view_kundali_matching_results',
-            ],
+            'TALASH_BASIC' => $this->talashPermissionNames(),
+            'RISHTA_PRO' => $this->rishtaPermissionNames(),
             default => [],
         };
 

@@ -9,6 +9,7 @@ return [
     'user_permissions_seconds' => (int) env('CACHE_TTL_USER_PERMISSIONS', 600),
     'master_data_seconds' => (int) env('CACHE_TTL_MASTER_DATA', 86400),
     'featured_profiles_seconds' => (int) env('CACHE_TTL_FEATURED_PROFILES', 300),
-    'dashboard_metrics_seconds' => (int) env('CACHE_TTL_DASHBOARD_METRICS', 900),
+    'dashboard_metrics_seconds' => (int) env('CACHE_TTL_DASHBOARD_METRICS', 3600),
+    'dashboard_health_seconds' => (int) env('CACHE_TTL_DASHBOARD_HEALTH', 3600),
     'profile_options_seconds' => (int) env('CACHE_TTL_PROFILE_OPTIONS', 3600),
 ];

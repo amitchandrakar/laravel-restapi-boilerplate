@@ -39,6 +39,7 @@ class PaymentResource extends JsonResource
                 'fullName' => trim(($user?->first_name ?? '') . ' ' . ($user?->last_name ?? '')),
                 'profilePhoto' => $user?->profile_photo_url,
                 'email' => $user?->email,
+                'phone' => $user?->phone,
             ],
             'gatewayName' => $payment->gateway_name,
             'gatewayOrderId' => $payment->gateway_order_id,

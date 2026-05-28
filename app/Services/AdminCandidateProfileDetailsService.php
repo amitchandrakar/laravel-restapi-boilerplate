@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\ContactRequest;
 use App\Models\User;
+use App\Support\CandidateEntitlements;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -334,7 +335,21 @@ class AdminCandidateProfileDetailsService
             $payload['referral'] = $this->referralService->referralPayloadForUser($user);
         }
 
-        return $payload;
+        return $this->finalizePayloadForViewer($payload, $user, $viewer);
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     *
+     * @return array<string, mixed>
+     */
+    private function finalizePayloadForViewer(array $payload, User $profile, ?User $viewer): array
+    {
+        if (!($viewer instanceof User) || !$viewer->hasRole('candidate')) {
+            return $payload;
+        }
+
+        return CandidateEntitlements::redactPeerProfilePayload($payload, $profile, $viewer);
     }
 
     /**
@@ -628,6 +643,13 @@ class AdminCandidateProfileDetailsService
         }
 
         if ($viewer->can('admin.candidates.view')) {
+            return $profile->phone;
+        }
+
+        if (
+            $viewer->can(CandidateEntitlements::VIEW_INSTANT_CONTACT) ||
+            $viewer->can(CandidateEntitlements::VIEW_CONTACT_DETAILS)
+        ) {
             return $profile->phone;
         }
 

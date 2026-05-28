@@ -66,6 +66,7 @@ it('lets a candidate load their own profile details', function (): void {
 it('lets a candidate view another candidate profile through profile details', function (): void {
     $a = $this->createUserWithRole('candidate', 'candidate-a-profile-details@example.com');
     $b = $this->createUserWithRole('candidate', 'candidate-b-profile-details@example.com');
+    $a->givePermissionTo('candidate.browse_profiles.limited');
 
     $this->actingAs($a, 'sanctum')
         ->getJson('/api/v1/app/auth/candidate/' . $b->uuid . '/profile-details')

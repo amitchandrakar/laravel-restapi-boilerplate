@@ -119,26 +119,31 @@ Default behavior is all-time when `from` and `to` are not supplied.
 
 ## Dashboard stats
 
-Single payload endpoint for dashboard cards/charts:
+Cached overview and chart aggregates (Redis, default TTL **3600s** via `CACHE_TTL_DASHBOARD_METRICS`):
 
 `GET /api/v1/admin/dashboard/stats`
 
-Returns:
+Permission: `admin.dashboard.view`
 
-- `totals.candidates`, `newCandidates7Days`, `newCandidates30Days`
-- `totals.premiumMembers`, `freeMembers`
-- `totals.revenueDemo` (sum of successful payment amounts)
-- `totals.teams`
-- `totals.reportsGeneratedTotal`, `reportsGenerated7Days`, `reportsGenerated30Days`
-- `totals.pendingApproval`, `approvedToday`
-- `totals.activeMatchesTotal`
-- `totals.profileViews7Days`
-- `totals.contactActionsTotal`
-- `totals.successStoriesLanding`
-- `genderSplit` (counts and percentages for male/female/other)
-- `candidatesByAge` (age-wise buckets for line chart)
-- `teamsByLocation` (location/count/percent)
-- `topCommunities` (surname-based top buckets)
+**Not included** (fetch on each dashboard load from other routes):
+
+- Pending KYC list: `GET /api/v1/admin/candidates/kyc/pending?perPage=8`
+- Recent payments: `GET /api/v1/admin/payments?perPage=8&sort=latest`
+
+System health is cached separately: `GET /api/v1/admin/system-health` (TTL `CACHE_TTL_DASHBOARD_HEALTH`, default 3600s).
+
+### Response `data` shape
+
+- `totals`: `candidates`, `newCandidates7Days`, `newCandidates30Days`, `premiumMembers`, `freeMembers`, `revenueDemo`, `teams`, `totalUsers`, `totalPayments`, `totalReferrals`, `reportsGenerated*`, `pendingApproval`, `approvedToday`, `activeMatchesTotal`, `profileViews7Days`, `contactActionsTotal`, `successStoriesLanding`
+- `genderSplit`: male/female/other counts and percentages
+- `candidatesByAge`: `[{ age, total }]`
+- `candidatesByLocationTop10`: `[{ location, total }]` (candidate cities)
+- `teamsByLocation`: `[{ location, total, percent }]` (legacy team locations)
+- `topSubCastes`: `[{ subCaste, total }]`
+- `revenue.monthOnMonth` / `yearOnYear`: `[{ label, value }]` (INR sums from successful payments)
+- `revenue.bySubscriptionType`: `[{ name, count }]` (package name → revenue amount)
+- `registrations.monthOnMonth` / `yearOnYear`: new candidate signups per period
+- `activeSubscriptions.monthOnMonth` / `yearOnYear`: new subscriptions created per period
 
 ## Test command
 

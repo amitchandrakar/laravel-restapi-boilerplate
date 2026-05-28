@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Models\User;
+use App\Services\PackagePermissionService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class DemoSubscriptionPaymentSeeder extends Seeder
 {
+    public function __construct(private readonly PackagePermissionService $packagePermissionService) {}
+
     public function run(): void
     {
         $this->seedForUserAndPackage('candidate.parichay@example.com', 'PARICHAY_FREE', 0.0);
@@ -90,5 +94,11 @@ class DemoSubscriptionPaymentSeeder extends Seeder
                 'last_payment_id' => $existingPaymentId > 0 ? $existingPaymentId : null,
                 'updated_at' => $now,
             ]);
+
+        $user = User::query()->find($userId);
+
+        if ($user instanceof User) {
+            $this->packagePermissionService->syncCandidatePermissions($user->fresh());
+        }
     }
 }

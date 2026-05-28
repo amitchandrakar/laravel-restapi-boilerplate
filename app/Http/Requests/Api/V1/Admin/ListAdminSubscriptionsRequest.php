@@ -25,6 +25,8 @@ class ListAdminSubscriptionsRequest extends ApiFormRequest
             'package_id' => ['sometimes', 'integer', 'exists:packages,id'],
             'ends_from' => ['sometimes', 'date'],
             'ends_to' => ['sometimes', 'date', 'after_or_equal:ends_from'],
+            'sort' => ['sometimes', 'string', 'in:latest,oldest,candidate,package,starts,ends,status'],
+            'sort_dir' => ['sometimes', 'string', 'in:asc,desc'],
         ];
     }
 }

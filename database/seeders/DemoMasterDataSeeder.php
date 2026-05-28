@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * Minimal geography and reference rows so demo users can reference FKs
@@ -117,6 +119,106 @@ class DemoMasterDataSeeder extends Seeder
                     'updated_at' => $now,
                 ]);
             }
+        }
+
+        $this->seedDefaultApplicationSettings($now);
+    }
+
+    private function seedDefaultApplicationSettings(Carbon $now): void
+    {
+        $singletonDefaults = [
+            'site_settings' => [
+                'site_name' => 'Community Connect',
+                'allowed_community_surnames' => json_encode(['Chandrakar', 'Verma', 'Bais'], JSON_THROW_ON_ERROR),
+                'maintenance_mode' => false,
+                'require_profile_approval' => true,
+                'success_stories_count' => 0,
+            ],
+            'seo_global_settings' => [
+                'og_type' => 'website',
+                'twitter_card' => 'summary_large_image',
+                'google_analytics_enabled' => false,
+                'robots_enabled' => false,
+                'sitemap_enabled' => false,
+                'sitemap_urls' => "/\n/browse\n",
+            ],
+            'social_login_settings' => [
+                'google_environment' => 'live',
+                'facebook_environment' => 'live',
+                'instagram_environment' => 'live',
+            ],
+            'payment_gateway_settings' => [
+                'gateway' => 'razorpay',
+                'is_enabled' => false,
+                'environment' => 'sandbox',
+                'currency' => 'INR',
+                'live_key_id' => env('RAZORPAY_KEY_ID'),
+                'sandbox_key_id' => env('RAZORPAY_KEY_ID'),
+            ],
+            'notification_settings' => [
+                'email_enabled' => false,
+                'sms_enabled' => false,
+                'push_enabled' => false,
+            ],
+            'storage_settings' => [
+                'is_enabled' => false,
+                'driver' => 's3',
+            ],
+            'redis_settings' => [
+                'is_enabled' => false,
+                'client' => env('REDIS_CLIENT', 'predis'),
+                'host' => env('REDIS_HOST'),
+                'port' => env('REDIS_PORT') !== null ? (int) env('REDIS_PORT') : null,
+                'database' => (int) env('REDIS_DB', 0),
+                'use_tls' => str_starts_with((string) env('REDIS_URL', ''), 'rediss://'),
+            ],
+            'search_settings' => [
+                'is_enabled' => filled(env('ALGOLIA_APP_ID')),
+                'driver' => 'algolia',
+                'app_id' => env('ALGOLIA_APP_ID'),
+                'candidate_index_name' => env('SCOUT_PREFIX', '') . 'candidates',
+                'queue_indexing' => true,
+            ],
+        ];
+
+        foreach ($singletonDefaults as $table => $defaults) {
+            if (DB::table($table)->where('id', 1)->exists()) {
+                continue;
+            }
+
+            DB::table($table)->insert(
+                array_merge(
+                    [
+                        'id' => 1,
+                        'uuid' => (string) Str::uuid(),
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ],
+                    $defaults
+                )
+            );
+        }
+
+        $legalPages = [
+            ['slug' => 'terms', 'title' => 'Terms of Service'],
+            ['slug' => 'privacy-policy', 'title' => 'Privacy Policy'],
+            ['slug' => 'cookie-policy', 'title' => 'Cookie Policy'],
+        ];
+
+        foreach ($legalPages as $page) {
+            if (DB::table('legal_pages')->where('slug', $page['slug'])->exists()) {
+                continue;
+            }
+
+            DB::table('legal_pages')->insert([
+                'uuid' => (string) Str::uuid(),
+                'slug' => $page['slug'],
+                'title' => $page['title'],
+                'body' => '<p>Placeholder content.</p>',
+                'is_published' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
         }
     }
 }

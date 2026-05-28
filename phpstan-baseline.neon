@@ -1597,6 +1597,12 @@ parameters:
 			path: app/Listeners/PackageUpdatedListener.php
 
 		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\>\:\:role\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 1
+			path: app/Listeners/AdminSettingsUpdatedListener.php
+
+		-
 			message: '#^Casting to int something that''s already int\.$#'
 			identifier: cast.useless
 			count: 2
@@ -2072,6 +2078,24 @@ parameters:
 
 		-
 			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Subscription\>\:\:orderByDesc\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 2
+			path: app/Services/AdminSubscriptionService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Subscription\>\:\:orderBy\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 7
+			path: app/Services/AdminSubscriptionService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Subscription\>\:\:join\(\)\.$#'
+			identifier: staticMethod.dynamicCall
+			count: 2
+			path: app/Services/AdminSubscriptionService.php
+
+		-
+			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Subscription\>\:\:select\(\)\.$#'
 			identifier: staticMethod.dynamicCall
 			count: 2
 			path: app/Services/AdminSubscriptionService.php

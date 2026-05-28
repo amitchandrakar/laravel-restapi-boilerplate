@@ -25,13 +25,13 @@ it('locks accounts after five consecutive failed password attempts', function ()
     ])->assertStatus(201);
 
     foreach (range(1, 5) as $attempt) {
-        $this->postJson('/api/v1/app/auth/login', [
+        $this->postJson('/api/v1/auth/login', [
             'username' => $email,
             'password' => 'wrong-password',
         ])->assertStatus(401);
     }
 
-    $this->postJson('/api/v1/app/auth/login', [
+    $this->postJson('/api/v1/auth/login', [
         'username' => $email,
         'password' => AUTH_LOGIN_LOCKOUT_PW,
     ])
@@ -53,20 +53,20 @@ it('clears failed-login counters after a successful password check', function ()
     expect($user)->not->toBeNull();
 
     foreach (range(1, 3) as $attempt) {
-        $this->postJson('/api/v1/app/auth/login', [
+        $this->postJson('/api/v1/auth/login', [
             'username' => $email,
             'password' => 'wrong-password',
         ])->assertStatus(401);
     }
 
-    $this->postJson('/api/v1/app/auth/login', [
+    $this->postJson('/api/v1/auth/login', [
         'username' => $email,
         'password' => AUTH_LOGIN_LOCKOUT_PW,
     ])->assertStatus(200);
 
     Cache::flush();
 
-    $this->postJson('/api/v1/app/auth/login', [
+    $this->postJson('/api/v1/auth/login', [
         'username' => $email,
         'password' => AUTH_LOGIN_LOCKOUT_PW,
     ])->assertStatus(200);

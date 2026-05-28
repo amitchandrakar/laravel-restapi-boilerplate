@@ -110,6 +110,9 @@ it('allows admins to call every report endpoint', function () {
                     'freeMembers',
                     'revenueDemo',
                     'teams',
+                    'totalUsers',
+                    'totalPayments',
+                    'totalReferrals',
                     'reportsGeneratedTotal',
                     'reportsGenerated7Days',
                     'reportsGenerated30Days',
@@ -123,7 +126,11 @@ it('allows admins to call every report endpoint', function () {
                 'genderSplit',
                 'candidatesByAge',
                 'teamsByLocation',
+                'candidatesByLocationTop10',
                 'topSubCastes',
+                'revenue' => ['monthOnMonth', 'yearOnYear', 'bySubscriptionType'],
+                'registrations' => ['monthOnMonth', 'yearOnYear'],
+                'activeSubscriptions' => ['monthOnMonth', 'yearOnYear'],
             ],
         ]);
 });

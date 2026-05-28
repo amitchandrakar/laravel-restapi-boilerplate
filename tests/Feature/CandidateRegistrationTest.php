@@ -125,7 +125,7 @@ it('supports email-free registration when phone credentials are supplied and log
     expect($user)->not->toBeNull();
     expect($user->email)->toBeNull();
 
-    $this->postJson('/api/v1/app/auth/login', [
+    $this->postJson('/api/v1/auth/login', [
         'username' => $phone,
         'password' => AUTH_CANDIDATE_REGISTRATION_PW,
     ])

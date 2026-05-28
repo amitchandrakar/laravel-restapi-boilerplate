@@ -346,20 +346,48 @@
 
 ## Content and App Config
 
-### `settings`
+### `site_settings` (singleton, `id = 1`)
 
-- `id`
-- `uuid`
-- `group_key`
-- `setting_key`
-- `setting_value`
-- `value_type` (string|number|boolean|json)
-- `is_public`
-- `is_active`
-- `created_at`
-- `updated_at`
+- `id`, `uuid`, `site_name`, `logo_url` (text), `favicon_url` (text), `contact_email`, `contact_phone`, `contact_address`
+- `allowed_community_surnames` (json), `maintenance_mode`, `require_profile_approval`, `success_stories_count`
+- `updated_by`, `created_at`, `updated_at`
 
-### `seo_settings`
+### `seo_global_settings` (singleton)
+
+- `site_title`, `default_description`, `default_keywords`, `canonical_base_url`
+- `google_analytics_enabled`, `google_analytics_snippet` (text), `robots_enabled`, `robots_txt` (text)
+- `sitemap_enabled`, `sitemap_urls` (text, newline-separated paths/URLs)
+- OG/Twitter fields; `updated_by`, timestamps
+
+### `social_login_settings` (singleton)
+
+- Google/Facebook/Instagram OAuth fields; client secrets encrypted; `updated_by`, timestamps
+
+### `payment_gateway_settings` (singleton)
+
+- Razorpay: `gateway`, `is_enabled`, `environment`, live/sandbox keys (encrypted), `webhook_secret`, `currency`, `checkout_options_json` (text JSON string), `webhook_url`
+
+### `notification_settings` (singleton)
+
+- Email SMTP, Twilio SMS, FCM push; passwords/tokens encrypted
+
+### `storage_settings` (singleton)
+
+- S3: bucket, region, keys (encrypted), endpoint, URL, path-style flag
+
+### `redis_settings` (singleton)
+
+- Reference copy for ops; runtime Redis still from `.env` in v1
+
+### `search_settings` (singleton)
+
+- Algolia: `app_id`, API keys (encrypted), `candidate_index_name`, `queue_indexing`
+
+### `legal_pages`
+
+- `slug`, `title`, `body`, `version`, `is_published`, `published_at`, `updated_by`, soft deletes
+
+### `seo_settings` (per-page, future)
 
 - `id`
 - `uuid`

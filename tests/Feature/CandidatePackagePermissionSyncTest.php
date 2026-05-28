@@ -31,10 +31,18 @@ it('grants Talash subscribers the expected marketplace permissions', function ()
     upsertActiveSubscription($candidate->id, 'TALASH_BASIC');
     $service->syncCandidatePermissions($candidate->refresh());
 
-    expect($candidate->fresh()->hasPermissionTo('candidate.browse_profiles.full'))->toBeTrue();
-    expect($candidate->fresh()->hasPermissionTo('candidate.view_full_profile_details'))->toBeTrue();
-    expect($candidate->fresh()->hasPermissionTo('candidate.send_contact_requests'))->toBeTrue();
-    expect($candidate->fresh()->hasPermissionTo('candidate.generate_kundali'))->toBeFalse();
+    $fresh = $candidate->fresh();
+
+    expect($fresh->hasPermissionTo('candidate.browse_profiles.full'))->toBeTrue();
+    expect($fresh->hasPermissionTo('candidate.view_full_profile_details'))->toBeTrue();
+    expect($fresh->hasPermissionTo('candidate.send_contact_requests'))->toBeTrue();
+    expect($fresh->hasPermissionTo('candidate.mark_profiles_favorite'))->toBeTrue();
+    expect($fresh->hasPermissionTo('candidate.view_partner_preferences_details'))->toBeTrue();
+    expect($fresh->hasPermissionTo('candidate.view_lifestyle_details'))->toBeTrue();
+    expect($fresh->hasPermissionTo('candidate.view_profile_highlighting'))->toBeFalse();
+    expect($fresh->hasPermissionTo('candidate.view_instant_contact_access'))->toBeFalse();
+    expect($fresh->hasPermissionTo('candidate.view_my_matches'))->toBeFalse();
+    expect($fresh->hasPermissionTo('candidate.generate_kundali'))->toBeFalse();
 });
 
 it('grants Rishta subscribers the full discovery and contact permissions', function () {
@@ -43,9 +51,15 @@ it('grants Rishta subscribers the full discovery and contact permissions', funct
     upsertActiveSubscription($candidate->id, 'RISHTA_PRO');
     $service->syncCandidatePermissions($candidate->refresh());
 
-    expect($candidate->fresh()->hasPermissionTo('candidate.view_partner_preferences_details'))->toBeTrue();
-    expect($candidate->fresh()->hasPermissionTo('candidate.generate_kundali'))->toBeTrue();
-    expect($candidate->fresh()->hasPermissionTo('candidate.view_kundali_matching_results'))->toBeTrue();
+    $fresh = $candidate->fresh();
+
+    expect($fresh->hasPermissionTo('candidate.view_partner_preferences_details'))->toBeTrue();
+    expect($fresh->hasPermissionTo('candidate.view_my_matches'))->toBeTrue();
+    expect($fresh->hasPermissionTo('candidate.view_profile_highlighting'))->toBeTrue();
+    expect($fresh->hasPermissionTo('candidate.view_instant_contact_access'))->toBeTrue();
+    expect($fresh->hasPermissionTo('candidate.mark_profiles_favorite'))->toBeTrue();
+    expect($fresh->hasPermissionTo('candidate.generate_kundali'))->toBeTrue();
+    expect($fresh->hasPermissionTo('candidate.view_kundali_matching_results'))->toBeTrue();
 });
 
 it('recomputes permissions instantly when subscriptions upgrade or downgrade tiers', function () {

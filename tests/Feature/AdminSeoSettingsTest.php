@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 use Database\Seeders\RbacSeeder;
 
 it('allows admins to update and fetch SEO settings', function () {
@@ -12,12 +13,12 @@ it('allows admins to update and fetch SEO settings', function () {
         'defaultDescription' => 'Find your perfect life partner.',
         'defaultKeywords' => 'Kurmi matrimony, Kurmi shaadi',
         'canonicalBaseUrl' => 'https://example.com',
-        'gaEnabled' => true,
-        'gaTrackingCode' => '<script>window.test=true;</script>',
+        'googleAnalyticsEnabled' => true,
+        'googleAnalyticsSnippet' => '<script>window.test=true;</script>',
         'robotsEnabled' => true,
-        'robotsTxtContent' => "User-agent: *\nDisallow:",
+        'robotsTxt' => "User-agent: *\nDisallow:",
         'sitemapEnabled' => true,
-        'sitemapUrls' => ['/', '/browse'],
+        'sitemapUrls' => "/\n/browse",
         'ogImage' => '/og-image.jpg',
         'ogType' => 'website',
         'twitterCard' => 'summary_large_image',
@@ -31,8 +32,8 @@ it('allows admins to update and fetch SEO settings', function () {
         ->assertStatus(200)
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.siteTitle', 'Kurmi Samaj Matrimonial')
-        ->assertJsonPath('data.gaEnabled', true)
-        ->assertJsonPath('data.sitemapUrls.0', '/');
+        ->assertJsonPath('data.googleAnalyticsEnabled', true)
+        ->assertJsonPath('data.sitemapUrls', "/\n/browse");
 
     $this->actingAs($admin, 'sanctum')
         ->getJson('/api/v1/admin/settings/seo')
@@ -58,7 +59,6 @@ it('rejects SEO settings payloads that fail validation', function () {
     $this->actingAs($admin, 'sanctum')
         ->putJson('/api/v1/admin/settings/seo', [
             'canonicalBaseUrl' => 'invalid-url',
-            'twitterCard' => 'invalid-card',
         ])
         ->assertStatus(422);
 });

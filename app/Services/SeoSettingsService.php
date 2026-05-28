@@ -4,27 +4,37 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use App\Enums\AdminSettingsType;
+use App\Models\SeoGlobalSetting;
+use App\Services\Concerns\AbstractSingletonSettingsService;
+use Illuminate\Database\Eloquent\Model;
 
-class SeoSettingsService
+class SeoSettingsService extends AbstractSingletonSettingsService
 {
-    /**
-     * @param  array<string, mixed>  $data
-     *
-     * @return array<string, mixed>
-     */
-    public function update(array $data): array
+    protected function modelClass(): string
     {
-        $map = [
+        return SeoGlobalSetting::class;
+    }
+
+    protected function settingsType(): AdminSettingsType
+    {
+        return AdminSettingsType::Seo;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function columnMap(): array
+    {
+        return [
             'siteTitle' => 'site_title',
             'defaultDescription' => 'default_description',
             'defaultKeywords' => 'default_keywords',
             'canonicalBaseUrl' => 'canonical_base_url',
-            'gaEnabled' => 'ga_enabled',
-            'gaTrackingCode' => 'ga_tracking_code',
+            'googleAnalyticsEnabled' => 'google_analytics_enabled',
+            'googleAnalyticsSnippet' => 'google_analytics_snippet',
             'robotsEnabled' => 'robots_enabled',
-            'robotsTxtContent' => 'robots_txt_content',
+            'robotsTxt' => 'robots_txt',
             'sitemapEnabled' => 'sitemap_enabled',
             'sitemapUrls' => 'sitemap_urls',
             'ogImage' => 'og_image',
@@ -34,95 +44,39 @@ class SeoSettingsService
             'twitterDescription' => 'twitter_description',
             'twitterImage' => 'twitter_image',
         ];
+    }
 
-        DB::transaction(function () use ($data, $map): void {
-            foreach ($map as $payloadKey => $settingKey) {
-                if (!array_key_exists($payloadKey, $data)) {
-                    continue;
-                }
-
-                $value = $data[$payloadKey];
-                $valueType = 'string';
-
-                if (is_bool($value)) {
-                    $valueType = 'boolean';
-                    $value = $value ? '1' : '0';
-                } elseif (is_array($value)) {
-                    $valueType = 'json';
-                    $value = json_encode($value, JSON_THROW_ON_ERROR);
-                } elseif ($value !== null && (is_int($value) || is_float($value))) {
-                    $valueType = 'number';
-                    $value = (string) $value;
-                } elseif ($value === null) {
-                    $valueType = 'string';
-                } else {
-                    $value = (string) $value;
-                }
-
-                DB::table('settings')->updateOrInsert(
-                    ['group_key' => 'seo', 'setting_key' => $settingKey],
-                    [
-                        'uuid' => (string) Str::uuid(),
-                        'setting_value' => $value,
-                        'value_type' => $valueType,
-                        'is_public' => false,
-                        'is_active' => true,
-                        'updated_at' => now(),
-                        'created_at' => now(),
-                    ]
-                );
-            }
-        });
-
-        return $this->all();
+    /**
+     * @return list<string>
+     */
+    protected function secretColumns(): array
+    {
+        return [];
     }
 
     /**
      * @return array<string, mixed>
      */
-    public function all(): array
+    protected function toApiArray(Model $record, bool $_maskSecrets): array
     {
-        $rows = DB::table('settings')->where('group_key', 'seo')->get();
-        $indexed = [];
-
-        foreach ($rows as $row) {
-            $indexed[(string) $row->setting_key] = $this->castSettingValue(
-                $row->setting_value,
-                (string) $row->value_type
-            );
-        }
-
+        /** @var SeoGlobalSetting $record */
         return [
-            'siteTitle' => $indexed['site_title'] ?? null,
-            'defaultDescription' => $indexed['default_description'] ?? null,
-            'defaultKeywords' => $indexed['default_keywords'] ?? null,
-            'canonicalBaseUrl' => $indexed['canonical_base_url'] ?? null,
-            'gaEnabled' => (bool) ($indexed['ga_enabled'] ?? false),
-            'gaTrackingCode' => $indexed['ga_tracking_code'] ?? null,
-            'robotsEnabled' => (bool) ($indexed['robots_enabled'] ?? false),
-            'robotsTxtContent' => $indexed['robots_txt_content'] ?? null,
-            'sitemapEnabled' => (bool) ($indexed['sitemap_enabled'] ?? false),
-            'sitemapUrls' => is_array($indexed['sitemap_urls'] ?? null) ? $indexed['sitemap_urls'] : [],
-            'ogImage' => $indexed['og_image'] ?? null,
-            'ogType' => $indexed['og_type'] ?? 'website',
-            'twitterCard' => $indexed['twitter_card'] ?? 'summary_large_image',
-            'twitterTitle' => $indexed['twitter_title'] ?? null,
-            'twitterDescription' => $indexed['twitter_description'] ?? null,
-            'twitterImage' => $indexed['twitter_image'] ?? null,
+            'siteTitle' => $record->site_title,
+            'defaultDescription' => $record->default_description,
+            'defaultKeywords' => $record->default_keywords,
+            'canonicalBaseUrl' => $record->canonical_base_url,
+            'googleAnalyticsEnabled' => $record->google_analytics_enabled,
+            'googleAnalyticsSnippet' => $record->google_analytics_snippet ?? '',
+            'robotsEnabled' => $record->robots_enabled,
+            'robotsTxt' => $record->robots_txt ?? '',
+            'sitemapEnabled' => $record->sitemap_enabled,
+            'sitemapUrls' => $record->sitemap_urls ?? '',
+            'ogImage' => $record->og_image,
+            'ogType' => $record->og_type ?? 'website',
+            'twitterCard' => $record->twitter_card ?? 'summary_large_image',
+            'twitterTitle' => $record->twitter_title,
+            'twitterDescription' => $record->twitter_description,
+            'twitterImage' => $record->twitter_image,
         ];
-    }
-
-    private function castSettingValue(mixed $value, string $valueType): mixed
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        return match ($valueType) {
-            'boolean' => (string) $value === '1',
-            'number' => is_numeric($value) ? $value + 0 : $value,
-            'json' => json_decode((string) $value, true, 512, JSON_THROW_ON_ERROR),
-            default => (string) $value,
-        };
     }
 }

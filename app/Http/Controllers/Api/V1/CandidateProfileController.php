@@ -25,6 +25,7 @@ use App\Services\CandidateProfileSectionService;
 use App\Services\ProfileViewService;
 use App\Services\UserImageManageService;
 use App\Services\UserImageUploadService;
+use App\Support\CandidateEntitlements;
 use App\Support\UserProfilePhotos;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
@@ -69,6 +70,14 @@ class CandidateProfileController extends Controller
 
         if (!$candidate->hasRole('candidate')) {
             return $this->notFoundResponse('Candidate not found');
+        }
+
+        if (
+            (int) $actor->id !== (int) $candidate->id &&
+            !CandidateEntitlements::canBrowse($actor) &&
+            !$actor->can(CandidateEntitlements::VIEW_FULL_PROFILE)
+        ) {
+            return $this->forbiddenResponse('You do not have permission to view this profile.');
         }
 
         $this->profileViewService->recordCandidatePeerView($actor, $candidate);
@@ -372,7 +381,7 @@ class CandidateProfileController extends Controller
         LogAuditJob::dispatch(
             (int) $user->id,
             'users',
-            (int) $user->id,
+            $user->id,
             'candidate.section.save',
             null,
             ['section' => $section],
@@ -380,7 +389,7 @@ class CandidateProfileController extends Controller
             $request->userAgent()
         );
         LogUserActivityJob::dispatch(
-            (int) $user->id,
+            $user->id,
             'candidate.section.save',
             'api_v1_candidate',
             ['section' => $section],

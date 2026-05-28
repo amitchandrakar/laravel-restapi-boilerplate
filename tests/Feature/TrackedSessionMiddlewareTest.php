@@ -23,7 +23,7 @@ it('authorizes `/me` after signup while a freshly started tracked session is act
     $token = (string) $register->json('data.token');
     expect($register->json('data.session_token_hash'))->toBeString();
 
-    $this->withToken($token)->getJson('/api/v1/app/auth/me')->assertStatus(200)->assertJsonPath('success', true);
+    $this->withToken($token)->getJson('/api/v1/auth/me')->assertStatus(200)->assertJsonPath('success', true);
 });
 
 it('returns HTTP 403 on `/me` when the tracked session ended but the PAT remains valid', function () {
@@ -39,7 +39,7 @@ it('returns HTTP 403 on `/me` when the tracked session ended but the PAT remains
         'password_confirmation' => $password,
     ])->assertStatus(201);
 
-    $login = $this->postJson('/api/v1/app/auth/login', [
+    $login = $this->postJson('/api/v1/auth/login', [
         'username' => $email,
         'password' => $password,
     ]);
@@ -52,7 +52,7 @@ it('returns HTTP 403 on `/me` when the tracked session ended but the PAT remains
 
     app(UserActionLogService::class)->endSession((int) $user->id, $hash);
 
-    $ended = $this->withToken($token)->getJson('/api/v1/app/auth/me');
+    $ended = $this->withToken($token)->getJson('/api/v1/auth/me');
     $ended
         ->assertStatus(403)
         ->assertJsonPath('success', false)
@@ -72,7 +72,7 @@ it('refreshes the opaque session token hash without breaking subsequent `/me` ca
         'password_confirmation' => $password,
     ])->assertStatus(201);
 
-    $login = $this->postJson('/api/v1/app/auth/login', [
+    $login = $this->postJson('/api/v1/auth/login', [
         'username' => $email,
         'password' => $password,
     ]);
@@ -80,7 +80,7 @@ it('refreshes the opaque session token hash without breaking subsequent `/me` ca
     $firstToken = (string) $login->json('data.token');
     $firstHash = (string) $login->json('data.session_token_hash');
 
-    $refresh = $this->withToken($firstToken)->postJson('/api/v1/app/auth/refresh');
+    $refresh = $this->withToken($firstToken)->postJson('/api/v1/auth/refresh');
     $refresh->assertStatus(200)->assertJsonPath('success', true);
     $secondToken = (string) $refresh->json('data.token');
     $secondHash = (string) $refresh->json('data.session_token_hash');
@@ -88,7 +88,7 @@ it('refreshes the opaque session token hash without breaking subsequent `/me` ca
     $this->assertNotSame($firstHash, $secondHash);
     expect(strlen($secondHash))->toBe(64);
 
-    $this->withToken($secondToken)->getJson('/api/v1/app/auth/me')->assertStatus(200);
+    $this->withToken($secondToken)->getJson('/api/v1/auth/me')->assertStatus(200);
 
     $user = User::query()->where('email', $email)->first();
     expect($user)->not->toBeNull();
@@ -111,7 +111,7 @@ it('hashes issued login tokens with the same algorithm as plain-text PAT inspect
         'password_confirmation' => $password,
     ])->assertStatus(201);
 
-    $login = $this->postJson('/api/v1/app/auth/login', [
+    $login = $this->postJson('/api/v1/auth/login', [
         'username' => $email,
         'password' => $password,
     ]);

@@ -8,6 +8,8 @@ use Illuminate\Support\Str;
 
 final class PostmanRequestBuilder
 {
+    public const AUTH_TOKEN_VARIABLE = 'AUTH_TOKEN';
+
     public function __construct(
         private readonly PostmanModuleMapper $moduleMapper,
         private readonly PostmanFormRequestParser $formRequestParser,
@@ -21,10 +23,9 @@ final class PostmanRequestBuilder
     {
         $mapping = $this->moduleMapper->map($record);
         $name = $this->requestName($record);
-        $auth = $this->authConfig($mapping['realm'], $record);
         $headers = $this->headers($record, $mapping['realm']);
         $url = $this->url($record);
-        $body = $this->body($record);
+        $body = $this->body($record, $mapping['realm']);
         $description = $this->description($record, $mapping['realm']);
 
         $item = [
@@ -34,16 +35,19 @@ final class PostmanRequestBuilder
                 'header' => $headers,
                 'url' => $url,
                 'description' => $description,
+                'auth' => $this->authConfig($record),
             ],
             'response' => $this->exampleResponses->forRoute($record, $name),
         ];
 
-        if ($auth !== null) {
-            $item['request']['auth'] = $auth;
-        }
-
         if ($body !== null) {
             $item['request']['body'] = $body;
+        }
+
+        $events = $this->events($record);
+
+        if ($events !== []) {
+            $item['event'] = $events;
         }
 
         return $item;
@@ -121,11 +125,11 @@ final class PostmanRequestBuilder
             }
         }
 
-        $raw = '{{base_url}}/' . implode('/', $path);
+        $raw = '{{BASE_URL}}/' . implode('/', $path);
 
         return [
             'raw' => $raw,
-            'host' => ['{{base_url}}'],
+            'host' => ['{{BASE_URL}}'],
             'path' => $path,
             'variable' => $variables,
         ];
@@ -150,10 +154,14 @@ final class PostmanRequestBuilder
     /**
      * @return array<string, mixed>|null
      */
-    private function body(PostmanRouteRecord $record): ?array
+    private function body(PostmanRouteRecord $record, string $realm): ?array
     {
         if (!in_array($record->method, ['POST', 'PUT', 'PATCH'], true)) {
             return null;
+        }
+
+        if ($this->isLoginRoute($record)) {
+            return $this->loginBody($realm);
         }
 
         if ($this->isWebhook($record)) {
@@ -202,21 +210,108 @@ final class PostmanRequestBuilder
         ];
     }
 
+    private function isLoginRoute(PostmanRouteRecord $record): bool
+    {
+        return $record->method === 'POST' &&
+            (str_ends_with($record->uri, 'auth/login') || str_contains($record->uri, '/auth/login'));
+    }
+
     /**
-     * @return array<string, mixed>|null
+     * @return array<string, mixed>
      */
-    private function authConfig(string $realm, PostmanRouteRecord $record): ?array
+    private function loginBody(string $realm): array
+    {
+        $payload =
+            $realm === 'admin' || $realm === 'shared'
+                ? [
+                    'username' => '{{ADMIN_USERNAME}}',
+                    'password' => '{{ADMIN_PASSWORD}}',
+                ]
+                : [
+                    'username' => '{{CANDIDATE_USERNAME}}',
+                    'password' => '{{CANDIDATE_PASSWORD}}',
+                ];
+
+        return [
+            'mode' => 'raw',
+            'raw' => json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
+            'options' => ['raw' => ['language' => 'json']],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function authConfig(PostmanRouteRecord $record): array
     {
         if ($this->isPublic($record)) {
-            return null;
+            return ['type' => 'noauth'];
         }
-
-        $tokenVar = $realm === 'admin' ? '{{admin_token}}' : '{{app_token}}';
 
         return [
             'type' => 'bearer',
-            'bearer' => [['key' => 'token', 'value' => $tokenVar, 'type' => 'string']],
+            'bearer' => [
+                [
+                    'key' => 'token',
+                    'value' => '{{' . self::AUTH_TOKEN_VARIABLE . '}}',
+                    'type' => 'string',
+                ],
+            ],
         ];
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function events(PostmanRouteRecord $record): array
+    {
+        if (!$this->isTokenIssuingRoute($record)) {
+            return [];
+        }
+
+        return [
+            [
+                'listen' => 'test',
+                'script' => [
+                    'type' => 'text/javascript',
+                    'exec' => $this->saveAuthTokenScriptLines(),
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function saveAuthTokenScriptLines(): array
+    {
+        return [
+            'if (pm.response.code === 200 || pm.response.code === 201) {',
+            '    const body = pm.response.json();',
+            '    if (body.success && body.data && body.data.token) {',
+            '        pm.environment.set(\'' . self::AUTH_TOKEN_VARIABLE . '\', body.data.token);',
+            '        if (body.data.session_token_hash) {',
+            '            pm.environment.set(\'session_token_hash\', body.data.session_token_hash);',
+            '        }',
+            '        if (body.data.user && body.data.user.uuid) {',
+            '            pm.environment.set(\'candidate_uuid\', body.data.user.uuid);',
+            '        }',
+            '    }',
+            '}',
+        ];
+    }
+
+    private function isTokenIssuingRoute(PostmanRouteRecord $record): bool
+    {
+        $tokenPaths = ['auth/login', 'auth/register', 'auth/register-candidate', 'auth/refresh'];
+
+        foreach ($tokenPaths as $path) {
+            if (str_ends_with($record->uri, $path) || str_contains($record->uri, '/' . $path)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function isPublic(PostmanRouteRecord $record): bool
@@ -269,7 +364,7 @@ final class PostmanRequestBuilder
         if (in_array('EnsureActiveTrackedSession', $record->middleware, true)) {
             $lines[] =
                 '**Session:** Requires an active tracked session. Log in first; use the returned Bearer token. `session_token_hash` in the login response is for client reference — send `Authorization: Bearer {{' .
-                ($realm === 'admin' ? 'admin_token' : 'app_token') .
+                self::AUTH_TOKEN_VARIABLE .
                 '}}`.';
         }
 

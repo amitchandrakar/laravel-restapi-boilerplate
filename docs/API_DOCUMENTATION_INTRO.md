@@ -14,7 +14,7 @@ All product endpoints are namespaced by version so clients can adopt changes saf
 
 - **Current base path:** `/api/v1/…`
 - Routes are defined in [`routes/api.php`](../routes/api.php) (API prefix), [`routes/api/v1.php`](../routes/api/v1.php) (v1 loader), [`routes/api/v1/admin.php`](../routes/api/v1/admin.php) (admin panel), and [`routes/api/v1/app.php`](../routes/api/v1/app.php) (mobile app).
-- **Audience prefixes:** `/api/v1/admin/…` (staff dashboard) and `/api/v1/app/…` (member mobile app). Shared session endpoints (`login`, `logout`, `me`, `forgot-password`, `reset-password`, etc.) are registered in **both** trees with the same controllers. Candidate signup uses **`POST /api/v1/app/auth/register`** or **`register-candidate`** on the app tree only; staff CRUD uses admin routes.
+- **Audience prefixes:** `/api/v1/admin/…` (staff dashboard) and `/api/v1/app/…` (member app). Shared session endpoints (`login`, `logout`, `me`, `forgot-password`, `reset-password`, etc.) live under **`/api/v1/auth/…`** — see [`docs/shared_auth_api.md`](shared_auth_api.md). Candidate signup uses **`POST /api/v1/app/auth/register`** or **`register-candidate`**; staff CRUD uses admin routes.
 - Future versions (e.g. `/api/v2/…`) can be added alongside v1 without breaking existing clients.
 
 **Example**
