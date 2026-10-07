@@ -1,0 +1,12 @@
+---
+description: Additive migrations and generated Postman collections
+globs: "{database/migrations/**,docs/postman/**}"
+alwaysApply: false
+---
+
+# Migrations and Postman
+
+- Add a new migration for schema changes. Do not edit `database/migrations/2026_05_20_000000_create_community_connect_schema.php`.
+- Give new migrations a unique timestamp prefix.
+- `docs/postman/**/*.json` is generated. After route or FormRequest changes run `php artisan postman:generate`.
+- Do not hand-edit Postman collection JSON.

@@ -13,23 +13,12 @@ use App\Http\Controllers\Api\V1\MeDeviceController;
 use App\Http\Controllers\Api\V1\MeKycController;
 use App\Http\Controllers\Api\V1\MemberNotificationController;
 use App\Http\Controllers\Api\V1\MeRegistrationController;
-use App\Http\Controllers\Api\V1\PublicCandidateProfileOptionsController;
-use App\Http\Controllers\Api\V1\PublicFeaturedCandidateController;
-use App\Http\Controllers\Api\V1\PublicLegalPageController;
-use App\Http\Controllers\Api\V1\PublicSiteSettingsController;
 use App\Http\Controllers\Api\V1\VillageController;
 use Illuminate\Support\Facades\Route;
 
 $sanctumWithTrackedSession = ['auth:sanctum', 'tracked.session'];
 
-Route::prefix('public')
-    ->middleware('throttle:120,1')
-    ->group(function (): void {
-        Route::get('featured-candidates', [PublicFeaturedCandidateController::class, 'index']);
-        Route::get('candidate-profile-options', PublicCandidateProfileOptionsController::class);
-        Route::get('site-settings', [PublicSiteSettingsController::class, 'show']);
-        Route::get('legal-pages/{slug}', [PublicLegalPageController::class, 'show']);
-    });
+Route::prefix('public')->group(base_path('routes/api/v1/public.php'));
 
 Route::prefix('me')
     ->middleware(array_merge($sanctumWithTrackedSession, ['profile.uuid.header']))

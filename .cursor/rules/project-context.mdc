@@ -1,0 +1,13 @@
+---
+description: Community Connect API context and doc trust
+alwaysApply: true
+---
+
+# Project context
+
+- Read `docs/cursor-knowledge.md` and `AGENTS.md` before non-trivial edits.
+- Trust `routes/api/v1/*.php` and `tests/Feature` over `app-plan.md` and PHASE trackers.
+- Controllers stay thin; business logic belongs in `app/Services`.
+- Public API IDs are UUIDs, not numeric primary keys.
+- Do not implement OTP, Socialite login, or Razorpay checkout/webhooks unless the user asks. They are not in the codebase.
+- Never commit `.env` or `storage/app/firebase/*.json`.

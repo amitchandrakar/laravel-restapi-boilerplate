@@ -1,0 +1,14 @@
+---
+description: Pint and PHPCS style for PHP
+globs: "**/*.php"
+alwaysApply: false
+---
+
+# PHP style
+
+Match Laravel Pint and PHPCS (Slevomat). Do not invent a different style.
+
+- Start PHP files with `declare(strict_types=1);`.
+- Keep imports ordered and unused imports removed.
+- Before finishing, run `vendor/bin/pint --dirty` on touched PHP, then `vendor/bin/phpcs` on those paths.
+- If Pint rewrites a file, keep that formatting. Do not hand-format against it.

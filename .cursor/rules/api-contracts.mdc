@@ -1,0 +1,13 @@
+---
+description: API envelopes, auth middleware, and guest payloads
+globs: "{routes/**/*.php,app/Http/**/*.php}"
+alwaysApply: false
+---
+
+# API contracts
+
+- Return JSON through `ApiResponseBuilder` or the `ApiResponse` trait. Do not add ad-hoc `response()->json()` on API controllers.
+- Member route groups keep `auth:sanctum` and `tracked.session`.
+- `/api/v1/app/me/*` keeps `profile.uuid.header` (`X-User-Profile-Uuid`). Do not rename the header or change its 403 body without a client update.
+- Guest routes live in `routes/api/v1/public.php`. Browse and profile responses stay teaser-only (no phone, email, DOB, or gated sections).
+- Do not build a public profile with `AdminCandidateProfileDetailsService` and a null viewer.

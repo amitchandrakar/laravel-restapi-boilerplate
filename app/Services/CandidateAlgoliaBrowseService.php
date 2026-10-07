@@ -27,6 +27,35 @@ class CandidateAlgoliaBrowseService
             $this->exclusions->excludedUserUuidsForViewer($viewer)
         );
 
+        return $this->paginateWithBuiltFilters($built, $perPage, $page, (int) $viewer->id, true);
+    }
+
+    /**
+     * Guest Algolia browse: no viewer exclusions.
+     *
+     * @param  array<string, mixed>  $filters
+     *
+     * @return LengthAwarePaginator<int, array<string, mixed>>
+     */
+    public function paginatePublicBrowse(int $perPage, int $page, array $filters = []): LengthAwarePaginator
+    {
+        $built = CandidateAlgoliaFilterBuilder::build($filters, '', []);
+
+        return $this->paginateWithBuiltFilters($built, $perPage, $page, 0, false);
+    }
+
+    /**
+     * @param  array{filters: string, numericFilters: list<string>}  $built
+     *
+     * @return LengthAwarePaginator<int, array<string, mixed>>
+     */
+    private function paginateWithBuiltFilters(
+        array $built,
+        int $perPage,
+        int $page,
+        int $viewerId,
+        bool $includeFavoriteFlag
+    ): LengthAwarePaginator {
         /** @var Builder<User> $builder */
         $builder = User::search('');
         $options = [
@@ -41,7 +70,7 @@ class CandidateAlgoliaBrowseService
 
         /** @var Paginator<int, User> $paginator */
         $paginator = $builder->paginate($perPage, 'page', $page);
-        $payloads = $this->cardData->buildCardPayloads($paginator->getCollection(), (int) $viewer->id, true);
+        $payloads = $this->cardData->buildCardPayloads($paginator->getCollection(), $viewerId, $includeFavoriteFlag);
         // @phpstan-ignore argument.type (card payloads replace User models in paginator)
         $paginator->setCollection(collect($payloads));
 

@@ -1,0 +1,13 @@
+---
+description: Pest tests and Scout test driver
+globs: tests/**/*.php
+alwaysApply: false
+---
+
+# Tests
+
+- API behavior changes need a Pest feature test under `tests/Feature`.
+- Tests use `SCOUT_DRIVER=collection`. Do not call live Algolia from Pest.
+- Run the narrowest check: `php artisan test --filter=NameOfTest`.
+- Do not weaken assertions or delete tests to make a change pass.
+- Auth flows that need a tracked session must log in through the API (or start a session) rather than only `createToken()`, or `tracked.session` returns 403.

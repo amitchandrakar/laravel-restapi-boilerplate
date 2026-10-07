@@ -1,0 +1,12 @@
+---
+description: PHPStan level 8 for application code
+globs: app/**/*.php
+alwaysApply: false
+---
+
+# PHPStan
+
+- The project uses PHPStan level 8 with Larastan (`phpstan.neon`).
+- Fix new type errors. Do not add lines to `phpstan-baseline.neon` to hide them.
+- After `app/` edits, run `vendor/bin/phpstan analyse` and resolve failures before finishing.
+- Add precise param, return, and array shapes when the analyser cannot infer them.
