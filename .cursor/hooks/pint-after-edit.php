@@ -1,6 +1,5 @@
 #!/usr/bin/env php
 <?php
-
 declare(strict_types=1);
 
 $raw = stream_get_contents(STDIN);
@@ -50,3 +49,4 @@ if ($code !== 0) {
 
 echo "{}\n";
 exit(0);
+

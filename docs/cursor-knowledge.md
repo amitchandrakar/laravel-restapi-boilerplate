@@ -42,20 +42,20 @@ Tests use `SCOUT_DRIVER=collection` (`phpunit.xml`). Do not require a live Algol
 
 ## Implemented vs missing
 
-| Area | Status | Where to read |
-|------|--------|----------------|
-| Shared auth, tracked sessions | Implemented | [shared_auth_api.md](shared_auth_api.md) |
-| Admin RBAC | Implemented | [module_role_permission.md](module_role_permission.md) |
-| Package entitlements | Implemented | [package_feature_permissions.md](package_feature_permissions.md) |
-| Member onboarding, KYC, FCM devices | Implemented | [member_onboarding_me_api.md](member_onboarding_me_api.md) |
-| Discovery, favorites, matches | Implemented | routes + `tests/Feature/CandidateDiscoveryApiTest.php` |
-| Public CMS, guest browse/detail | Implemented | [app_public_cms_api.md](app_public_cms_api.md) |
-| Algolia + DB browse | Implemented | `CandidateBrowseService`, `config/scout.php` |
-| Notifications feed + FCM send | Implemented | [member_notifications_api.md](member_notifications_api.md), `FcmPushService` |
-| Admin settings (site, search, storage, payments config) | Implemented | matching `docs/admin_*_api.md` |
-| OTP / Twilio login | Not implemented | |
-| Socialite login | Not implemented (admin can store social credentials only) | |
-| Razorpay order create + webhook | Not implemented (settings row exists; checkout throws when payment is required) | |
+| Area                                                    | Status                                                                          | Where to read                                                                |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Shared auth, tracked sessions                           | Implemented                                                                     | [shared_auth_api.md](shared_auth_api.md)                                     |
+| Admin RBAC                                              | Implemented                                                                     | [module_role_permission.md](module_role_permission.md)                       |
+| Package entitlements                                    | Implemented                                                                     | [package_feature_permissions.md](package_feature_permissions.md)             |
+| Member onboarding, KYC, FCM devices                     | Implemented                                                                     | [member_onboarding_me_api.md](member_onboarding_me_api.md)                   |
+| Discovery, favorites, matches                           | Implemented                                                                     | routes + `tests/Feature/CandidateDiscoveryApiTest.php`                       |
+| Public CMS, guest browse/detail                         | Implemented                                                                     | [app_public_cms_api.md](app_public_cms_api.md)                               |
+| Algolia + DB browse                                     | Implemented                                                                     | `CandidateBrowseService`, `config/scout.php`                                 |
+| Notifications feed + FCM send                           | Implemented                                                                     | [member_notifications_api.md](member_notifications_api.md), `FcmPushService` |
+| Admin settings (site, search, storage, payments config) | Implemented                                                                     | matching `docs/admin_*_api.md`                                               |
+| OTP / Twilio login                                      | Not implemented                                                                 |                                                                              |
+| Socialite login                                         | Not implemented (admin can store social credentials only)                       |                                                                              |
+| Razorpay order create + webhook                         | Not implemented (settings row exists; checkout throws when payment is required) |                                                                              |
 
 ## Doc trust
 

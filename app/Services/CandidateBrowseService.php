@@ -80,8 +80,7 @@ class CandidateBrowseService
         CandidateDiscoveryFilterApplier::apply($query, $filters, 'users');
 
         /** @var Paginator<int, User> $paginator */
-        $paginator =
-            $page === null ? $query->paginate($perPage) : $query->paginate($perPage, ['*'], 'page', $page);
+        $paginator = $page === null ? $query->paginate($perPage) : $query->paginate($perPage, ['*'], 'page', $page);
         $payloads = $this->cardData->buildCardPayloads(
             $paginator->getCollection(),
             $viewer instanceof User ? $viewer->id : 0,

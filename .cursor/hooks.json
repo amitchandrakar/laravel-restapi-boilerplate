@@ -1,18 +1,18 @@
 {
-  "version": 1,
-  "hooks": {
-    "afterFileEdit": [
-      {
-        "command": "php .cursor/hooks/pint-after-edit.php",
-        "timeout": 60
-      }
-    ],
-    "stop": [
-      {
-        "command": "php .cursor/hooks/remind-quality-on-stop.php",
-        "timeout": 15,
-        "loop_limit": 1
-      }
-    ]
-  }
+    "version": 1,
+    "hooks": {
+        "afterFileEdit": [
+            {
+                "command": "php .cursor/hooks/pint-after-edit.php",
+                "timeout": 60
+            }
+        ],
+        "stop": [
+            {
+                "command": "php .cursor/hooks/remind-quality-on-stop.php",
+                "timeout": 15,
+                "loop_limit": 1
+            }
+        ]
+    }
 }
