@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Services\PackagePermissionService;
 use Database\Seeders\ChhattisgarhMasterGeoSeeder;
 use Database\Seeders\DemoMasterDataSeeder;
+use Database\Seeders\PackageCatalogSeeder;
 use Database\Seeders\RbacSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -64,9 +66,26 @@ it('lets a candidate load their own profile details', function (): void {
 });
 
 it('lets a candidate view another candidate profile through profile details', function (): void {
+    $this->seed(PackageCatalogSeeder::class);
     $a = $this->createUserWithRole('candidate', 'candidate-a-profile-details@example.com');
     $b = $this->createUserWithRole('candidate', 'candidate-b-profile-details@example.com');
-    $a->givePermissionTo('candidate.browse_profiles.limited');
+    $this->approveCandidateKyc($a);
+
+    $packageId = (int) DB::table('packages')->where('code', 'TALASH_BASIC')->value('id');
+    $now = now();
+    DB::table('subscriptions')->insert([
+        'uuid' => (string) Str::uuid(),
+        'user_id' => $a->id,
+        'package_id' => $packageId,
+        'subscription_status' => 'active',
+        'started_at' => $now,
+        'ends_at' => $now->copy()->addYear(),
+        'auto_renew' => false,
+        'renewal_source' => 'manual',
+        'created_at' => $now,
+        'updated_at' => $now,
+    ]);
+    app(PackagePermissionService::class)->syncCandidatePermissions($a->fresh());
 
     $this->actingAs($a, 'sanctum')
         ->getJson('/api/v1/app/auth/candidate/' . $b->uuid . '/profile-details')

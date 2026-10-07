@@ -21,6 +21,31 @@ final class CacheKeys
         return 'master:candidate-profile-options';
     }
 
+    public static function publicSiteSettings(): string
+    {
+        return 'public:site-settings:v1';
+    }
+
+    public static function publicLegalPage(string $slug): string
+    {
+        return 'public:legal-page:' . $slug . ':v1';
+    }
+
+    public static function registrationOptions(): string
+    {
+        return 'public:registration-options:v1';
+    }
+
+    public static function adminSiteSettings(): string
+    {
+        return 'admin:site-settings:v1';
+    }
+
+    public static function adminRolesCatalog(): string
+    {
+        return 'admin:settings:roles:v1';
+    }
+
     public static function publicFeaturedPage(int $page, int $perPage): string
     {
         return 'profiles:featured:page:' . $page . ':per:' . $perPage;

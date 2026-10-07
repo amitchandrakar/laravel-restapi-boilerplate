@@ -15,10 +15,14 @@ use App\Listeners\AdminSettingsUpdatedListener;
 use App\Listeners\ForgotPasswordRequestedListener;
 use App\Listeners\PackageCreatedListener;
 use App\Listeners\PackageUpdatedListener;
+use App\Listeners\SendFcmPushOnDatabaseNotification;
+use App\Listeners\SkipMailWhenDisabledListener;
 use App\Listeners\TeamMemberLifecycleListener;
 use App\Listeners\UserCreatedListener;
 use App\Listeners\UserLifecycleListener;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Illuminate\Notifications\Events\NotificationSending;
+use Illuminate\Notifications\Events\NotificationSent;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -35,5 +39,7 @@ class EventServiceProvider extends ServiceProvider
         PackageUpdatedEvent::class => [PackageUpdatedListener::class],
         AdminSettingsUpdatedEvent::class => [AdminSettingsUpdatedListener::class],
         TeamMemberLifecycleEvent::class => [TeamMemberLifecycleListener::class],
+        NotificationSending::class => [SkipMailWhenDisabledListener::class],
+        NotificationSent::class => [SendFcmPushOnDatabaseNotification::class],
     ];
 }

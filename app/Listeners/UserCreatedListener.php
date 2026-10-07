@@ -24,7 +24,15 @@ class UserCreatedListener implements ShouldQueue
      */
     public function handle(UserCreatedEvent $event): void
     {
-        $event->user->notify(new WelcomeEmailNotification());
+        try {
+            $event->user->notify(new WelcomeEmailNotification());
+        } catch (\Throwable $e) {
+            // Never fail registration/login because outbound mail is misconfigured or rate-limited.
+            Log::warning('Welcome email failed (skipped).', [
+                'user_id' => $event->user->id,
+                'message' => $e->getMessage(),
+            ]);
+        }
 
         // SMS provider is not configured yet; keep a hook here for future.
         Log::info('Welcome SMS not configured (skipped).', [

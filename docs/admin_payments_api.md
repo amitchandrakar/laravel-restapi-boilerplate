@@ -20,7 +20,7 @@ Auth for all endpoints: `Bearer` Sanctum token required.
     "user_id": 101,
     "subscription_id": 77,
     "package_id": 5,
-    "gateway_name": "razorpay",
+    "gateway_name": "manual",
     "gateway_order_id": "order_ABC123",
     "gateway_payment_id": "pay_ABC123",
     "gateway_reference_id": "ref_ABC123",
@@ -66,7 +66,7 @@ For update, all fields are optional (`PATCH` semantics).
         "userId": 101,
         "subscriptionId": 77,
         "packageId": 5,
-        "gatewayName": "razorpay",
+        "gatewayName": "manual",
         "gatewayOrderId": "order_ABC123",
         "gatewayPaymentId": "pay_ABC123",
         "gatewayReferenceId": "ref_ABC123",
@@ -94,7 +94,7 @@ For update, all fields are optional (`PATCH` semantics).
 | `user_id`               | int    | Payer user id                                 |
 | `package_id`            | int    | Package id                                    |
 | `payment_status`        | string | pending, success, failed, refunded, cancelled |
-| `gateway_name`          | string | e.g. razorpay                                 |
+| `gateway_name`          | string | e.g. manual                                   |
 | `payment_method`        | string | upi, card, netbanking, wallet, cash, manual   |
 | `paid_from` / `paid_to` | date   | Paid-at range                                 |
 | `sort`                  | string | latest (default), oldest, amount              |

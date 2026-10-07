@@ -118,6 +118,12 @@ class User extends BaseModel implements Authenticatable, AuthorizableContract
         return $this->hasMany(UserVerificationDocument::class, 'user_id');
     }
 
+    /** @return HasMany<UserPushDevice, $this> */
+    public function pushDevices(): HasMany
+    {
+        return $this->hasMany(UserPushDevice::class, 'user_id');
+    }
+
     /**
      * @return array<int, string>
      */

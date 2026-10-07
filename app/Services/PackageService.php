@@ -7,9 +7,11 @@ namespace App\Services;
 use App\Jobs\SyncPackageCandidatePermissionsJob;
 use App\Models\Package;
 use App\Models\User;
+use App\Support\CacheKeys;
 use App\Support\QuerySearch;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -60,6 +62,7 @@ class PackageService
             }
 
             Log::info('PackageService: package created', ['package_id' => $package->id]);
+            $this->forgetRegistrationOptionsCache();
 
             return $package->refresh()->load('permissions');
         });
@@ -136,6 +139,7 @@ class PackageService
             }
 
             Log::info('PackageService: package updated', ['package_id' => $package->id]);
+            $this->forgetRegistrationOptionsCache();
 
             return $package->refresh()->load('permissions');
         });
@@ -147,7 +151,13 @@ class PackageService
             $package->update(['updated_by' => $actor->id]);
             $package->delete();
             Log::info('PackageService: package deleted', ['package_id' => $package->id]);
+            $this->forgetRegistrationOptionsCache();
         });
+    }
+
+    private function forgetRegistrationOptionsCache(): void
+    {
+        Cache::forget(CacheKeys::registrationOptions());
     }
 
     /**

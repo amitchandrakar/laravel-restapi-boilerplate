@@ -108,13 +108,15 @@ class AdminSubscriptionController extends Controller
 
             $paginator = $fetcher($request->validated());
 
-            LogUserActivityJob::dispatch(
-                $this->authenticatedUserId($request),
-                'admin.subscriptions.' . $activitySuffix,
-                'api_v1_admin',
-                ['filters' => $request->validated()],
-                $request->ip()
-            );
+            if (config('api.log_user_activity_on_read', false)) {
+                LogUserActivityJob::dispatch(
+                    $this->authenticatedUserId($request),
+                    'admin.subscriptions.' . $activitySuffix,
+                    'api_v1_admin',
+                    ['filters' => $request->validated()],
+                    $request->ip()
+                );
+            }
 
             return $this->paginatedResponse(
                 AdminSubscriptionResource::collection($paginator),

@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\Coupon;
 use App\Models\Package;
 use App\Models\Payment;
 use App\Models\Role;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Models\UserVerificationDocument;
-use App\Services\Payment\RegistrationPaymentService;
+use App\Support\CacheKeys;
 use App\Support\SanctumAuthToken;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -28,8 +30,9 @@ class AuthService
 
     public function __construct(
         private readonly PackagePermissionService $packagePermissionService,
-        private readonly RegistrationPaymentService $registrationPaymentService,
-        private readonly LoginLockoutService $loginLockoutService
+        private readonly LoginLockoutService $loginLockoutService,
+        private readonly CouponService $couponService,
+        private readonly CouponPricingService $couponPricingService
     ) {}
 
     /**
@@ -50,7 +53,7 @@ class AuthService
         $user = User::create($data);
 
         if ($candidateRoleId !== null) {
-            $user->assignRole('candidate');
+            $user->assignRole(Role::findByName('candidate', 'web'));
         }
         $this->attachDefaultPackageForRegistration($user->id);
         $this->packagePermissionService->syncCandidatePermissions($user);
@@ -66,6 +69,28 @@ class AuthService
      * @return array{packages: list<array<string, mixed>>, surnames: list<array{id: int, name: string}>}
      */
     public function registrationOptions(): array
+    {
+        $ttl = max(60, (int) config('cache_strategy.registration_options_seconds', 600));
+
+        /** @var array{packages: list<array<string, mixed>>, surnames: list<array{id: int, name: string}>} $data */
+        $data = Cache::remember(
+            CacheKeys::registrationOptions(),
+            $ttl,
+            fn(): array => $this->buildRegistrationOptions()
+        );
+
+        return $this->decorateRegistrationOptionsForPayments($data);
+    }
+
+    public function forgetRegistrationOptionsCache(): void
+    {
+        Cache::forget(CacheKeys::registrationOptions());
+    }
+
+    /**
+     * @return array{packages: list<array<string, mixed>>, surnames: list<array{id: int, name: string}>}
+     */
+    private function buildRegistrationOptions(): array
     {
         $packages = Package::query()
             ->where('is_active', true)
@@ -90,8 +115,8 @@ class AuthService
             ->all();
 
         return [
-            'packages' => $packages,
-            'surnames' => $surnames,
+            'packages' => array_values($packages),
+            'surnames' => array_values($surnames),
         ];
     }
 
@@ -106,7 +131,9 @@ class AuthService
     {
         return DB::transaction(function () use ($data): array {
             $packageUuid = (string) $data['package_uuid'];
-            unset($data['package_uuid'], $data['password_confirmation']);
+            $couponCode =
+                isset($data['coupon_code']) && is_string($data['coupon_code']) ? trim($data['coupon_code']) : null;
+            unset($data['package_uuid'], $data['password_confirmation'], $data['coupon_code']);
             $candidateRoleId = $this->candidateRoleId();
 
             /** @var Package|null $package */
@@ -127,49 +154,57 @@ class AuthService
             $user = User::create($data);
 
             if ($candidateRoleId !== null) {
-                $user->assignRole('candidate');
+                $user->assignRole(Role::findByName('candidate', 'web'));
             }
 
-            $payable = $package->registrationPayableAmountRupees();
+            $payable = $this->resolveRegistrationPayableRupees($package, $couponCode);
+            $appliedCoupon = $this->resolveAppliedCoupon($package, $couponCode);
 
             if ($payable <= 0) {
-                $this->attachSubscriptionForRegistration($user->id, $packageId, 'active', 'system');
+                $subscriptionId = $this->attachSubscriptionForRegistration($user->id, $packageId, 'active', 'system');
+
+                if ($appliedCoupon instanceof Coupon) {
+                    $this->couponService->redeem($appliedCoupon, (int) $user->id, $subscriptionId);
+                }
+
                 $this->packagePermissionService->syncCandidatePermissions($user);
                 $token = SanctumAuthToken::issue($user);
 
                 return ['user' => $user, 'token' => $token, 'payment' => null];
             }
 
-            $subscriptionId = $this->attachSubscriptionForRegistration($user->id, $packageId, 'pending', 'gateway');
-            $paymentMeta = $this->registrationPaymentService->createOrderForRegistration(
-                $user,
-                $package,
-                $subscriptionId
-            );
-            $token = SanctumAuthToken::issue($user);
-
-            return ['user' => $user, 'token' => $token, 'payment' => $paymentMeta];
+            throw ValidationException::withMessages([
+                'package_uuid' => [
+                    'Online payment is not configured. Please contact support or choose another package.',
+                ],
+            ]);
         });
     }
 
     /**
-     * POST /me/registration/checkout — ensure subscription + Razorpay order for the selected package.
+     * POST /me/registration/checkout — activate complimentary packages or reject unpaid gateway checkout.
      *
      * @return array<string, mixed>
      */
-    public function prepareRegistrationCheckout(User $user, Package $package): array
+    public function prepareRegistrationCheckout(User $user, Package $package, ?string $couponCode = null): array
     {
         $packageId = (int) $package->id;
-        $payable = $package->registrationPayableAmountRupees();
+        $payable = $this->resolveRegistrationPayableRupees($package, $couponCode, $user);
+        $appliedCoupon = $this->resolveAppliedCoupon($package, $couponCode, $user);
 
         if ($payable <= 0) {
-            $this->attachSubscriptionForRegistration($user->id, $packageId, 'active', 'system');
+            $subscriptionId = $this->attachSubscriptionForRegistration($user->id, $packageId, 'active', 'system');
+
+            if ($appliedCoupon instanceof Coupon) {
+                $this->couponService->redeem($appliedCoupon, (int) $user->id, $subscriptionId);
+            }
+
             $user->refresh();
             $this->packagePermissionService->syncCandidatePermissions($user);
 
             return [
                 'skip_checkout' => true,
-                'reason' => 'free_or_complimentary',
+                'reason' => $appliedCoupon instanceof Coupon ? 'coupon_applied' : 'free_package',
             ];
         }
 
@@ -183,42 +218,9 @@ class AuthService
             ];
         }
 
-        $subscriptionId = $this->findOrCreateRegistrationSubscriptionForPaidPackage($user->id, $packageId);
-
-        /** @var Payment|null $pendingPayment */
-        $pendingPayment = Payment::query()
-            ->where('subscription_id', $subscriptionId)
-            ->where('gateway_name', 'razorpay')
-            ->where('payment_status', 'pending')
-            ->whereNotNull('gateway_order_id')
-            ->orderByDesc('id')
-            ->first();
-
-        if ($pendingPayment instanceof Payment) {
-            $amountPaise = (int) round(((float) $pendingPayment->amount) * 100);
-
-            return [
-                'skip_checkout' => false,
-                'order_id' => (string) $pendingPayment->gateway_order_id,
-                'key_id' => (string) config('services.razorpay.key_id', ''),
-                'amount_paise' => $amountPaise,
-                'currency' => strtoupper((string) $pendingPayment->currency),
-                'payment_uuid' => (string) $pendingPayment->uuid,
-                'checkout_options' => config('services.razorpay.checkout', []),
-            ];
-        }
-
-        $meta = $this->registrationPaymentService->createOrderForRegistration($user, $package, $subscriptionId);
-
-        return [
-            'skip_checkout' => false,
-            'order_id' => $meta['orderId'],
-            'key_id' => $meta['keyId'],
-            'amount_paise' => $meta['amount'],
-            'currency' => $meta['currency'],
-            'payment_uuid' => $meta['paymentUuid'],
-            'checkout_options' => config('services.razorpay.checkout', []),
-        ];
+        throw ValidationException::withMessages([
+            'package_uuid' => ['Online payment is not configured. Please contact support or choose another package.'],
+        ]);
     }
 
     /**
@@ -266,6 +268,11 @@ class AuthService
                 'submitted_at' => $aadhaar !== null && $aadhaar->submitted_at !== null
                         ? Carbon::parse($aadhaar->submitted_at)->toIso8601String()
                         : null,
+                'rejection_reason' => $aadhaar !== null && in_array($kycStatus, ['rejected', 'resubmission_required'], true)
+                        ? ($aadhaar->rejection_reason !== null && $aadhaar->rejection_reason !== ''
+                            ? (string) $aadhaar->rejection_reason
+                            : null)
+                        : null,
             ],
             'next_step' => $nextStep,
         ];
@@ -310,7 +317,11 @@ class AuthService
 
         $this->loginLockoutService->clear($user);
 
-        // API auth uses Sanctum personal access tokens only. Avoid web-guard session login here:
+        if ((string) ($user->profile_status ?? '') === 'spam' || (string) ($user->status ?? 'active') === 'inactive') {
+            throw new AuthenticationException('Your account has been deactivated. Please contact support.');
+        }
+
+        // API auth uses Sanctum personal access tokens only.
         // Sanctum checks the web guard first; a session user + TransientToken would bypass PAT
         // validation and keep the user "logged in" after the PAT is revoked on logout.
 
@@ -376,8 +387,9 @@ class AuthService
 
     private function candidateRoleId(): ?int
     {
-        $guard = (string) config('auth.defaults.guard', 'web');
-        $roleId = Role::query()->where('name', 'candidate')->where('guard_name', $guard)->value('id');
+        // Roles are seeded on the `web` guard. Do not use Auth::getDefaultDriver() /
+        // config('auth.defaults.guard') here — auth:sanctum mutates that to `sanctum`.
+        $roleId = Role::query()->where('name', 'candidate')->where('guard_name', 'web')->value('id');
 
         return $roleId !== null ? (int) $roleId : null;
     }
@@ -430,13 +442,18 @@ class AuthService
      */
     private function mapRegisterPayload(array $data): array
     {
-        unset($data['password_confirmation']);
+        unset($data['password_confirmation'], $data['package_uuid']);
 
         if (isset($data['name'])) {
             $parts = preg_split('/\s+/', trim((string) $data['name']), 2, PREG_SPLIT_NO_EMPTY);
             $data['first_name'] = $parts[0] ?? '';
             $data['last_name'] = $parts[1] ?? '';
             unset($data['name']);
+        }
+
+        if (array_key_exists('phone', $data)) {
+            $phone = is_string($data['phone']) ? trim($data['phone']) : '';
+            $data['phone'] = $phone !== '' ? $phone : null;
         }
 
         return $data;
@@ -475,11 +492,13 @@ class AuthService
 
         $uuid = $existing !== null && isset($existing->uuid) ? (string) $existing->uuid : (string) Str::uuid();
 
+        $endsAt = $this->registrationSubscriptionEndsAt($packageId, $now);
+
         $row = [
             'uuid' => $uuid,
             'subscription_status' => $subscriptionStatus,
             'started_at' => $now,
-            'ends_at' => $now->copy()->addYear(),
+            'ends_at' => $endsAt,
             'auto_renew' => false,
             'renewal_source' => $renewalSource,
             'updated_at' => $now,
@@ -487,7 +506,7 @@ class AuthService
 
         if ($existing === null) {
             $row['created_at'] = $now;
-            $id = (int) DB::table('subscriptions')->insertGetId(
+            $id = DB::table('subscriptions')->insertGetId(
                 array_merge($row, [
                     'user_id' => $userId,
                     'package_id' => $packageId,
@@ -502,15 +521,71 @@ class AuthService
         return (int) $existing->id;
     }
 
-    private function findOrCreateRegistrationSubscriptionForPaidPackage(int $userId, int $packageId): int
+    private function registrationSubscriptionEndsAt(int $packageId, Carbon $now): Carbon
     {
-        $existing = DB::table('subscriptions')->where('user_id', $userId)->where('package_id', $packageId)->first();
+        /** @var Package|null $package */
+        $package = Package::query()->whereKey($packageId)->first();
 
-        if ($existing !== null) {
-            return (int) $existing->id;
+        if ($package instanceof Package) {
+            $durationUnit = (string) ($package->duration_unit ?? 'year');
+            $durationValue = max(1, (int) ($package->getAttribute('duration_value') ?? 1));
+
+            if ($durationUnit === 'month') {
+                return $now->copy()->addMonths($durationValue);
+            }
+
+            return $now->copy()->addYears($durationValue);
         }
 
-        return $this->attachSubscriptionForRegistration($userId, $packageId, 'pending', 'gateway');
+        return $now->copy()->addYear();
+    }
+
+    private function resolveRegistrationPayableRupees(
+        Package $package,
+        ?string $couponCode = null,
+        ?User $user = null
+    ): int {
+        $coupon = $this->resolveAppliedCoupon($package, $couponCode, $user);
+
+        return $this->couponPricingService->apply($package, $coupon);
+    }
+
+    private function resolveAppliedCoupon(Package $package, ?string $couponCode = null, ?User $user = null): ?Coupon
+    {
+        if ($couponCode !== null && trim($couponCode) !== '') {
+            return $this->couponService->resolveEligibleCoupon($package, $couponCode, $user);
+        }
+
+        return $this->couponService->bestEligibleCouponForPackage($package, $user);
+    }
+
+    /**
+     * @param  array{packages: list<array<string, mixed>>, surnames: list<array{id: int, name: string}>}  $data
+     *
+     * @return array{packages: list<array<string, mixed>>, surnames: list<array{id: int, name: string}>}
+     */
+    private function decorateRegistrationOptionsForPayments(array $data): array
+    {
+        $data['packages'] = array_map(function (array $pkg): array {
+            $packageId = isset($pkg['id']) ? (int) $pkg['id'] : 0;
+            /** @var Package|null $packageModel */
+            $packageModel = $packageId > 0 ? Package::query()->whereKey($packageId)->first() : null;
+
+            if ($packageModel instanceof Package) {
+                $coupon = $this->couponService->bestEligibleCouponForPackage($packageModel);
+                $pkg['registrationPayableRupees'] = $this->couponPricingService->apply($packageModel, $coupon);
+                $pkg['availableCoupons'] = [];
+            } else {
+                $discounted = $pkg['discountedPrice'] ?? null;
+                $price = $pkg['price'] ?? 0;
+                $pkg['registrationPayableRupees'] = max(0.0, (float) ($discounted !== null ? $discounted : $price));
+                $pkg['availableCoupons'] = [];
+            }
+
+            return $pkg;
+        }, $data['packages']);
+
+        return $data;
     }
 
     private function resolveRegistrationPackageForStatus(User $user, ?string $packageUuidQuery): ?Package
@@ -558,7 +633,7 @@ class AuthService
      */
     private function buildRegistrationPaymentStatusBlock(User $user, Package $package): array
     {
-        $packageId = (int) $package->id;
+        $packageId = $package->id;
         $payable = $package->registrationPayableAmountRupees();
 
         if ($payable <= 0) {
@@ -593,7 +668,6 @@ class AuthService
         $latestPayment = Payment::query()
             ->where('user_id', $user->id)
             ->where('package_id', $packageId)
-            ->where('gateway_name', 'razorpay')
             ->orderByDesc('id')
             ->first();
 
@@ -619,7 +693,7 @@ class AuthService
             'pending_payment_uuid' => $latestPayment !== null ? (string) $latestPayment->uuid : null,
             'gateway_order_id' => $latestPayment !== null ? $latestPayment->gateway_order_id : null,
             'awaiting_checkout' => $latestPayment === null ||
-                ((string) $latestPayment->payment_status === 'pending' && $latestPayment->gateway_order_id === null),
+                ($latestPayment->payment_status === 'pending' && $latestPayment->gateway_order_id === null),
         ];
     }
 
@@ -661,7 +735,7 @@ class AuthService
      */
     private function mapPublicRegistrationPackage(Package $package): array
     {
-        $durationUnit = (string) ($package->duration_unit ?? 'year');
+        $durationUnit = $package->duration_unit ?? 'year';
         $durationDays = $durationUnit === 'year' ? 365 : 30;
         $monthlyPrice = (float) ($package->monthly_price ?? 0);
         $yearlyPrice = (float) ($package->yearly_price ?? ($package->price ?? 0));

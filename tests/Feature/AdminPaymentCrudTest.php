@@ -6,6 +6,7 @@ use App\Models\Payment;
 use App\Models\Subscription;
 use App\Models\User;
 use Database\Seeders\RbacSeeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 beforeEach(function (): void {
@@ -31,6 +32,34 @@ it('allows admins to list and inspect payments', function (): void {
         ->assertStatus(200)
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.id', $payment->id);
+});
+
+it('resolves payment candidate profilePhoto from user_images gallery', function (): void {
+    $admin = $this->createUserWithRole('admin', 'admin-payment-photo@example.com');
+    $candidate = $this->createUserWithRole('candidate', 'candidate-payment-photo@example.com');
+    $candidate->update(['profile_photo_url' => 'https://legacy.example/old.jpg']);
+    $package = paymentCrudMakePackage('PAYMENT_PHOTO_PLAN');
+    paymentCrudMakePayment($candidate, $package);
+
+    DB::table('user_images')->insert([
+        'uuid' => (string) Str::uuid(),
+        'user_id' => $candidate->id,
+        'image_type' => 'profile',
+        'image_storage_path' => null,
+        'image_url' => 'https://cdn.example.com/payment-gallery.jpg',
+        'thumbnail_url' => null,
+        'icon_url' => null,
+        'is_profile_photo' => true,
+        'sort_order' => 0,
+        'is_active' => true,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $this->actingAs($admin, 'sanctum')
+        ->getJson('/api/v1/admin/payments?perPage=10&user_id=' . $candidate->id)
+        ->assertStatus(200)
+        ->assertJsonPath('data.0.candidate.profilePhoto', 'https://cdn.example.com/payment-gallery.jpg');
 });
 
 it('allows admins to patch payments while writing subscription history rows', function (): void {

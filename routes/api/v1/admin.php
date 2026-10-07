@@ -6,8 +6,10 @@ use App\Http\Controllers\Api\V1\Admin\AdminCandidateProfileController;
 use App\Http\Controllers\Api\V1\Admin\AdminRoleController;
 use App\Http\Controllers\Api\V1\Admin\AdminSubscriptionController;
 use App\Http\Controllers\Api\V1\Admin\CandidateUserController;
+use App\Http\Controllers\Api\V1\Admin\CouponController;
 use App\Http\Controllers\Api\V1\Admin\KycDocumentController;
 use App\Http\Controllers\Api\V1\Admin\LegalPageController;
+use App\Http\Controllers\Api\V1\Admin\ModerationReportController;
 use App\Http\Controllers\Api\V1\Admin\NotificationSettingsController;
 use App\Http\Controllers\Api\V1\Admin\PackageController;
 use App\Http\Controllers\Api\V1\Admin\PaymentController;
@@ -46,6 +48,15 @@ Route::middleware($sanctumWithTrackedSession)->group(function (): void {
     );
     Route::delete('packages/{package}', [PackageController::class, 'destroy'])->middleware(
         'permission:admin.packages.delete'
+    );
+
+    Route::get('coupons', [CouponController::class, 'index'])->middleware('permission:admin.coupons.view');
+    Route::post('coupons', [CouponController::class, 'store'])->middleware('permission:admin.coupons.add');
+    Route::match(['put', 'patch'], 'coupons/{coupon}', [CouponController::class, 'update'])->middleware(
+        'permission:admin.coupons.edit'
+    );
+    Route::delete('coupons/{coupon}', [CouponController::class, 'destroy'])->middleware(
+        'permission:admin.coupons.delete'
     );
 
     Route::get('subscriptions/active', [AdminSubscriptionController::class, 'active'])->middleware(
@@ -90,6 +101,48 @@ Route::middleware($sanctumWithTrackedSession)->group(function (): void {
     Route::get('reports/team-activities', [ReportController::class, 'teamActivities'])->middleware(
         'permission:admin.reports.team_activities.view'
     );
+
+    Route::prefix('moderation-reports')->group(function (): void {
+        Route::get('spam', [ModerationReportController::class, 'spamIndex'])->middleware(
+            'permission:admin.moderation_reports.view'
+        );
+        Route::post('spam/{report:uuid}/mark-spammer', [ModerationReportController::class, 'markSpammer'])->middleware(
+            'permission:admin.moderation_reports.action'
+        );
+        Route::post('spam/{report:uuid}/mark-not-spammer', [
+            ModerationReportController::class,
+            'markNotSpammer',
+        ])->middleware('permission:admin.moderation_reports.action');
+
+        Route::get('favorites', [ModerationReportController::class, 'favoritesIndex'])->middleware(
+            'permission:admin.moderation_reports.view'
+        );
+        Route::post('favorites/{favorite:uuid}/unmark', [
+            ModerationReportController::class,
+            'unmarkFavorite',
+        ])->middleware('permission:admin.moderation_reports.action');
+
+        Route::get('contact-requests', [ModerationReportController::class, 'contactRequestsIndex'])->middleware(
+            'permission:admin.moderation_reports.view'
+        );
+        Route::post('contact-requests/{contactRequest:uuid}/mark-contacted', [
+            ModerationReportController::class,
+            'markContacted',
+        ])->middleware('permission:admin.moderation_reports.action');
+        Route::post('contact-requests/{contactRequest:uuid}/mark-not-contacted', [
+            ModerationReportController::class,
+            'markNotContacted',
+        ])->middleware('permission:admin.moderation_reports.action');
+
+        Route::get('dont-show-again', [ModerationReportController::class, 'dontShowAgainIndex'])->middleware(
+            'permission:admin.moderation_reports.view'
+        );
+        Route::post('dont-show-again/{hide:uuid}/unmark', [
+            ModerationReportController::class,
+            'unmarkDontShowAgain',
+        ])->middleware('permission:admin.moderation_reports.action');
+    });
+
     Route::get('dashboard/stats', [ReportController::class, 'dashboardStats'])->middleware(
         'permission:admin.dashboard.view'
     );
@@ -114,12 +167,6 @@ Route::middleware($sanctumWithTrackedSession)->group(function (): void {
     Route::put('settings/social-login', [SocialLoginSettingsController::class, 'update'])->middleware(
         'permission:admin.settings.social.edit'
     );
-    Route::get('settings/payments', [PaymentGatewaySettingsController::class, 'show'])->middleware(
-        'permission:admin.settings.payments.view'
-    );
-    Route::put('settings/payments', [PaymentGatewaySettingsController::class, 'update'])->middleware(
-        'permission:admin.settings.payments.edit'
-    );
     Route::get('settings/notifications', [NotificationSettingsController::class, 'show'])->middleware(
         'permission:admin.settings.notifications.view'
     );
@@ -143,6 +190,12 @@ Route::middleware($sanctumWithTrackedSession)->group(function (): void {
     );
     Route::put('settings/search', [SearchSettingsController::class, 'update'])->middleware(
         'permission:admin.settings.search.edit'
+    );
+    Route::get('settings/payments', [PaymentGatewaySettingsController::class, 'show'])->middleware(
+        'permission:admin.settings.payments.view'
+    );
+    Route::put('settings/payments', [PaymentGatewaySettingsController::class, 'update'])->middleware(
+        'permission:admin.settings.payments.edit'
     );
     Route::get('settings/legal-pages', [LegalPageController::class, 'index'])->middleware(
         'permission:admin.settings.legal.view'
@@ -210,6 +263,9 @@ Route::middleware($sanctumWithTrackedSession)->group(function (): void {
     Route::post('candidates/{user:uuid}/impersonate', [CandidateUserController::class, 'impersonate'])->middleware(
         'permission:admin.candidates.impersonate'
     );
+    Route::post('candidates/villages', [AdminCandidateProfileController::class, 'findOrCreateVillage'])->middleware(
+        'permission:admin.candidates.edit'
+    );
     Route::get('candidates/{user:uuid}/profile-details', [
         AdminCandidateProfileController::class,
         'profileDetails',
@@ -229,6 +285,10 @@ Route::middleware($sanctumWithTrackedSession)->group(function (): void {
     Route::patch('candidates/{user:uuid}/sections/photos', [
         AdminCandidateProfileController::class,
         'savePhotos',
+    ])->middleware('permission:admin.candidates.edit');
+    Route::post('candidates/{user:uuid}/photos/upload', [
+        AdminCandidateProfileController::class,
+        'uploadPhoto',
     ])->middleware('permission:admin.candidates.edit');
     Route::patch('candidates/{user:uuid}/sections/personal-details', [
         AdminCandidateProfileController::class,
@@ -253,6 +313,10 @@ Route::middleware($sanctumWithTrackedSession)->group(function (): void {
     Route::patch('candidates/{user:uuid}/sections/lifestyle', [
         AdminCandidateProfileController::class,
         'saveLifestyle',
+    ])->middleware('permission:admin.candidates.edit');
+    Route::patch('candidates/{user:uuid}/sections/property-details', [
+        AdminCandidateProfileController::class,
+        'savePropertyDetails',
     ])->middleware('permission:admin.candidates.edit');
     Route::patch('candidates/{user:uuid}/sections/partner-preferences', [
         AdminCandidateProfileController::class,

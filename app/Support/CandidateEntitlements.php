@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 final class CandidateEntitlements
 {
@@ -39,6 +40,22 @@ final class CandidateEntitlements
     public static function canBrowse(?User $user): bool
     {
         return $user !== null && ($user->can(self::BROWSE_LIMITED) || $user->can(self::BROWSE_FULL));
+    }
+
+    /**
+     * Aadhaar KYC approved — required before viewing other candidates' discovery data.
+     */
+    public static function hasApprovedIdentity(?User $user): bool
+    {
+        if ($user === null) {
+            return false;
+        }
+
+        return DB::table('user_verification_documents')
+            ->where('user_id', $user->id)
+            ->where('document_type', 'aadhaar')
+            ->where('verification_status', 'approved')
+            ->exists();
     }
 
     public static function hasFullBrowse(?User $user): bool
@@ -76,9 +93,9 @@ final class CandidateEntitlements
             unset($sections['partnerPreferences']);
         }
 
-        if (!$viewer->can(self::VIEW_KUNDALI) && !$viewer->can(self::GENERATE_KUNDALI)) {
-            unset($sections['horoscopeDetails']);
-        }
+        // Birth / horoscope profile fields (DOB, TOB, place, rashi, etc.) are part of the
+        // full profile payload — do not strip them for missing kundali-matching entitlements.
+        // Kundali generate/match permissions gate matching features elsewhere.
 
         $payload['sections'] = $sections;
 

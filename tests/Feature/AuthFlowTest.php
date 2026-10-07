@@ -17,6 +17,26 @@ beforeEach(function (): void {
     $this->seed(RbacSeeder::class);
 });
 
+it('persists phone when provided on simple register', function (): void {
+    $email = 'auth-phone-' . uniqid('', true) . '@example.com';
+    $phone = '98765' . substr((string) time(), -5);
+
+    $this->postJson('/api/v1/app/auth/register', [
+        'first_name' => 'Phone',
+        'last_name' => 'Saver',
+        'email' => $email,
+        'phone' => $phone,
+        'password' => REGISTER_PASSWORD,
+        'password_confirmation' => REGISTER_PASSWORD,
+    ])
+        ->assertStatus(201)
+        ->assertJsonPath('success', true);
+
+    $user = User::query()->where('email', $email)->first();
+    expect($user)->not->toBeNull();
+    expect($user->phone)->toBe($phone);
+});
+
 it('covers registration, login, forgot password, and anonymous password reset', function (): void {
     $email = 'auth-flow-' . uniqid('', true) . '@example.com';
 

@@ -32,6 +32,10 @@ class LogApiCalls
 
     public function handle(Request $request, Closure $next): Response
     {
+        if (!config('api.log_api_calls', false)) {
+            return $next($request);
+        }
+
         $start = microtime(true);
         $requestId = (string) $request->attributes->get('request_id', '');
         $userId = $request->user()?->id;
@@ -74,15 +78,18 @@ class LogApiCalls
             throw $e;
         }
 
-        Log::info(
-            'api.call.completed',
-            array_merge($context, [
-                'duration_ms' => $this->durationMs($start),
-                'status_code' => $response->getStatusCode(),
-                'response' => $this->responseSummary($response),
-                'response_json' => $this->toPrettyJson($this->responseSummary($response)),
-            ])
-        );
+        $responseSummary = $this->responseSummary($response);
+        $completedContext = array_merge($context, [
+            'duration_ms' => $this->durationMs($start),
+            'status_code' => $response->getStatusCode(),
+            'response' => $responseSummary,
+        ]);
+
+        if (!$this->shouldOmitResponseJson($request)) {
+            $completedContext['response_json'] = $this->toPrettyJson($responseSummary);
+        }
+
+        Log::info('api.call.completed', $completedContext);
 
         return $response;
     }
@@ -115,6 +122,19 @@ class LogApiCalls
         }
 
         return $data;
+    }
+
+    private function shouldOmitResponseJson(Request $request): bool
+    {
+        if ($request->method() !== 'GET') {
+            return false;
+        }
+
+        $path = '/' . ltrim($request->path(), '/');
+
+        return str_contains($path, '/candidates') ||
+            str_contains($path, '/team-users') ||
+            str_contains($path, '/payments');
     }
 
     private function durationMs(float $start): int

@@ -50,7 +50,9 @@ class AdminSubscriptionResource extends JsonResource
                 'uuid' => $user?->uuid,
                 'fullName' => trim(($user?->first_name ?? '') . ' ' . ($user?->last_name ?? '')),
                 'email' => $user?->email,
-                'profilePhoto' => $user?->profile_photo_url,
+                'profilePhoto' => filled($subscription->candidateProfilePhoto ?? null)
+                    ? $subscription->candidateProfilePhoto
+                    : $user?->profile_photo_url,
             ],
             'package' => [
                 'id' => $package?->id,

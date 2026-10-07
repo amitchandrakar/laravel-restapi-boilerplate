@@ -10,6 +10,8 @@ use App\Models\ContactRequest;
 use App\Models\User;
 use App\Services\ContactRequestService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\ValidationException;
 
 class CandidateContactRequestController extends Controller
@@ -51,6 +53,43 @@ class CandidateContactRequestController extends Controller
                 'createdAt' => $row->created_at?->toIso8601String(),
             ],
             'Contact request sent successfully'
+        );
+    }
+
+    public function sent(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user === null || !$user->hasRole('candidate')) {
+            return $this->forbiddenResponse('Only candidates can view sent contact requests.');
+        }
+
+        $perPage = max(1, min(100, (int) $request->query('per_page', 15)));
+        $paginator = $this->contactRequestService->paginateSentForMember($user, $perPage);
+
+        $items = collect($paginator->items())
+            ->map(static function (ContactRequest $row): array {
+                $to = $row->toUser;
+
+                return [
+                    'uuid' => $row->uuid,
+                    'candidateUuid' => $to instanceof User ? $to->uuid : null,
+                    'candidateName' => $to instanceof User ? trim($to->first_name . ' ' . $to->last_name) : null,
+                    'requestStatus' => $row->request_status,
+                    'adminResolution' => $row->admin_resolution,
+                    'requestMessage' => $row->request_message,
+                    'createdAt' => $row->created_at !== null ? $row->created_at->toIso8601String() : null,
+                    'respondedAt' => $row->responded_at?->toIso8601String(),
+                ];
+            })
+            ->all();
+
+        return $this->paginatedResponse(
+            new LengthAwarePaginator($items, $paginator->total(), $paginator->perPage(), $paginator->currentPage(), [
+                'path' => $paginator->path(),
+                'pageName' => $paginator->getPageName(),
+            ]),
+            'Sent contact requests fetched successfully'
         );
     }
 

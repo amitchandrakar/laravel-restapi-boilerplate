@@ -37,4 +37,9 @@ class Favorite extends Model
     {
         return $this->belongsTo(User::class, 'favorite_user_id');
     }
+
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
 }

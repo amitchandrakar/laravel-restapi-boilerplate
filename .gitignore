@@ -8,6 +8,8 @@
 /public/images/uploads/*
 !/public/images/uploads/.gitkeep
 /storage/*.key
+/storage/app/firebase/*.json
+!/storage/app/firebase/.gitkeep
 /storage/pail
 /vendor
 .env

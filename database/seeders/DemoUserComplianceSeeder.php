@@ -30,6 +30,10 @@ class DemoUserComplianceSeeder extends Seeder
             return;
         }
 
+        // Remove seeded placeholder KYC rows so members can upload real documents.
+        // Fake example.com URLs blocked submit (pending lock) and broke ID-check previews.
+        $this->removePlaceholderVerificationDocuments();
+
         $users = DB::table('users')->select('id')->get();
 
         foreach ($users as $user) {
@@ -44,9 +48,23 @@ class DemoUserComplianceSeeder extends Seeder
                     $this->ensureMembershipHistory($userId, $defaultPackageId, $subscriptionId, $now);
                 }
             }
-
-            $this->ensureVerificationDocument($userId, $now);
         }
+    }
+
+    /**
+     * Demo KYC used to insert pending rows with https://example.com/... URLs.
+     * Those cannot be displayed on device and block real multipart submit while pending.
+     */
+    private function removePlaceholderVerificationDocuments(): void
+    {
+        DB::table('user_verification_documents')
+            ->where(static function ($query): void {
+                $query
+                    ->where('document_front_url', 'like', '%example.com%')
+                    ->orWhere('document_back_url', 'like', '%example.com%')
+                    ->orWhere('selfie_url', 'like', '%example.com%');
+            })
+            ->delete();
     }
 
     private function ensureSubscription(int $userId, int $packageId, CarbonInterface $now): int
@@ -99,35 +117,6 @@ class DemoUserComplianceSeeder extends Seeder
             'action_source' => 'system',
             'notes' => 'Seeded demo membership history.',
             'created_at' => $now,
-        ]);
-    }
-
-    private function ensureVerificationDocument(int $userId, CarbonInterface $now): void
-    {
-        $exists = DB::table('user_verification_documents')
-            ->where('user_id', $userId)
-            ->where('document_type', 'aadhaar')
-            ->exists();
-
-        if ($exists) {
-            return;
-        }
-
-        DB::table('user_verification_documents')->insert([
-            'uuid' => (string) Str::uuid(),
-            'user_id' => $userId,
-            'document_type' => 'aadhaar',
-            'document_number_masked' => 'XXXX-XXXX-' . str_pad((string) random_int(1000, 9999), 4, '0', STR_PAD_LEFT),
-            'document_front_url' => 'https://example.com/docs/demo-front-' . $userId . '.jpg',
-            'document_back_url' => 'https://example.com/docs/demo-back-' . $userId . '.jpg',
-            'selfie_url' => 'https://example.com/docs/demo-selfie-' . $userId . '.jpg',
-            'verification_status' => 'pending',
-            'verified_by' => null,
-            'verified_at' => null,
-            'rejection_reason' => null,
-            'submitted_at' => $now,
-            'created_at' => $now,
-            'updated_at' => $now,
         ]);
     }
 }

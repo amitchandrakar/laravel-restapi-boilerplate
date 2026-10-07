@@ -64,6 +64,8 @@ class AdminCandidateProfileDetailsService
             ]);
 
         $siblings = $this->loadSiblings($user->id);
+        $spocContacts = $this->viewerCanSeeContactDetails($user, $viewer) ? $this->loadSpocContacts($user->id) : [];
+        $properties = $this->loadProperties($user->id);
         $partner = DB::table('user_partner_preferences')->where('user_id', $user->id)->first();
 
         $partnerDegreeIds = self::decodeStoredIdList(
@@ -103,15 +105,22 @@ class AdminCandidateProfileDetailsService
             $partnerCommunityIds
         );
 
+        $occupationLabel = $this->resolveMasterName($maps['occupations'], data_get($user, 'occupation_id'));
+        $incomeRangeLabel = $this->resolveMasterName($maps['income_ranges'], data_get($user, 'income_range_id'));
+
         $qualifications = $educationRows
             ->map(function (object $row) use ($maps): array {
                 $degId = data_get($row, 'degree_id');
+                $degIdInt = $degId !== null && $degId !== '' ? (int) $degId : null;
+
+                if ($degIdInt !== null && $degIdInt <= 0) {
+                    $degIdInt = null;
+                }
 
                 return [
                     'id' => (int) data_get($row, 'id'),
-                    'degreeName' => $degId !== null && (int) $degId > 0
-                            ? data_get($maps['degrees']->get((int) $degId), 'name')
-                            : null,
+                    'degreeId' => $degIdInt,
+                    'degreeName' => $degIdInt !== null ? data_get($maps['degrees']->get($degIdInt), 'name') : null,
                     'fieldOfStudy' => data_get($row, 'field_of_study'),
                     'institutionName' => data_get($row, 'institution_name'),
                     'educationType' => data_get($row, 'education_type'),
@@ -138,6 +147,11 @@ class AdminCandidateProfileDetailsService
                 'city' => 'place_of_birth_city',
             ]
         );
+        $birthDistrict = data_get($user, 'place_of_birth_district');
+        $birthVillage = data_get($user, 'place_of_birth_village');
+        $birthPlace['district'] =
+            is_string($birthDistrict) && trim($birthDistrict) !== '' ? trim($birthDistrict) : null;
+        $birthPlace['village'] = is_string($birthVillage) && trim($birthVillage) !== '' ? trim($birthVillage) : null;
 
         $maternalPlace = $this->resolveGeoChain(
             $user,
@@ -196,9 +210,15 @@ class AdminCandidateProfileDetailsService
                     'photoUrl' => $photoUrl,
                     'age' => $user->date_of_birth !== null ? $user->date_of_birth->age : null,
                     'subCaste' => data_get($user, 'sub_caste'),
-                    'gotra' => data_get($user, 'gotra'),
+                    'gotra' => self::nonEmptyString(data_get($user, 'gotra')) ??
+                        self::nonEmptyString(data_get($user, 'father_gotra')),
                     'rashi' => data_get($user, 'rashi'),
                     'nakshatra' => data_get($user, 'nakshatra'),
+                    // Mirrored for clients that hydrate birth fields from personalDetails
+                    // (same pattern as gotra/rashi) when horoscopeDetails is absent.
+                    'timeOfBirth' => self::formatTimeOfBirth(data_get($user, 'time_of_birth')),
+                    'placeOfBirthLine' => self::nonEmptyString(data_get($user, 'place_of_birth_line')) ??
+                        self::composePlaceLine($birthPlace),
                     'occupationId' => data_get($user, 'occupation_id'),
                     'incomeRangeId' => data_get($user, 'income_range_id'),
                     'gender' => $user->gender,
@@ -212,14 +232,23 @@ class AdminCandidateProfileDetailsService
                 ],
                 'horoscopeDetails' => [
                     'dateOfBirth' => $user->date_of_birth !== null ? (string) $user->date_of_birth : null,
-                    'timeOfBirth' => data_get($user, 'time_of_birth'),
+                    'timeOfBirth' => self::formatTimeOfBirth(data_get($user, 'time_of_birth')),
                     'zodiacSign' => data_get($user, 'zodiac_sign'),
                     'manglikStatus' => data_get($user, 'manglik_status'),
-                    'gotra' => data_get($user, 'gotra'),
+                    // Prefer dedicated gotra; fall back to father_gotra (admin editor writes both).
+                    'gotra' => self::nonEmptyString(data_get($user, 'gotra')) ??
+                        self::nonEmptyString(data_get($user, 'father_gotra')),
                     'rashi' => data_get($user, 'rashi'),
                     'nakshatra' => data_get($user, 'nakshatra'),
-                    'placeOfBirthLine' => data_get($user, 'place_of_birth_line'),
+                    'placeOfBirthLine' => self::nonEmptyString(data_get($user, 'place_of_birth_line')) ??
+                        self::composePlaceLine($birthPlace),
                     'birthPlace' => $birthPlace,
+                    // Resolved place labels for clients that do not walk birthPlace.
+                    'birthCountry' => $birthPlace['country'] ?? data_get($user, 'place_of_birth_country'),
+                    'birthState' => $birthPlace['state'] ?? data_get($user, 'place_of_birth_state'),
+                    'birthCity' => $birthPlace['city'] ?? data_get($user, 'place_of_birth_city'),
+                    'birthDistrict' => $birthPlace['district'] ?? data_get($user, 'place_of_birth_district'),
+                    'birthVillage' => $birthPlace['village'] ?? data_get($user, 'place_of_birth_village'),
                 ],
                 'locationFamilyRoots' => [
                     'current' => [
@@ -239,9 +268,14 @@ class AdminCandidateProfileDetailsService
                     'maternal' => $maternalPlace,
                 ],
                 'careerEducation' => [
-                    'occupation' => data_get($user, 'occupation'),
+                    'occupation' => is_string($occupationLabel) && $occupationLabel !== ''
+                            ? $occupationLabel
+                            : data_get($user, 'occupation'),
                     'employer' => data_get($user, 'employer'),
+                    // Always expose numeric monthly income; range label is separate.
                     'income' => data_get($user, 'income'),
+                    'incomeRange' => $incomeRangeLabel,
+                    'incomeRangeId' => data_get($user, 'income_range_id'),
                     'maritalStatus' => data_get($user, 'marital_status'),
                     'qualifications' => $qualifications,
                 ],
@@ -250,15 +284,18 @@ class AdminCandidateProfileDetailsService
                     'fatherOccupation' => data_get($user, 'father_occupation'),
                     'fatherGotra' => data_get($user, 'father_gotra'),
                     'fatherNativePlace' => data_get($user, 'father_native_place'),
+                    'fatherContactNumber' => data_get($user, 'father_contact_number'),
                     'motherName' => data_get($user, 'mother_name'),
                     'motherOccupation' => data_get($user, 'mother_occupation'),
                     'motherGotra' => data_get($user, 'mother_gotra'),
                     'motherNativePlace' => data_get($user, 'mother_native_place'),
+                    'motherContactNumber' => data_get($user, 'mother_contact_number'),
                     'brothersCount' => data_get($user, 'brothers_count'),
                     'sistersCount' => data_get($user, 'sisters_count'),
                     'familyType' => data_get($user, 'family_type'),
                     'familyStatus' => data_get($user, 'family_status'),
                     'siblings' => $siblings,
+                    'spocContacts' => $spocContacts,
                 ],
                 'lifestyle' => [
                     'diet' => data_get($user, 'diet'),
@@ -281,6 +318,9 @@ class AdminCandidateProfileDetailsService
                     'likes' => data_get($user, 'likes', []),
                     'dislikes' => data_get($user, 'dislikes', []),
                 ],
+                'propertyDetails' => [
+                    'properties' => $properties,
+                ],
                 'partnerPreferences' => [
                     'preferredMinAge' => data_get($partner, 'preferred_min_age'),
                     'preferredMaxAge' => data_get($partner, 'preferred_max_age'),
@@ -298,11 +338,14 @@ class AdminCandidateProfileDetailsService
                     'preferredCaste' => data_get($partner, 'preferred_caste'),
                     'preferredIncomeMin' => data_get($partner, 'preferred_income_min'),
                     'preferredDegrees' => $preferredDegreeNames,
+                    'preferredDegreeIds' => $partnerDegreeIds,
                     'preferredCities' => $preferredCityNames,
                     'preferredLocations' => app(UserPartnerPreferredLocationService::class)->listForUserId(
                         (int) $user->id
                     ),
+                    'preferredLocationIds' => $partnerLocationIds,
                     'preferredCommunities' => $preferredCommunityNames,
+                    'preferredCommunityIds' => $partnerCommunityIds,
                     'preferredOccupation' => data_get($partner, 'preferred_occupation'),
                     'preferredSleepPattern' => data_get($partner, 'preferred_sleep_pattern'),
                     'preferredWorkingHours' => data_get($partner, 'preferred_working_hours'),
@@ -429,6 +472,56 @@ class AdminCandidateProfileDetailsService
     }
 
     /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function loadSpocContacts(int $userId): array
+    {
+        return DB::table('user_spoc_contacts')
+            ->where('user_id', $userId)
+            ->whereNull('deleted_at')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get(['id', 'name', 'relation', 'contact_number', 'sort_order'])
+            ->map(static function (object $row): array {
+                return [
+                    'id' => (int) data_get($row, 'id'),
+                    'name' => data_get($row, 'name'),
+                    'relation' => data_get($row, 'relation'),
+                    'contactNumber' => data_get($row, 'contact_number'),
+                    'sortOrder' => (int) data_get($row, 'sort_order', 0),
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function loadProperties(int $userId): array
+    {
+        return DB::table('user_property_details')
+            ->where('user_id', $userId)
+            ->whereNull('deleted_at')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get(['id', 'property_type', 'area_sq_ft', 'city', 'state', 'country', 'sort_order'])
+            ->map(static function (object $row): array {
+                return [
+                    'id' => (int) data_get($row, 'id'),
+                    'propertyType' => data_get($row, 'property_type'),
+                    'areaSqFt' => data_get($row, 'area_sq_ft') !== null ? (int) data_get($row, 'area_sq_ft') : null,
+                    'city' => data_get($row, 'city'),
+                    'state' => data_get($row, 'state'),
+                    'country' => data_get($row, 'country'),
+                    'sortOrder' => (int) data_get($row, 'sort_order', 0),
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
      * @param  Collection<int, \stdClass>  $educationRows
      * @param  list<int>  $partnerDegreeIds
      * @param  list<int>  $partnerLocationIds
@@ -440,7 +533,9 @@ class AdminCandidateProfileDetailsService
      *     cities: Collection<(int|string), \stdClass>,
      *     degrees: Collection<(int|string), \stdClass>,
      *     languages: Collection<(int|string), \stdClass>,
-     *     surnames: Collection<(int|string), \stdClass>
+     *     surnames: Collection<(int|string), \stdClass>,
+     *     occupations: Collection<(int|string), \stdClass>,
+     *     income_ranges: Collection<(int|string), \stdClass>
      * }
      */
     private function loadMasterMaps(
@@ -466,6 +561,11 @@ class AdminCandidateProfileDetailsService
         $push($countryIds, $user->birth_country_id);
         $push($stateIds, $user->birth_state_id);
         $push($cityIds, $user->birth_city_id);
+
+        $occupationIds = [];
+        $incomeRangeIds = [];
+        $push($occupationIds, data_get($user, 'occupation_id'));
+        $push($incomeRangeIds, data_get($user, 'income_range_id'));
 
         $push($countryIds, $user->maternal_country_id);
         $push($stateIds, $user->maternal_state_id);
@@ -493,6 +593,8 @@ class AdminCandidateProfileDetailsService
         $degreeIds = array_keys($degreeIds);
         $languageIds = array_keys($languageIds);
         $surnameIds = array_keys($surnameIds);
+        $occupationIds = array_keys($occupationIds);
+        $incomeRangeIds = array_keys($incomeRangeIds);
 
         return [
             'countries' => $this->fetchMap('countries', $countryIds, ['id', 'name', 'iso2']),
@@ -501,7 +603,47 @@ class AdminCandidateProfileDetailsService
             'degrees' => $this->fetchMap('degrees', $degreeIds, ['id', 'name']),
             'languages' => $this->fetchMap('languages', $languageIds, ['id', 'name']),
             'surnames' => $this->fetchMap('surnames', $surnameIds, ['id', 'name']),
+            'occupations' => $this->fetchMap('occupations', $this->positiveIds($occupationIds), ['id', 'name']),
+            'income_ranges' => $this->fetchMap('income_ranges', $this->positiveIds($incomeRangeIds), ['id', 'name']),
         ];
+    }
+
+    /**
+     * @param  Collection<(int|string), \stdClass>  $collection
+     */
+    private function resolveMasterName(Collection $collection, mixed $id): ?string
+    {
+        if ($id === null || (int) $id <= 0) {
+            return null;
+        }
+
+        $row = $collection->get((int) $id);
+
+        if ($row === null) {
+            return null;
+        }
+
+        $name = data_get($row, 'name');
+
+        return is_string($name) ? $name : (is_scalar($name) ? (string) $name : null);
+    }
+
+    /**
+     * @param  list<int|string>  $ids
+     *
+     * @return list<int>
+     */
+    private function positiveIds(array $ids): array
+    {
+        $positive = [];
+
+        foreach ($ids as $id) {
+            if (is_int($id) && $id > 0) {
+                $positive[] = $id;
+            }
+        }
+
+        return $positive;
     }
 
     /**
@@ -632,28 +774,91 @@ class AdminCandidateProfileDetailsService
         return [];
     }
 
-    private function profilePhoneForViewer(User $profile, ?User $viewer): ?string
+    private static function nonEmptyString(mixed $value): ?string
+    {
+        if (!is_string($value) && !is_numeric($value)) {
+            return null;
+        }
+
+        $trimmed = trim((string) $value);
+
+        return $trimmed !== '' ? $trimmed : null;
+    }
+
+    /**
+     * Normalize TIME / datetime strings to HH:mm for HTML time inputs and mobile display.
+     */
+    private static function formatTimeOfBirth(mixed $value): ?string
+    {
+        $raw = self::nonEmptyString($value);
+
+        if ($raw === null) {
+            return null;
+        }
+
+        if (preg_match('/^(\d{1,2}):(\d{2})(?::\d{2})?/', $raw, $m) === 1) {
+            $hh = (int) $m[1];
+            $mm = (int) $m[2];
+
+            if ($hh >= 0 && $hh <= 23 && $mm >= 0 && $mm <= 59) {
+                return sprintf('%02d:%02d', $hh, $mm);
+            }
+        }
+
+        return $raw;
+    }
+
+    /**
+     * @param  array{country?: ?string, state?: ?string, city?: ?string, district?: ?string, village?: ?string}  $place
+     */
+    private static function composePlaceLine(array $place): ?string
+    {
+        $parts = array_values(
+            array_filter(
+                [
+                    self::nonEmptyString($place['village'] ?? null),
+                    self::nonEmptyString($place['city'] ?? null),
+                    self::nonEmptyString($place['state'] ?? null),
+                    self::nonEmptyString($place['country'] ?? null),
+                ],
+                static fn(?string $part): bool => $part !== null && $part !== ''
+            )
+        );
+
+        return $parts === [] ? null : implode(', ', $parts);
+    }
+
+    private function viewerCanSeeContactDetails(User $profile, ?User $viewer): bool
     {
         if ($viewer === null) {
-            return $profile->phone;
+            return true;
         }
 
         if ((int) $viewer->id === (int) $profile->id) {
-            return $profile->phone;
+            return true;
         }
 
         if ($viewer->can('admin.candidates.view')) {
-            return $profile->phone;
+            return true;
         }
 
         if (
             $viewer->can(CandidateEntitlements::VIEW_INSTANT_CONTACT) ||
             $viewer->can(CandidateEntitlements::VIEW_CONTACT_DETAILS)
         ) {
-            return $profile->phone;
+            return true;
         }
 
         if ($viewer->hasRole('candidate') && !ContactRequest::existsAccepted((int) $viewer->id, (int) $profile->id)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function profilePhoneForViewer(User $profile, ?User $viewer): ?string
+    {
+        if (!$this->viewerCanSeeContactDetails($profile, $viewer)) {
             return null;
         }
 

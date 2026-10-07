@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -24,6 +25,9 @@ class ContactRequest extends BaseModel
         'request_status',
         'responded_at',
         'response_message',
+        'admin_resolution',
+        'admin_resolved_at',
+        'admin_resolved_by',
     ];
 
     protected static function booted(): void
@@ -42,6 +46,7 @@ class ContactRequest extends BaseModel
     {
         return [
             'responded_at' => 'datetime',
+            'admin_resolved_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
@@ -60,6 +65,12 @@ class ContactRequest extends BaseModel
     public function toUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'to_user_id');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function adminResolver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'admin_resolved_by');
     }
 
     public static function existsAccepted(int $fromUserId, int $toUserId): bool

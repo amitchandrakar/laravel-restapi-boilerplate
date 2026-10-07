@@ -6,10 +6,13 @@ namespace App\Jobs;
 
 use App\Enums\AdminSettingsType;
 use App\Jobs\Concerns\ConfiguresQueueRetries;
+use App\Services\LegalPageService;
 use App\Services\Settings\NotificationConfigResolver;
 use App\Services\Settings\PaymentGatewayConfigResolver;
 use App\Services\Settings\SearchConfigResolver;
+use App\Services\Settings\SettingsRuntimeBootstrap;
 use App\Services\Settings\StorageConfigResolver;
+use App\Services\SiteSettingsService;
 use App\Support\QueuePriority;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -29,19 +32,26 @@ class ApplySettingsConfigJob implements ShouldQueue
     }
 
     public function handle(
-        PaymentGatewayConfigResolver $paymentResolver,
         NotificationConfigResolver $notificationResolver,
+        PaymentGatewayConfigResolver $paymentGatewayResolver,
         StorageConfigResolver $storageResolver,
-        SearchConfigResolver $searchResolver
+        SearchConfigResolver $searchResolver,
+        SettingsRuntimeBootstrap $runtimeBootstrap,
+        SiteSettingsService $siteSettingsService,
+        LegalPageService $legalPageService
     ): void {
         match ($this->settingType) {
-            AdminSettingsType::PaymentGateway => $paymentResolver->apply(),
             AdminSettingsType::Notification => $notificationResolver->apply(),
             AdminSettingsType::Storage => $storageResolver->apply(),
             AdminSettingsType::Search => $searchResolver->apply(),
+            AdminSettingsType::Site => $siteSettingsService->forgetCaches(),
+            AdminSettingsType::LegalPage => $legalPageService->forgetAllPublishedCaches(),
+            AdminSettingsType::PaymentGateway => $paymentGatewayResolver->apply(),
             default => null,
         };
 
         Cache::forget('settings:runtime-config');
+        Cache::forget(SettingsRuntimeBootstrap::CACHE_KEY);
+        $runtimeBootstrap->forceRefresh();
     }
 }

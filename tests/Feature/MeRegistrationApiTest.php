@@ -1,15 +1,21 @@
 <?php
 
 declare(strict_types=1);
+use App\Models\Coupon;
 use App\Models\Package;
 use App\Models\User;
-use App\Services\Payment\RazorpayClient;
 use Database\Seeders\PackageCatalogSeeder;
 use Database\Seeders\RbacSeeder;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
+    // Clear actingAs / guard user left by a previous test in this process.
+    $this->app['auth']->forgetGuards();
+    config(['auth.defaults.guard' => 'web']);
+
     $this->seed(RbacSeeder::class);
     $this->seed(PackageCatalogSeeder::class);
 });
@@ -33,17 +39,18 @@ it('skips payment checkout for free packages during `/me` registration flows', f
         ->assertJsonPath('data.skip_checkout', true);
 });
 
-it('creates Razorpay orders for paid `/me` checkout selections', function () {
-    $this->mock(RazorpayClient::class, function ($mock): void {
-        $mock
-            ->shouldReceive('createOrder')
-            ->once()
-            ->andReturn([
-                'id' => 'order_me_checkout_1',
-                'amount' => 36500,
-                'currency' => 'INR',
-            ]);
-    });
+it('activates paid packages with a full discount coupon on checkout', function () {
+    $paidPackage = Package::query()->where('code', 'TALASH_BASIC')->first();
+    expect($paidPackage)->not->toBeNull();
+
+    Coupon::query()->create([
+        'code' => 'MEFREE',
+        'name' => 'Checkout free',
+        'discount_type' => 'percent',
+        'discount_value' => 100,
+        'package_id' => $paidPackage->id,
+        'is_active' => true,
+    ]);
 
     $email = 'me-paid-' . uniqid('', true) . '@example.com';
     $register = $this->postJson('/api/v1/app/auth/register', [
@@ -54,14 +61,44 @@ it('creates Razorpay orders for paid `/me` checkout selections', function () {
     $register->assertStatus(201);
     $token = (string) $register->json('data.token');
 
-    $paidUuid = (string) Package::query()->where('code', 'TALASH_BASIC')->value('uuid');
-
     $this->withHeader('Authorization', 'Bearer ' . $token)
-        ->postJson('/api/v1/app/me/registration/checkout', ['package_uuid' => $paidUuid])
+        ->postJson('/api/v1/app/me/registration/checkout', [
+            'package_uuid' => $paidPackage->uuid,
+            'coupon_code' => 'MEFREE',
+        ])
         ->assertStatus(200)
         ->assertJsonPath('success', true)
-        ->assertJsonPath('data.skip_checkout', false)
-        ->assertJsonPath('data.order_id', 'order_me_checkout_1');
+        ->assertJsonPath('data.skip_checkout', true)
+        ->assertJsonPath('data.reason', 'coupon_applied');
+
+    $user = User::query()->where('email', $email)->first();
+    expect($user)->not->toBeNull();
+
+    $this->assertDatabaseHas('subscriptions', [
+        'user_id' => $user->id,
+        'package_id' => $paidPackage->id,
+        'subscription_status' => 'active',
+    ]);
+
+    $endsAt = Carbon::parse(
+        (string) DB::table('subscriptions')
+            ->where('user_id', $user->id)
+            ->where('package_id', $paidPackage->id)
+            ->value('ends_at')
+    );
+    expect($endsAt->isFuture())->toBeTrue();
+});
+
+it('exposes catalog prices on registration options', function () {
+    $response = $this->getJson('/api/v1/app/auth/registration')->assertStatus(200)->assertJsonPath('success', true);
+
+    $packages = $response->json('data.packages');
+    expect($packages)->toBeArray()->not->toBeEmpty();
+
+    $talash = collect($packages)->firstWhere('code', 'TALASH_BASIC');
+    expect($talash)->not->toBeNull();
+    expect((float) $talash['registrationPayableRupees'])->toBe(365.0);
+    expect($talash['availableCoupons'])->toBeArray();
 });
 
 it('reports structured onboarding payloads from `/me/registration/status`', function () {
@@ -101,6 +138,33 @@ it('responds with 403 when profile UUID headers do not match the token subject',
         ->assertStatus(403);
 });
 
+it('exposes rejection_reason on registration status after KYC reject', function () {
+    $this->seed(RbacSeeder::class);
+    $candidate = $this->createUserWithRole('candidate', 'me-kyc-reject-status@example.com');
+    $reviewer = $this->createUserWithRole('reviewer', 'me-kyc-reject-reviewer@example.com');
+
+    $uuid = (string) $this->actingAs($candidate, 'sanctum')
+        ->putJson('/api/v1/app/auth/candidate/kyc/documents', [
+            'document_type' => 'aadhaar',
+            'document_front_url' => 'https://example.com/kyc/front-status.jpg',
+            'document_back_url' => 'https://example.com/kyc/back-status.jpg',
+        ])
+        ->json('data.uuid');
+
+    $this->actingAs($reviewer, 'sanctum')
+        ->patchJson('/api/v1/admin/candidates/kyc/documents/' . $uuid, [
+            'verification_status' => 'rejected',
+            'rejection_reason' => 'Blurry document photo',
+        ])
+        ->assertStatus(200);
+
+    $this->actingAs($candidate, 'sanctum')
+        ->getJson('/api/v1/app/me/registration/status')
+        ->assertStatus(200)
+        ->assertJsonPath('data.kyc.status', 'rejected')
+        ->assertJsonPath('data.kyc.rejection_reason', 'Blurry document photo');
+});
+
 it('captures multipart KYC uploads plus submission through `/me/kyc/*` endpoints', function () {
     Storage::fake('public');
 
@@ -109,8 +173,9 @@ it('captures multipart KYC uploads plus submission through `/me/kyc/*` endpoints
         'name' => 'Me Kyc User',
         'email' => $email,
         'password' => 'secret',
-    ]);
+    ])->assertCreated();
     $token = (string) $register->json('data.token');
+    expect($token)->not->toBeEmpty();
 
     $session = $this->withHeader('Authorization', 'Bearer ' . $token)
         ->postJson('/api/v1/app/me/kyc/upload-sessions')
@@ -135,8 +200,4 @@ it('captures multipart KYC uploads plus submission through `/me/kyc/*` endpoints
         ->assertStatus(200)
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.verificationStatus', 'pending');
-});
-
-it('routes Razorpay signature validation through the same gateway as canonical webhooks', function () {
-    $this->postJson('/api/v1/app/webhooks/razorpay', [], ['X-Razorpay-Signature' => 'bad'])->assertStatus(401);
 });

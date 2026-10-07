@@ -107,7 +107,7 @@ final class PostmanModuleMapper
             return 'public';
         }
 
-        if (str_contains($suffix, 'webhook') || str_starts_with($suffix, 'payment/razorpay')) {
+        if (str_contains($suffix, 'webhook')) {
             return 'webhooks';
         }
 

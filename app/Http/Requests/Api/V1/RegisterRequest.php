@@ -34,6 +34,7 @@ class RegisterRequest extends ApiFormRequest
             'first_name' => ['sometimes', 'string', 'max:128'],
             'last_name' => ['sometimes', 'string', 'max:128'],
             'email' => ['nullable', 'string', 'email', 'max:255', 'unique:users,email'],
+            'phone' => ['sometimes', 'nullable', 'string', 'max:32'],
             'password' => ['required', 'string'],
         ];
     }
@@ -59,6 +60,7 @@ class RegisterRequest extends ApiFormRequest
         return [
             'name' => 'full name',
             'email' => 'email address',
+            'phone' => 'phone number',
             'password' => 'password',
         ];
     }

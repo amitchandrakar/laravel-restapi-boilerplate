@@ -147,14 +147,6 @@ class DemoMasterDataSeeder extends Seeder
                 'facebook_environment' => 'live',
                 'instagram_environment' => 'live',
             ],
-            'payment_gateway_settings' => [
-                'gateway' => 'razorpay',
-                'is_enabled' => false,
-                'environment' => 'sandbox',
-                'currency' => 'INR',
-                'live_key_id' => env('RAZORPAY_KEY_ID'),
-                'sandbox_key_id' => env('RAZORPAY_KEY_ID'),
-            ],
             'notification_settings' => [
                 'email_enabled' => false,
                 'sms_enabled' => false,

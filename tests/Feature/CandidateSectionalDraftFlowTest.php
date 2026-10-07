@@ -31,6 +31,7 @@ it('walks candidates through sectional saves before publishing the profile', fun
             'career-education',
             'family-background',
             'lifestyle',
+            'property-details',
             'partner-preferences',
         ] as $sectionPath
     ) {

@@ -34,9 +34,13 @@ class TeamUserService
     {
         $perPage = min(100, max(1, (int) ($filters['perPage'] ?? 15)));
 
-        return $this->buildListQuery($filters)
-            ->with(['primaryRole', 'permissions.module'])
-            ->paginate($perPage);
+        $with = ['primaryRole'];
+
+        if ($this->includesPermissions($filters)) {
+            $with[] = 'permissions.module';
+        }
+
+        return $this->buildListQuery($filters)->with($with)->paginate($perPage);
     }
 
     /**
@@ -269,5 +273,19 @@ class TeamUserService
         }
 
         return $role;
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     */
+    private function includesPermissions(array $filters): bool
+    {
+        $include = (string) ($filters['include'] ?? '');
+
+        if ($include === '') {
+            return false;
+        }
+
+        return in_array('permissions', array_map(trim(...), explode(',', $include)), true);
     }
 }

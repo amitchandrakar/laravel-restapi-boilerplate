@@ -28,6 +28,34 @@ it('lists active subscriptions with candidate and package details', function ():
         ->assertJsonPath('data.0.package.price', 1000);
 });
 
+it('resolves subscription candidate profilePhoto from user_images gallery', function (): void {
+    $admin = $this->createUserWithRole('admin', 'admin-sub-photo@example.com');
+    $candidate = $this->createUserWithRole('candidate', 'candidate-sub-photo@example.com');
+    $candidate->update(['profile_photo_url' => 'https://legacy.example/old.jpg']);
+    $package = subscriptionTestPackage('PHOTO_PLAN');
+    subscriptionTestInsert($candidate->id, $package->id, 'active', now()->addMonths(3));
+
+    DB::table('user_images')->insert([
+        'uuid' => (string) Str::uuid(),
+        'user_id' => $candidate->id,
+        'image_type' => 'profile',
+        'image_storage_path' => null,
+        'image_url' => 'https://cdn.example.com/gallery-profile.jpg',
+        'thumbnail_url' => null,
+        'icon_url' => null,
+        'is_profile_photo' => true,
+        'sort_order' => 0,
+        'is_active' => true,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $this->actingAs($admin, 'sanctum')
+        ->getJson('/api/v1/admin/subscriptions/active?search=' . urlencode($candidate->email))
+        ->assertStatus(200)
+        ->assertJsonPath('data.0.candidate.profilePhoto', 'https://cdn.example.com/gallery-profile.jpg');
+});
+
 it('lists subscriptions expiring within seven days', function (): void {
     $admin = $this->createUserWithRole('admin', 'admin-sub-expiring@example.com');
     $candidate = $this->createUserWithRole('candidate', 'candidate-sub-expiring@example.com');

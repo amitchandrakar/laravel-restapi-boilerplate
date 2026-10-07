@@ -223,6 +223,8 @@ function memberNotificationsTwoCandidatesWithTokens(): array
 
     memberNotificationsSubscribeToTalash($a);
     memberNotificationsSubscribeToTalash($b);
+    test()->approveCandidateKyc($a);
+    test()->approveCandidateKyc($b);
 
     return [$a->fresh(), $b->fresh(), memberNotificationsLoginToken($emailA)];
 }
@@ -238,6 +240,7 @@ function memberNotificationsMakeCandidate(string $email): User
         'role_id' => (int) DB::table('roles')->where('name', 'candidate')->where('guard_name', 'web')->value('id'),
     ]);
     $user->assignRole('candidate');
+    test()->approveCandidateKyc($user);
 
     return $user;
 }

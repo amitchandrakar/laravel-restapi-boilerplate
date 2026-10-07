@@ -14,9 +14,34 @@ use Illuminate\Support\Facades\Storage;
 final class HealthCheckService
 {
     /**
+     * Fast probes suitable for synchronous API responses (no external network I/O).
+     *
      * @return array<string, array{status: string, message: string}>
      */
-    public function checkServices(): array
+    public function checkServicesFast(): array
+    {
+        return [
+            'database' => $this->checkDatabase(),
+            'cache' => $this->checkCache(),
+            'queue' => $this->checkQueue(),
+            'storage' => $this->checkApplicationStorage(),
+            'object_storage' => [
+                'status' => 'up',
+                'message' => 'Deep object storage probe deferred (run health:warm-cache)',
+            ],
+            'search' => [
+                'status' => 'up',
+                'message' => 'Deep search probe deferred (run health:warm-cache)',
+            ],
+        ];
+    }
+
+    /**
+     * Full probes including Algolia and S3 — use via health:warm-cache, not per request.
+     *
+     * @return array<string, array{status: string, message: string}>
+     */
+    public function checkServicesDeep(): array
     {
         return [
             'database' => $this->checkDatabase(),
@@ -28,9 +53,24 @@ final class HealthCheckService
         ];
     }
 
+    /**
+     * @return array<string, array{status: string, message: string}>
+     */
+    public function checkServices(): array
+    {
+        return $this->checkServicesDeep();
+    }
+
     public function isHealthy(): bool
     {
         return collect($this->checkServices())->every(static fn(array $service): bool => $service['status'] === 'up');
+    }
+
+    public function isHealthyFast(): bool
+    {
+        return collect($this->checkServicesFast())->every(
+            static fn(array $service): bool => $service['status'] === 'up'
+        );
     }
 
     /**
@@ -114,9 +154,6 @@ final class HealthCheckService
         }
     }
 
-    /**
-     * @return array{status: string, message: string}
-     */
     /**
      * @return array{status: string, message: string}
      */

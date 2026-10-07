@@ -6,6 +6,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property string $candidateProfilePhoto
+ */
 class Subscription extends BaseModel
 {
     protected $table = 'subscriptions';

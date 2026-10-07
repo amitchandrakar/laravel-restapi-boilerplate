@@ -7,7 +7,9 @@ namespace App\Services;
 use App\Models\Module;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Support\CacheKeys;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;
@@ -21,14 +23,33 @@ class AdminRoleService
      */
     public function index(): array
     {
-        return Role::query()
-            ->where('guard_name', self::GUARD)
-            ->withCount('permissions')
-            ->orderBy('name')
-            ->get()
-            ->map(static fn(Role $role): array => self::roleSummary($role))
-            ->values()
-            ->all();
+        $ttl = max(60, (int) config('cache_strategy.admin_roles_seconds', 3600));
+
+        /** @var list<array<string, mixed>> $roles */
+        $roles = Cache::remember(CacheKeys::adminRolesCatalog(), $ttl, fn(): array => $this->loadIndex());
+
+        return $roles;
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function loadIndex(): array
+    {
+        return array_values(
+            Role::query()
+                ->where('guard_name', self::GUARD)
+                ->withCount('permissions')
+                ->orderBy('name')
+                ->get()
+                ->map(static fn(Role $role): array => self::roleSummary($role))
+                ->all()
+        );
+    }
+
+    private function forgetCatalogCache(): void
+    {
+        Cache::forget(CacheKeys::adminRolesCatalog());
     }
 
     /**
@@ -104,6 +125,7 @@ class AdminRoleService
             }
 
             app(PermissionRegistrar::class)->forgetCachedPermissions();
+            $this->forgetCatalogCache();
 
             return $role->refresh();
         });
@@ -152,6 +174,7 @@ class AdminRoleService
             }
 
             app(PermissionRegistrar::class)->forgetCachedPermissions();
+            $this->forgetCatalogCache();
 
             return $role->refresh();
         });
@@ -168,6 +191,7 @@ class AdminRoleService
         DB::transaction(function () use ($role): void {
             $role->delete();
             app(PermissionRegistrar::class)->forgetCachedPermissions();
+            $this->forgetCatalogCache();
         });
     }
 

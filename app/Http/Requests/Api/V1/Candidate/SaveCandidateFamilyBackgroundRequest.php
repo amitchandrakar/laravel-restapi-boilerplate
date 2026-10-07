@@ -29,10 +29,12 @@ class SaveCandidateFamilyBackgroundRequest extends ApiFormRequest
             $p . 'father_occupation' => ['nullable', 'string', 'max:255'],
             $p . 'father_gotra' => ['nullable', 'string', 'max:128'],
             $p . 'father_native_place' => ['nullable', 'string', 'max:255'],
+            $p . 'father_contact_number' => ['nullable', 'string', 'max:32'],
             $p . 'mother_name' => ['nullable', 'string', 'max:255'],
             $p . 'mother_occupation' => ['nullable', 'string', 'max:255'],
             $p . 'mother_gotra' => ['nullable', 'string', 'max:128'],
             $p . 'mother_native_place' => ['nullable', 'string', 'max:255'],
+            $p . 'mother_contact_number' => ['nullable', 'string', 'max:32'],
             $p . 'brothers_count' => ['nullable', 'integer', 'min:0', 'max:255'],
             $p . 'sisters_count' => ['nullable', 'integer', 'min:0', 'max:255'],
             $p . 'family_type' => ['nullable', 'string', 'max:64'],
@@ -47,6 +49,11 @@ class SaveCandidateFamilyBackgroundRequest extends ApiFormRequest
             $p . 'siblings.*.age' => ['nullable', 'integer', 'min:0', 'max:120'],
             $p . 'siblings.*.is_elder' => ['nullable', 'boolean'],
             $p . 'siblings.*.sort_order' => ['nullable', 'integer', 'min:0', 'max:65535'],
+            $p . 'spoc_contacts' => ['nullable', 'array', 'max:20'],
+            $p . 'spoc_contacts.*.name' => ['nullable', 'string', 'max:255'],
+            $p . 'spoc_contacts.*.relation' => ['nullable', 'string', 'max:128'],
+            $p . 'spoc_contacts.*.contact_number' => ['nullable', 'string', 'max:32'],
+            $p . 'spoc_contacts.*.sort_order' => ['nullable', 'integer', 'min:0', 'max:65535'],
         ];
     }
 }

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\Controller;
 use App\Jobs\LogAuditJob;
 use App\Jobs\LogUserActivityJob;
 use App\Services\Concerns\AbstractSingletonSettingsService;
+use App\Services\SiteSettingsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -29,7 +30,9 @@ trait HandlesSingletonSettings
         }
 
         try {
-            return $this->successResponse($service->all(), $successMessage);
+            $data = $service instanceof SiteSettingsService ? $service->cachedAll() : $service->all();
+
+            return $this->successResponse($data, $successMessage);
         } catch (Throwable $e) {
             Log::error('Failed to fetch admin settings', [
                 'permission' => $viewPermission,

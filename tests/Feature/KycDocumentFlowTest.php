@@ -53,6 +53,10 @@ it('lets candidates submit KYC documents and reviewers finalize approval', funct
     expect($doc)->not->toBeNull();
     expect((int) $doc->verified_by)->toBe((int) $reviewer->id);
     expect($doc->verified_at)->not->toBeNull();
+
+    $feed = $this->actingAs($candidate, 'sanctum')->getJson('/api/v1/app/auth/notifications')->assertStatus(200);
+    $kinds = collect($feed->json('data'))->pluck('kind')->all();
+    expect($kinds)->toContain('kyc_approved');
 });
 
 it('requires rejection reasons and forbids reviewing documents that are not pending', function () {

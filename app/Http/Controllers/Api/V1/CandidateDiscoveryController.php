@@ -36,6 +36,10 @@ class CandidateDiscoveryController extends Controller
             return $this->forbiddenResponse('You do not have permission to browse profiles.');
         }
 
+        if (!CandidateEntitlements::hasApprovedIdentity($user)) {
+            return $this->forbiddenResponse('Complete identity verification before viewing other members.');
+        }
+
         $perPage = (int) $request->validated('perPage', 15);
         $page = (int) $request->validated('page', 1);
         $paginator = $this->browseService->paginateBrowse($user, $perPage, $request->filters(), $page);
@@ -58,6 +62,10 @@ class CandidateDiscoveryController extends Controller
             return $this->forbiddenResponse('You do not have permission to view favorites.');
         }
 
+        if (!CandidateEntitlements::hasApprovedIdentity($user)) {
+            return $this->forbiddenResponse('Complete identity verification before viewing other members.');
+        }
+
         $perPage = max(1, min(50, (int) $request->integer('perPage', 15)));
         $paginator = $this->favoriteService->paginateFavorites($user, $perPage, $request->filters());
 
@@ -77,6 +85,10 @@ class CandidateDiscoveryController extends Controller
 
         if (!$viewer->can(CandidateEntitlements::MARK_FAVORITE)) {
             return $this->forbiddenResponse('You do not have permission to favorite profiles.');
+        }
+
+        if (!CandidateEntitlements::hasApprovedIdentity($viewer)) {
+            return $this->forbiddenResponse('Complete identity verification before viewing other members.');
         }
 
         try {
@@ -101,6 +113,10 @@ class CandidateDiscoveryController extends Controller
 
         if (!$user->can(CandidateEntitlements::VIEW_MATCHES)) {
             return $this->forbiddenResponse('You do not have permission to view matches.');
+        }
+
+        if (!CandidateEntitlements::hasApprovedIdentity($user)) {
+            return $this->forbiddenResponse('Complete identity verification before viewing other members.');
         }
 
         $perPage = (int) $request->validated('perPage', 15);

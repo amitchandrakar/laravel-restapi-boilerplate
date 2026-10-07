@@ -28,7 +28,8 @@ final class CandidateDiscoveryFilterApplier
     public static function apply(EloquentBuilder|QueryBuilder $query, array $filters, string $userTable = 'users'): void
     {
         if (($filters['gender'] ?? null) !== null && $filters['gender'] !== '') {
-            $query->where("{$userTable}.gender", $filters['gender']);
+            $gender = mb_strtolower(trim($filters['gender']));
+            $query->whereRaw("LOWER(TRIM({$userTable}.gender)) = ?", [$gender]);
         }
 
         $minAge = $filters['min_age'] ?? null;

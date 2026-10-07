@@ -3,7 +3,10 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use App\Services\CandidateProfileSectionService;
 use Database\Seeders\RbacSeeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 beforeEach(function (): void {
     $this->seed(RbacSeeder::class);
@@ -142,4 +145,108 @@ it('exports candidates as CSV with expected headers', function (): void {
     expect($lines[0] ?? '')->toBe(
         'uuid,first_name,last_name,email,phone,gender,marital_status,height,weight,blood_group,body_type,profile_status,status,is_featured,published_at,created_at,updated_at'
     );
+});
+
+it('returns admin candidate list enrichment fields', function (): void {
+    $admin = $this->createUserWithRole('admin', 'admin-list-fields-' . uniqid('', true) . '@example.com');
+    $candidate = $this->createUserWithRole('candidate', 'list-fields-' . uniqid('', true) . '@example.com');
+    $candidate->update([
+        'father_name' => 'Ram Kumar',
+        'mother_name' => 'Sita Devi',
+        'current_village' => 'Jamul',
+        'current_city' => 'Raipur',
+        'current_state' => 'Chhattisgarh',
+        'current_country' => 'India',
+        'sub_caste' => 'Chandrakar',
+        'completed_sections_json' => array_slice(CandidateProfileSectionService::sections(), 0, 5),
+    ]);
+
+    DB::table('user_verification_documents')->insert([
+        'uuid' => (string) Str::uuid(),
+        'user_id' => $candidate->id,
+        'document_type' => 'aadhaar',
+        'verification_status' => 'approved',
+        'submitted_at' => now(),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $this->actingAs($admin, 'sanctum')
+        ->getJson('/api/v1/admin/candidates?search=' . urlencode('Ram Kumar'))
+        ->assertStatus(200)
+        ->assertJsonPath('data.0.uuid', $candidate->uuid)
+        ->assertJsonPath('data.0.fatherName', 'Ram Kumar')
+        ->assertJsonPath('data.0.motherName', 'Sita Devi')
+        ->assertJsonPath('data.0.currentLocationLine', 'Jamul, Raipur, Chhattisgarh, India')
+        ->assertJsonPath('data.0.identityVerified', true)
+        ->assertJsonPath(
+            'data.0.profileCompletenessPercent',
+            (int) round((5 / count(CandidateProfileSectionService::sections())) * 100)
+        );
+});
+
+it('filters candidates by surname community and current city', function (): void {
+    $admin = $this->createUserWithRole('admin', 'admin-list-filter-' . uniqid('', true) . '@example.com');
+
+    $match = $this->createUserWithRole('candidate', 'match-' . uniqid('', true) . '@example.com');
+    $match->update([
+        'sub_caste' => 'Chandrakar',
+        'current_city' => 'Raipur',
+        'profile_status' => 'published',
+    ]);
+
+    $otherCommunity = $this->createUserWithRole('candidate', 'other-comm-' . uniqid('', true) . '@example.com');
+    $otherCommunity->update([
+        'sub_caste' => 'Patel',
+        'current_city' => 'Raipur',
+        'profile_status' => 'published',
+    ]);
+
+    $otherCity = $this->createUserWithRole('candidate', 'other-city-' . uniqid('', true) . '@example.com');
+    $otherCity->update([
+        'sub_caste' => 'Chandrakar',
+        'current_city' => 'Bilaspur',
+        'profile_status' => 'published',
+    ]);
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->getJson('/api/v1/admin/candidates?community=Chandrakar&city=Raipur&bucket=published')
+        ->assertStatus(200);
+
+    $uuids = collect($response->json('data'))->pluck('uuid');
+
+    expect($uuids)
+        ->toContain($match->uuid)
+        ->and($uuids)
+        ->not->toContain($otherCommunity->uuid)
+        ->and($uuids)
+        ->not->toContain($otherCity->uuid);
+});
+
+it('searches candidates by parent names and current city', function (): void {
+    $admin = $this->createUserWithRole('admin', 'admin-list-search-' . uniqid('', true) . '@example.com');
+
+    $byFather = $this->createUserWithRole('candidate', 'father-' . uniqid('', true) . '@example.com');
+    $byFather->update(['father_name' => 'UniqueFatherName', 'current_city' => 'Durg']);
+
+    $byMother = $this->createUserWithRole('candidate', 'mother-' . uniqid('', true) . '@example.com');
+    $byMother->update(['mother_name' => 'UniqueMotherName', 'current_city' => 'Korba']);
+
+    $byCity = $this->createUserWithRole('candidate', 'city-' . uniqid('', true) . '@example.com');
+    $byCity->update(['current_city' => 'UniqueCityName']);
+
+    $this->actingAs($admin, 'sanctum')
+        ->getJson('/api/v1/admin/candidates?search=UniqueFatherName')
+        ->assertStatus(200)
+        ->assertJsonPath('data.0.uuid', $byFather->uuid);
+
+    $this->actingAs($admin, 'sanctum')
+        ->getJson('/api/v1/admin/candidates?search=UniqueMotherName')
+        ->assertStatus(200)
+        ->assertJsonPath('data.0.uuid', $byMother->uuid);
+
+    $this->actingAs($admin, 'sanctum')
+        ->getJson('/api/v1/admin/candidates?search=UniqueCityName')
+        ->assertStatus(200)
+        ->assertJsonPath('data.0.uuid', $byCity->uuid);
 });

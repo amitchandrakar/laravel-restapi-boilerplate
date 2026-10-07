@@ -35,7 +35,7 @@ Errors use `success: false`, non‑null `error`, and HTTP status matching `statu
 
 ## Registration checkout
 
-Prepares subscription state and either skips Razorpay or returns checkout fields for the **selected package** (for users who registered via `POST /auth/register` and then choose a plan).
+Activates the selected package. While registration payments are disabled, the response is always complimentary `skip_checkout` (no payment gateway).
 
 ### `POST /me/registration/checkout`
 
@@ -55,7 +55,8 @@ When registration amount for the package is **0**, or the user **already has an 
 ```json
 {
     "skip_checkout": true,
-    "reason": "free_or_complimentary"
+    "reason": "free_or_complimentary",
+    "complimentary_access_until": "2026-12-31"
 }
 ```
 
@@ -68,75 +69,15 @@ or
 }
 ```
 
-**Success `200` — Razorpay checkout** (`data`)
-
-When payment is required and a pending order is created or reused:
-
-```json
-{
-    "skip_checkout": false,
-    "order_id": "order_…",
-    "key_id": "rzp_…",
-    "amount_paise": 36500,
-    "currency": "INR",
-    "payment_uuid": "…",
-    "checkout_options": {
-        "method": {
-            "upi": true,
-            "card": false,
-            "netbanking": false,
-            "wallet": false,
-            "emi": false
-        }
-    }
-}
-```
-
-Merge `checkout_options` into Razorpay Checkout `options` on the client (same pattern as [`payment_razorpay_api.md`](payment_razorpay_api.md)).
+With `REGISTRATION_PAYMENTS_ENABLED=false` (launch default), payable packages also take the complimentary path above. Subscription `ends_at` is end-of-day on `COMPLIMENTARY_ACCESS_UNTIL`.
 
 **Typical errors**
 
-| HTTP  | When                                                       |
-| ----- | ---------------------------------------------------------- |
-| `401` | Missing or invalid Bearer token.                           |
-| `403` | User is not a candidate (or profile UUID header mismatch). |
-| `422` | Validation failed (e.g. invalid `package_uuid`).           |
-
----
-
-## Registration payment verify
-
-Same semantics as `POST /auth/payment/registration/confirm`, exposed under `/me/…` for the mobile contract.
-
-### `POST /me/registration/payments/verify`
-
-**Method:** `POST`  
-**Path:** `/api/v1/app/me/registration/payments/verify`
-
-**Request body (JSON)**
-
-| Field                 | Type   | Required |
-| --------------------- | ------ | -------- |
-| `razorpay_order_id`   | string | Yes      |
-| `razorpay_payment_id` | string | Yes      |
-| `razorpay_signature`  | string | Yes      |
-
-**Success `200` (`data`)**
-
-```json
-{
-    "payment_status": "success",
-    "permissions": ["candidate.…", "…"]
-}
-```
-
-**Typical errors**
-
-| HTTP  | When                                                         |
-| ----- | ------------------------------------------------------------ |
-| `401` | Unauthenticated.                                             |
-| `409` | Payment already confirmed or cannot be confirmed (conflict). |
-| `422` | Invalid signature or no matching payment for the order.      |
+| HTTP  | When                                                                                    |
+| ----- | --------------------------------------------------------------------------------------- |
+| `401` | Missing or invalid Bearer token.                                                        |
+| `403` | User is not a candidate (or profile UUID header mismatch).                              |
+| `422` | Validation failed (e.g. invalid `package_uuid`), or payments enabled without a gateway. |
 
 ---
 
@@ -298,60 +239,55 @@ The upload session is cleared after successful submit.
 
 ---
 
-## Devices (FCM stub)
+## Devices (FCM)
 
 ### `PUT /me/devices`
 
 **Method:** `PUT`  
 **Path:** `/api/v1/app/me/devices`
 
-**Request body (JSON)** — all optional
+Registers or refreshes a Firebase Cloud Messaging device token for the authenticated user.
 
-| Field       | Type              |
-| ----------- | ----------------- |
-| `fcm_token` | string (max 4096) |
-| `platform`  | string (max 64)   |
-| `device_id` | string (max 255)  |
+**Request body (JSON)**
+
+| Field         | Type                       | Required |
+| ------------- | -------------------------- | -------- |
+| `fcm_token`   | string (max 4096)          | yes      |
+| `platform`    | string (android\|ios\|web) | no       |
+| `device_id`   | string (max 255)           | no       |
+| `app_version` | string (max 64)            | no       |
 
 **Success `200` (`data`)**
 
 ```json
 {
-    "registered": false,
-    "stub": true
+    "registered": true,
+    "stub": false,
+    "uuid": "...",
+    "platform": "android",
+    "lastSeenAt": "2026-08-07T12:00:00+00:00"
 }
 ```
 
-Nothing is persisted yet; intended for future push registration.
+Stored in `user_push_devices`. Re-registering the same token updates `last_seen_at`. Tokens are reused across users (reassigned).
 
----
+### `DELETE /me/devices`
 
-## Razorpay webhook (alias)
+Unregister one token (`fcm_token`) or all tokens for the user (`all: true`).
 
-Same handler as `POST /payment/razorpay/webhook`.
+### Push delivery
 
-### `POST /webhooks/razorpay`
+When a member **database** notification is stored (feed kinds in `MemberNotificationFeedService::FEED_KINDS`), `SendFcmPushForNotificationJob` sends FCM HTTP v1 messages to that user’s devices. Requires:
 
-**Method:** `POST`  
-**Path:** `/api/v1/app/webhooks/razorpay`
+- `FIREBASE_CREDENTIALS` pointing at a Firebase service account JSON (or file at `storage/app/firebase/service-account.json`)
+- `notification_settings.push_enabled` true when a settings row exists
+- Queue worker running (`QUEUE_CONNECTION`)
 
-**Authentication:** none (public).
-
-**Headers**
-
-| Header                 | Required               |
-| ---------------------- | ---------------------- |
-| `X-Razorpay-Signature` | Yes (HMAC of raw body) |
-
-**Request body:** raw Razorpay webhook JSON (preserve body for signature verification).
-
-**Success `200`:** processed event (idempotent).
-
-**Typical errors:** `401` invalid signature; `422` JSON/process failure.
+See mobile `docs/push-notification-backend-contract.md`.
 
 ---
 
 ## Related documentation
 
-- Razorpay env keys, Checkout hints, and legacy confirm/status routes: [`payment_razorpay_api.md`](payment_razorpay_api.md).
+- Launch payments config: `REGISTRATION_PAYMENTS_ENABLED`, `COMPLIMENTARY_ACCESS_UNTIL` in `.env` / `config/payments.php`.
 - URL‑based KYC (alternative to multipart): `PUT /api/v1/app/auth/candidate/kyc/documents` — see existing candidate/KYC docs.

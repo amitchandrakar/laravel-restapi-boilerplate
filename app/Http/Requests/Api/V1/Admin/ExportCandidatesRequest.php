@@ -23,6 +23,8 @@ class ExportCandidatesRequest extends ApiFormRequest
         return [
             'bucket' => ['sometimes', 'string', Rule::in(CandidateUserService::LIST_BUCKETS)],
             'search' => ['sometimes', 'string', 'max:255'],
+            'community' => ['sometimes', 'string', 'max:128'],
+            'city' => ['sometimes', 'string', 'max:128'],
             'gender' => ['sometimes', 'string', 'max:32'],
             'marital_status' => ['sometimes', 'string', 'max:64'],
             'profile_status' => ['sometimes', 'string', Rule::in(CandidateUserService::PROFILE_STATUSES)],

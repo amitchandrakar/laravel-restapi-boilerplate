@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api\V1;
 
+use App\Models\User;
 use App\Services\UserPartnerPreferredLocationService;
 use App\Support\UserProfilePhotos;
 use Illuminate\Http\Request;
@@ -111,6 +112,44 @@ class CandidateUserResource extends JsonResource
             ->values()
             ->all();
 
+        $spocContacts = DB::table('user_spoc_contacts')
+            ->where('user_id', $user->id)
+            ->whereNull('deleted_at')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get(['id', 'name', 'relation', 'contact_number', 'sort_order'])
+            ->map(static function (object $row): array {
+                return [
+                    'id' => (int) data_get($row, 'id'),
+                    'name' => data_get($row, 'name'),
+                    'relation' => data_get($row, 'relation'),
+                    'contactNumber' => data_get($row, 'contact_number'),
+                    'sortOrder' => (int) data_get($row, 'sort_order', 0),
+                ];
+            })
+            ->values()
+            ->all();
+
+        $properties = DB::table('user_property_details')
+            ->where('user_id', $user->id)
+            ->whereNull('deleted_at')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get(['id', 'property_type', 'area_sq_ft', 'city', 'state', 'country', 'sort_order'])
+            ->map(static function (object $row): array {
+                return [
+                    'id' => (int) data_get($row, 'id'),
+                    'propertyType' => data_get($row, 'property_type'),
+                    'areaSqFt' => data_get($row, 'area_sq_ft') !== null ? (int) data_get($row, 'area_sq_ft') : null,
+                    'city' => data_get($row, 'city'),
+                    'state' => data_get($row, 'state'),
+                    'country' => data_get($row, 'country'),
+                    'sortOrder' => (int) data_get($row, 'sort_order', 0),
+                ];
+            })
+            ->values()
+            ->all();
+
         $partner = DB::table('user_partner_preferences')->where('user_id', $user->id)->first();
 
         $partnerDegreeIds = self::decodeStoredIdList(
@@ -164,7 +203,7 @@ class CandidateUserResource extends JsonResource
             'profileStatus' => data_get($user, 'profile_status', 'draft'),
             'completedSections' => data_get($user, 'completed_sections_json', []),
             'publishedAt' => optional($user->published_at)->toDateTimeString(),
-            'isFeatured' => (bool) ($user->is_featured ?? false),
+            'isFeatured' => $user->is_featured ?? false,
             'featuredAt' => optional($user->featured_at)->toDateTimeString(),
             'sections' => [
                 'photos' => $photos,
@@ -177,7 +216,17 @@ class CandidateUserResource extends JsonResource
                     'photoUrl' => $photoUrl,
                     'age' => $user->date_of_birth !== null ? $user->date_of_birth->age : null,
                     'subCaste' => data_get($user, 'sub_caste'),
-                    'gotra' => data_get($user, 'gotra'),
+                    'gotra' => (static function () use ($user): ?string {
+                        foreach (['gotra', 'father_gotra'] as $key) {
+                            $v = data_get($user, $key);
+
+                            if (is_string($v) && trim($v) !== '') {
+                                return trim($v);
+                            }
+                        }
+
+                        return null;
+                    })(),
                     'rashi' => data_get($user, 'rashi'),
                     'nakshatra' => data_get($user, 'nakshatra'),
                     'occupationId' => data_get($user, 'occupation_id'),
@@ -196,7 +245,17 @@ class CandidateUserResource extends JsonResource
                     'timeOfBirth' => data_get($user, 'time_of_birth'),
                     'zodiacSign' => data_get($user, 'zodiac_sign'),
                     'manglikStatus' => data_get($user, 'manglik_status'),
-                    'gotra' => data_get($user, 'gotra'),
+                    'gotra' => (static function () use ($user): ?string {
+                        foreach (['gotra', 'father_gotra'] as $key) {
+                            $v = data_get($user, $key);
+
+                            if (is_string($v) && trim($v) !== '') {
+                                return trim($v);
+                            }
+                        }
+
+                        return null;
+                    })(),
                     'rashi' => data_get($user, 'rashi'),
                     'nakshatra' => data_get($user, 'nakshatra'),
                     'placeOfBirthLine' => data_get($user, 'place_of_birth_line'),
@@ -241,15 +300,18 @@ class CandidateUserResource extends JsonResource
                     'fatherOccupation' => data_get($user, 'father_occupation'),
                     'fatherGotra' => data_get($user, 'father_gotra'),
                     'fatherNativePlace' => data_get($user, 'father_native_place'),
+                    'fatherContactNumber' => data_get($user, 'father_contact_number'),
                     'motherName' => data_get($user, 'mother_name'),
                     'motherOccupation' => data_get($user, 'mother_occupation'),
                     'motherGotra' => data_get($user, 'mother_gotra'),
                     'motherNativePlace' => data_get($user, 'mother_native_place'),
+                    'motherContactNumber' => data_get($user, 'mother_contact_number'),
                     'brothersCount' => data_get($user, 'brothers_count'),
                     'sistersCount' => data_get($user, 'sisters_count'),
                     'familyType' => data_get($user, 'family_type'),
                     'familyStatus' => data_get($user, 'family_status'),
                     'siblings' => $siblings,
+                    'spocContacts' => $spocContacts,
                 ],
                 'lifestyle' => [
                     'diet' => data_get($user, 'diet'),
@@ -272,6 +334,9 @@ class CandidateUserResource extends JsonResource
                     'likes' => data_get($user, 'likes', []),
                     'dislikes' => data_get($user, 'dislikes', []),
                 ],
+                'propertyDetails' => [
+                    'properties' => $properties,
+                ],
                 'partnerPreferences' => [
                     'preferredMinAge' => data_get($partner, 'preferred_min_age'),
                     'preferredMaxAge' => data_get($partner, 'preferred_max_age'),
@@ -289,9 +354,7 @@ class CandidateUserResource extends JsonResource
                     'preferredCaste' => data_get($partner, 'preferred_caste'),
                     'preferredIncomeMin' => data_get($partner, 'preferred_income_min'),
                     'preferredDegreeIds' => $partnerDegreeIds,
-                    'preferredLocations' => app(UserPartnerPreferredLocationService::class)->listForUserId(
-                        (int) $user->id
-                    ),
+                    'preferredLocations' => app(UserPartnerPreferredLocationService::class)->listForUserId($user->id),
                     'preferredLocationIds' => $partnerLocationIds,
                     'preferredCommunityIds' => $partnerCommunityIds,
                     'preferredOccupation' => data_get($partner, 'preferred_occupation'),

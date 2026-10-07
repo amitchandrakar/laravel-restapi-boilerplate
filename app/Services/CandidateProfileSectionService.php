@@ -22,6 +22,7 @@ class CandidateProfileSectionService
     public const SECTION_CAREER_EDUCATION = 'career_education';
     public const SECTION_FAMILY_BACKGROUND = 'family_background';
     public const SECTION_LIFESTYLE = 'lifestyle';
+    public const SECTION_PROPERTY_DETAILS = 'property_details';
     public const SECTION_PARTNER_PREFERENCES = 'partner_preferences';
 
     /** @return list<string> */
@@ -36,6 +37,7 @@ class CandidateProfileSectionService
             self::SECTION_CAREER_EDUCATION,
             self::SECTION_FAMILY_BACKGROUND,
             self::SECTION_LIFESTYLE,
+            self::SECTION_PROPERTY_DETAILS,
             self::SECTION_PARTNER_PREFERENCES,
         ];
     }
@@ -68,11 +70,15 @@ class CandidateProfileSectionService
                     'body_type' => $payload['body_type'] ?? null,
                     'complexion' => $payload['complexion'] ?? null,
                     'height' => $payload['height'] ?? null,
+                    'weight' => $payload['weight'] ?? null,
                     'blood_group' => $payload['blood_group'] ?? null,
                     'manglik_status' => $payload['manglik_status'] ?? null,
                     'about_me' => $payload['about_me'] ?? null,
                     'profile_photo_url' => $payload['photo_url'] ?? null,
                     'sub_caste' => $payload['sub_caste'] ?? null,
+                    'gotra' => $payload['gotra'] ?? null,
+                    'rashi' => $payload['rashi'] ?? null,
+                    'nakshatra' => $payload['nakshatra'] ?? null,
                     'occupation_id' => $payload['occupation_id'] ?? null,
                     'income_range_id' => $payload['income_range_id'] ?? null,
                 ]),
@@ -81,6 +87,7 @@ class CandidateProfileSectionService
                 self::SECTION_CAREER_EDUCATION => $this->saveCareerEducation($user, $payload),
                 self::SECTION_FAMILY_BACKGROUND => $this->saveFamilyBackgroundSection($user, $payload),
                 self::SECTION_LIFESTYLE => $this->saveLifestyleSection($user, $payload),
+                self::SECTION_PROPERTY_DETAILS => $this->savePropertyDetailsSection($user, $payload),
                 self::SECTION_PARTNER_PREFERENCES => $this->savePartnerPreferences($user, $payload),
                 default => throw new InvalidArgumentException('Unsupported section'),
             };
@@ -113,6 +120,7 @@ class CandidateProfileSectionService
             self::SECTION_CAREER_EDUCATION => data_get($payload, 'career_education', []),
             self::SECTION_FAMILY_BACKGROUND => data_get($payload, 'family_background', []),
             self::SECTION_LIFESTYLE => data_get($payload, 'lifestyle', []),
+            self::SECTION_PROPERTY_DETAILS => data_get($payload, 'property_details', []),
             self::SECTION_PARTNER_PREFERENCES => data_get($payload, 'partner_preferences', []),
         ];
 
@@ -187,6 +195,11 @@ class CandidateProfileSectionService
             'rashi',
             'nakshatra',
             'place_of_birth_line',
+            'place_of_birth_country',
+            'place_of_birth_state',
+            'place_of_birth_city',
+            'place_of_birth_district',
+            'place_of_birth_village',
             'birth_country_id',
             'birth_state_id',
             'birth_city_id',
@@ -210,6 +223,11 @@ class CandidateProfileSectionService
             if ($key === 'date_of_birth' && $value instanceof \DateTimeInterface) {
                 $value = $value->format('Y-m-d');
             }
+
+            if (str_ends_with($key, '_id') && is_numeric($value)) {
+                $value = (int) $value;
+            }
+
             $columns[$key] = $value;
         }
 
@@ -330,7 +348,7 @@ class CandidateProfileSectionService
     }
 
     /**
-     * Parents / counts on `users`; optional `siblings` replaces `user_siblings_details` rows for this user.
+     * Parents / counts on `users`; optional `siblings` / `spoc_contacts` replace child rows.
      *
      * @param  array<string, mixed>  $payload
      */
@@ -338,35 +356,107 @@ class CandidateProfileSectionService
     {
         $this->saveUsersData($user, $payload);
 
-        if (!array_key_exists('siblings', $payload)) {
+        if (array_key_exists('siblings', $payload) && is_array($payload['siblings'])) {
+            DB::table('user_siblings_details')->where('user_id', $user->id)->delete();
+
+            foreach (array_values(array_slice($payload['siblings'], 0, 20)) as $index => $row) {
+                if (!is_array($row)) {
+                    continue;
+                }
+                $relation = data_get($row, 'relation_type');
+                $relationType = $relation === 'sister' ? 'sister' : 'brother';
+
+                DB::table('user_siblings_details')->insert([
+                    'uuid' => (string) Str::uuid(),
+                    'user_id' => $user->id,
+                    'name' => (string) data_get($row, 'name', ''),
+                    'gender' => data_get($row, 'gender'),
+                    'relation_type' => $relationType,
+                    'marital_status' => data_get($row, 'marital_status'),
+                    'occupation' => data_get($row, 'occupation'),
+                    'education' => data_get($row, 'education'),
+                    'age' => data_get($row, 'age') !== null && data_get($row, 'age') !== ''
+                            ? (int) data_get($row, 'age')
+                            : null,
+                    'is_elder' => (bool) data_get($row, 'is_elder', false),
+                    'sort_order' => data_get($row, 'sort_order') !== null && data_get($row, 'sort_order') !== ''
+                            ? (int) data_get($row, 'sort_order')
+                            : $index,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+
+        if (array_key_exists('spoc_contacts', $payload) && is_array($payload['spoc_contacts'])) {
+            DB::table('user_spoc_contacts')->where('user_id', $user->id)->delete();
+
+            foreach (array_values(array_slice($payload['spoc_contacts'], 0, 20)) as $index => $row) {
+                if (!is_array($row)) {
+                    continue;
+                }
+
+                $name = trim((string) data_get($row, 'name', ''));
+                $relation = trim((string) data_get($row, 'relation', ''));
+                $contactNumber = trim((string) data_get($row, 'contact_number', ''));
+
+                if ($name === '' && $relation === '' && $contactNumber === '') {
+                    continue;
+                }
+
+                DB::table('user_spoc_contacts')->insert([
+                    'uuid' => (string) Str::uuid(),
+                    'user_id' => $user->id,
+                    'name' => $name !== '' ? $name : null,
+                    'relation' => $relation !== '' ? $relation : null,
+                    'contact_number' => $contactNumber !== '' ? $contactNumber : null,
+                    'sort_order' => data_get($row, 'sort_order') !== null && data_get($row, 'sort_order') !== ''
+                            ? (int) data_get($row, 'sort_order')
+                            : $index,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Optional multi-row property details; replace-all when `properties` key is present.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    private function savePropertyDetailsSection(User $user, array $payload): void
+    {
+        if (!array_key_exists('properties', $payload) || !is_array($payload['properties'])) {
             return;
         }
-        $siblings = $payload['siblings'];
 
-        if (!is_array($siblings)) {
-            return;
-        }
+        DB::table('user_property_details')->where('user_id', $user->id)->delete();
 
-        DB::table('user_siblings_details')->where('user_id', $user->id)->delete();
-
-        foreach (array_values(array_slice($siblings, 0, 20)) as $index => $row) {
+        foreach (array_values(array_slice($payload['properties'], 0, 20)) as $index => $row) {
             if (!is_array($row)) {
                 continue;
             }
-            $relation = data_get($row, 'relation_type');
-            $relationType = $relation === 'sister' ? 'sister' : 'brother';
 
-            DB::table('user_siblings_details')->insert([
+            $propertyType = trim((string) data_get($row, 'property_type', ''));
+            $city = trim((string) data_get($row, 'city', ''));
+            $state = trim((string) data_get($row, 'state', ''));
+            $country = trim((string) data_get($row, 'country', ''));
+            $areaRaw = data_get($row, 'area_sq_ft');
+            $area = $areaRaw !== null && $areaRaw !== '' ? (int) $areaRaw : null;
+
+            if ($propertyType === '' && $city === '' && $state === '' && $country === '' && $area === null) {
+                continue;
+            }
+
+            DB::table('user_property_details')->insert([
                 'uuid' => (string) Str::uuid(),
                 'user_id' => $user->id,
-                'name' => (string) data_get($row, 'name', ''),
-                'gender' => data_get($row, 'gender'),
-                'relation_type' => $relationType,
-                'marital_status' => data_get($row, 'marital_status'),
-                'occupation' => data_get($row, 'occupation'),
-                'education' => data_get($row, 'education'),
-                'age' => data_get($row, 'age') !== null && data_get($row, 'age') !== '' ? (int) data_get($row, 'age') : null,
-                'is_elder' => (bool) data_get($row, 'is_elder', false),
+                'property_type' => $propertyType !== '' ? $propertyType : null,
+                'area_sq_ft' => $area,
+                'city' => $city !== '' ? $city : null,
+                'state' => $state !== '' ? $state : null,
+                'country' => $country !== '' ? $country : null,
                 'sort_order' => data_get($row, 'sort_order') !== null && data_get($row, 'sort_order') !== ''
                         ? (int) data_get($row, 'sort_order')
                         : $index,
@@ -378,12 +468,67 @@ class CandidateProfileSectionService
 
     private function saveCareerEducation(User $user, array $payload): void
     {
-        $this->saveUsersData($user, [
+        $userColumns = [
             'occupation' => $payload['occupation'] ?? null,
             'employer' => $payload['employer'] ?? null,
-            'income' => $payload['income'] ?? null,
             'marital_status' => $payload['marital_status'] ?? null,
-        ]);
+        ];
+
+        if (
+            array_key_exists('occupation_id', $payload) &&
+            $payload['occupation_id'] !== null &&
+            $payload['occupation_id'] !== ''
+        ) {
+            $userColumns['occupation_id'] = (int) $payload['occupation_id'];
+        } elseif (!empty($payload['occupation']) && is_string($payload['occupation'])) {
+            $occupationId = DB::table('occupations')
+                ->where('name', trim($payload['occupation']))
+                ->where('is_active', true)
+                ->value('id');
+
+            if ($occupationId !== null) {
+                $userColumns['occupation_id'] = (int) $occupationId;
+            }
+        }
+
+        if (
+            array_key_exists('income_range_id', $payload) &&
+            $payload['income_range_id'] !== null &&
+            $payload['income_range_id'] !== ''
+        ) {
+            $userColumns['income_range_id'] = (int) $payload['income_range_id'];
+        } elseif (!empty($payload['income_range']) && is_string($payload['income_range'])) {
+            $incomeRangeId = DB::table('income_ranges')
+                ->where('name', trim($payload['income_range']))
+                ->where('is_active', true)
+                ->value('id');
+
+            if ($incomeRangeId !== null) {
+                $userColumns['income_range_id'] = (int) $incomeRangeId;
+            }
+        }
+
+        if (
+            array_key_exists('income', $payload) &&
+            $payload['income'] !== null &&
+            $payload['income'] !== '' &&
+            is_numeric($payload['income'])
+        ) {
+            $userColumns['income'] = $payload['income'];
+        }
+
+        $this->saveUsersData($user, $userColumns);
+
+        // Member monthly salary edits should not keep a stale income-range label for GET.
+        if (
+            array_key_exists('income', $payload) &&
+            $payload['income'] !== null &&
+            $payload['income'] !== '' &&
+            is_numeric($payload['income']) &&
+            Schema::hasColumn('users', 'income_range_id')
+        ) {
+            $user->forceFill(['income_range_id' => null])->saveQuietly();
+        }
 
         if (!isset($payload['qualifications']) || !is_array($payload['qualifications'])) {
             return;
@@ -391,9 +536,15 @@ class CandidateProfileSectionService
 
         DB::table('user_education_details')->where('user_id', $user->id)->delete();
 
-        foreach ($payload['qualifications'] as $qualification) {
+        foreach (array_values(array_slice($payload['qualifications'], 0, 20)) as $qualification) {
+            if (!is_array($qualification)) {
+                continue;
+            }
+
             $degreeId = data_get($qualification, 'degree_id');
             $degreeId = $degreeId !== null && $degreeId !== '' ? (int) $degreeId : null;
+            $grade = data_get($qualification, 'grade_or_percentage');
+            $grade = is_string($grade) ? trim($grade) : (is_scalar($grade) ? trim((string) $grade) : '');
 
             DB::table('user_education_details')->insert([
                 'uuid' => (string) Str::uuid(),
@@ -402,8 +553,9 @@ class CandidateProfileSectionService
                 'field_of_study' => data_get($qualification, 'field_of_study'),
                 'institution_name' => data_get($qualification, 'institution_name'),
                 'end_year' => data_get($qualification, 'year_of_graduation'),
+                'grade_or_percentage' => $grade !== '' ? $grade : null,
                 'education_type' => 'graduation',
-                'is_highest' => false,
+                'is_highest' => (bool) data_get($qualification, 'is_highest', false),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

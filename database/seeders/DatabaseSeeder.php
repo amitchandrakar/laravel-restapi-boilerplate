@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
                     DemoAuthUsersSeeder::class,
                     DemoTeamUsersSeeder::class,
                     DemoUsersSeeder::class,
+                    DemoNumberedUsersSeeder::class,
                     DemoCandidateNotificationsSeeder::class,
                     DemoSubscriptionPaymentSeeder::class,
                     DemoUserComplianceSeeder::class,

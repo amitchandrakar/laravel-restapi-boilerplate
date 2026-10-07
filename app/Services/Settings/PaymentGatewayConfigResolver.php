@@ -36,28 +36,10 @@ class PaymentGatewayConfigResolver
             Config::set('services.razorpay.currency', $settings->currency);
         }
 
-        $checkoutOptions = $this->decodeCheckoutOptions($settings->checkout_options_json);
+        $checkoutOptions = $settings->checkout_options_json;
 
-        if ($checkoutOptions !== []) {
+        if (is_array($checkoutOptions) && $checkoutOptions !== []) {
             Config::set('services.razorpay.checkout', $checkoutOptions);
         }
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function decodeCheckoutOptions(mixed $raw): array
-    {
-        if (is_array($raw)) {
-            return $raw;
-        }
-
-        if (!is_string($raw) || trim($raw) === '') {
-            return [];
-        }
-
-        $decoded = json_decode($raw, true);
-
-        return is_array($decoded) ? $decoded : [];
     }
 }

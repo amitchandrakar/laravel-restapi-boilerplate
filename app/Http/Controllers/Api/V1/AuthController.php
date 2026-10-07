@@ -13,6 +13,7 @@ use App\Http\Requests\Api\V1\RegisterCandidateRequest;
 use App\Http\Requests\Api\V1\RegisterRequest;
 use App\Http\Requests\Api\V1\ResetPasswordRequest;
 use App\Http\Requests\Api\V1\UpdateProfileRequest;
+use App\Http\Requests\Api\V1\ValidateRegistrationCouponRequest;
 use App\Http\Resources\Api\V1\AuthLoginResource;
 use App\Http\Resources\Api\V1\AuthMeResource;
 use App\Http\Resources\Api\V1\TokenResource;
@@ -22,8 +23,10 @@ use App\Jobs\LogAuditJob;
 use App\Jobs\LogUserActivityJob;
 use App\Jobs\StartUserSessionJob;
 use App\Jobs\UpsertUserDeviceLogJob;
+use App\Models\Package;
 use App\Models\User;
 use App\Services\AuthService;
+use App\Services\CouponService;
 use App\Support\AuthUserType;
 use App\Support\SanctumPlainTokenHasher;
 use App\Traits\ApiResponse;
@@ -38,7 +41,7 @@ class AuthController extends Controller
 {
     use ApiResponse;
 
-    public function __construct(protected AuthService $authService) {}
+    public function __construct(protected AuthService $authService, protected CouponService $couponService) {}
 
     /**
      * Public data for candidate registration (packages + surnames).
@@ -51,6 +54,29 @@ class AuthController extends Controller
             $this->authService->registrationOptions(),
             'Registration options fetched successfully'
         );
+    }
+
+    /**
+     * Validate a coupon against a package and return discounted pricing.
+     */
+    public function validateRegistrationCoupon(ValidateRegistrationCouponRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        /** @var Package $package */
+        $package = Package::query()
+            ->where('uuid', (string) $validated['packageUuid'])
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        $user = $request->user();
+        $result = $this->couponService->validateForPackage(
+            $package,
+            (string) $validated['couponCode'],
+            $user instanceof User ? $user : null
+        );
+
+        return $this->successResponse($result, 'Coupon validated');
     }
 
     /**

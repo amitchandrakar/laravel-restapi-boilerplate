@@ -13,20 +13,35 @@ final class CandidateAlgoliaFilterBuilder
 {
     /**
      * @param  array<string, mixed>  $filters
+     * @param  list<string>  $additionalExcludeUuids
      *
      * @return array{filters: string, numericFilters: list<string>}
      */
-    public static function build(array $filters, string $excludeUuid): array
+    public static function build(array $filters, string $excludeUuid, array $additionalExcludeUuids = []): array
     {
         $parts = ['profile_status:published', 'is_searchable:1'];
         $numeric = [];
 
+        $excludeUuids = [];
+
         if ($excludeUuid !== '') {
-            $parts[] = 'NOT uuid:' . self::quoteFilterValue($excludeUuid);
+            $excludeUuids[] = $excludeUuid;
+        }
+
+        foreach ($additionalExcludeUuids as $uuid) {
+            $uuid = trim($uuid);
+
+            if ($uuid !== '') {
+                $excludeUuids[] = $uuid;
+            }
+        }
+
+        foreach (array_values(array_unique($excludeUuids)) as $uuid) {
+            $parts[] = 'NOT uuid:' . self::quoteFilterValue($uuid);
         }
 
         if (($filters['gender'] ?? null) !== null && $filters['gender'] !== '') {
-            $parts[] = 'gender:' . self::quoteFilterValue((string) $filters['gender']);
+            $parts[] = 'gender:' . self::quoteFilterValue(mb_strtolower(trim((string) $filters['gender'])));
         }
 
         $minAge = $filters['min_age'] ?? null;

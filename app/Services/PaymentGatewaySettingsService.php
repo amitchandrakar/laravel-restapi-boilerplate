@@ -63,7 +63,7 @@ class PaymentGatewaySettingsService extends AbstractSingletonSettingsService
                 'liveKeyId' => $record->live_key_id,
                 'sandboxKeyId' => $record->sandbox_key_id,
                 'currency' => $record->currency ?? 'INR',
-                'checkoutOptionsJson' => $record->checkout_options_json ?? '',
+                'checkoutOptionsJson' => $record->checkout_options_json ?? [],
                 'webhookUrl' => $record->webhook_url,
             ],
             $maskSecrets

@@ -17,24 +17,35 @@ class TeamUserResource extends JsonResource
     {
         /** @var User $user */
         $user = $this->resource;
-        $permissions = $user->getAllPermissions();
-        $permissions->each(static function (Permission $permission): void {
-            $permission->loadMissing('module');
-        });
+        $includePermissions = $this->shouldIncludePermissions($request);
 
-        $directPermissionIds = $user->permissions->pluck('id')->map(static fn($id): int => (int) $id)->values()->all();
-
-        $modules = $permissions
-            ->filter(static fn(Permission $permission): bool => data_get($permission, 'module.id') !== null)
-            ->map(static function (Permission $permission): array {
-                return [
-                    'id' => (int) data_get($permission, 'module.id'),
-                    'code' => (string) data_get($permission, 'module.code', ''),
-                    'name' => (string) data_get($permission, 'module.name', ''),
-                ];
-            })
-            ->unique('id')
-            ->values();
+        if ($includePermissions) {
+            $permissions = $user->getAllPermissions();
+            $permissions->each(static function (Permission $permission): void {
+                $permission->loadMissing('module');
+            });
+            $directPermissionIds = $user->permissions
+                ->pluck('id')
+                ->map(static fn($id): int => (int) $id)
+                ->values()
+                ->all();
+            $modules = $permissions
+                ->filter(static fn(Permission $permission): bool => data_get($permission, 'module.id') !== null)
+                ->map(static function (Permission $permission): array {
+                    return [
+                        'id' => (int) data_get($permission, 'module.id'),
+                        'code' => (string) data_get($permission, 'module.code', ''),
+                        'name' => (string) data_get($permission, 'module.name', ''),
+                    ];
+                })
+                ->unique('id')
+                ->values();
+            $permissionNames = $permissions->pluck('name')->values()->all();
+        } else {
+            $directPermissionIds = [];
+            $modules = collect();
+            $permissionNames = [];
+        }
 
         return [
             'id' => $user->id,
@@ -59,8 +70,19 @@ class TeamUserResource extends JsonResource
             'about' => $user->about_me,
             'status' => $user->status,
             'permissionIds' => $directPermissionIds,
-            'permissions' => $permissions->pluck('name')->values()->all(),
+            'permissions' => $permissionNames,
             'modules' => $modules->all(),
         ];
+    }
+
+    private function shouldIncludePermissions(Request $request): bool
+    {
+        $include = (string) $request->query('include', '');
+
+        if ($include === '') {
+            return false;
+        }
+
+        return in_array('permissions', array_map(trim(...), explode(',', $include)), true);
     }
 }

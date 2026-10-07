@@ -24,7 +24,7 @@ class UpdatePaymentGatewaySettingsRequest extends ApiFormRequest
             'sandboxKeySecret' => ['sometimes', 'nullable', 'string', 'max:5000'],
             'webhookSecret' => ['sometimes', 'nullable', 'string', 'max:5000'],
             'currency' => ['sometimes', 'string', 'max:8'],
-            'checkoutOptionsJson' => ['sometimes', 'nullable', 'string', 'json', 'max:50000'],
+            'checkoutOptionsJson' => ['sometimes', 'array'],
             'webhookUrl' => ['sometimes', 'nullable', 'string', 'max:2048'],
         ];
     }

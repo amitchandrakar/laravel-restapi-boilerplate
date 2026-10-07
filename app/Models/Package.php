@@ -47,15 +47,23 @@ class Package extends BaseModel
     }
 
     /**
-     * Amount charged at candidate registration (INR). Uses discounted_price when set, otherwise price.
+     * Catalog amount for registration (INR), ignoring launch payment flags.
      */
-    public function registrationPayableAmountRupees(): float
+    public function catalogRegistrationPayableAmountRupees(): float
     {
         if ($this->discounted_price !== null) {
             return max(0.0, (float) $this->discounted_price);
         }
 
         return max(0.0, (float) ($this->price ?? 0));
+    }
+
+    /**
+     * Amount charged at candidate registration (INR).
+     */
+    public function registrationPayableAmountRupees(): float
+    {
+        return $this->catalogRegistrationPayableAmountRupees();
     }
 
     /**

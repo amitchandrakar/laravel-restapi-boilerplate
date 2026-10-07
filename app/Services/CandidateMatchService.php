@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\User;
+use App\Support\ViewerPreferredGender;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class CandidateMatchService
 {
-    public function __construct(private readonly CandidateCardDataService $cardData) {}
+    public function __construct(
+        private readonly CandidateCardDataService $cardData,
+        private readonly CandidateDiscoveryExclusionService $exclusions
+    ) {}
 
     /**
      * @param  array<string, mixed>  $filters
@@ -20,6 +24,8 @@ class CandidateMatchService
      */
     public function paginateMatches(User $viewer, int $perPage, array $filters = []): LengthAwarePaginator
     {
+        $filters = ViewerPreferredGender::mergeIntoFilters($viewer, $filters);
+
         $base = DB::table('matches as m')
             ->join('users as u', 'u.id', '=', 'm.matched_user_id')
             ->where('m.user_id', $viewer->id)
@@ -35,6 +41,12 @@ class CandidateMatchService
                 'm.match_reason_json',
                 'm.matched_user_id',
             ]);
+
+        $excludedIds = $this->exclusions->excludedUserIdsForViewer($viewer);
+
+        if ($excludedIds !== []) {
+            $base->whereNotIn('m.matched_user_id', $excludedIds);
+        }
 
         CandidateDiscoveryFilterApplier::apply($base, $filters, 'u');
 

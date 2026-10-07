@@ -182,13 +182,12 @@ Report segments from [`REPORT_SEGMENT_META`](src/lib/admin-reports-constants.ts)
 
 ### 4.3 Admin — settings
 
-| Code                      | Name                        | Routes                         |
-| ------------------------- | --------------------------- | ------------------------------ |
-| `admin_settings_site`     | Admin — Site / branding     | `/admin/settings/site`         |
-| `admin_settings_payments` | Admin — Payment settings    | `/admin/settings/payments`     |
-| `admin_settings_social`   | Admin — Social login        | `/admin/settings/social-login` |
-| `admin_settings_roles`    | Admin — Roles & permissions | `/admin/settings/roles`        |
-| `admin_settings_seo`      | Admin — SEO                 | `/admin/settings/seo`          |
+| Code                    | Name                        | Routes                         |
+| ----------------------- | --------------------------- | ------------------------------ |
+| `admin_settings_site`   | Admin — Site / branding     | `/admin/settings/site`         |
+| `admin_settings_social` | Admin — Social login        | `/admin/settings/social-login` |
+| `admin_settings_roles`  | Admin — Roles & permissions | `/admin/settings/roles`        |
+| `admin_settings_seo`    | Admin — SEO                 | `/admin/settings/seo`          |
 
 **Suggested permissions**
 
@@ -212,7 +211,6 @@ Generate one row per key below in `permissions` (each linked to the correct `mod
 - `admin.payments.view`, `admin.payments.edit`
 - `admin.reports.state.view`, `admin.reports.community.view`, `admin.reports.education.view`, `admin.reports.active_users.view`, `admin.reports.user_activities.view`, `admin.reports.team_activities.view`
 - `admin.settings.site.view`, `admin.settings.site.edit`
-- `admin.settings.payments.view`, `admin.settings.payments.edit`
 - `admin.settings.social.view`, `admin.settings.social.edit`
 - `admin.settings.roles.view`, `admin.settings.roles.edit` (+ add/delete if custom roles)
 - `admin.settings.seo.view`, `admin.settings.seo.edit`
@@ -233,20 +231,19 @@ Only keys listed in **section 5** apply.
 
 Typical staff reviewer: work candidates and read operations; **no** role/permission management; limited settings.
 
-| Permission family           | view                         | add | edit | delete                                              |
-| --------------------------- | ---------------------------- | --- | ---- | --------------------------------------------------- |
-| `admin.dashboard.*`         | Y                            | —   | —    | —                                                   |
-| `admin.candidates.*`        | Y                            | Y   | Y    | **—** (optional Y for soft-delete if policy allows) |
-| `admin.teams.*`             | Y                            | —   | —    | —                                                   |
-| `admin.packages.*`          | Y                            | —   | —    | —                                                   |
-| `admin.subscriptions.*`     | Y (view only)                | —   | —    | —                                                   |
-| `admin.payments.*`          | Y                            | —   | Y    | —                                                   |
-| `admin.reports.*`           | Y (all report segment views) | —   | —    | —                                                   |
-| `admin.settings.site.*`     | Y                            | —   | —    | —                                                   |
-| `admin.settings.payments.*` | Y                            | —   | —    | —                                                   |
-| `admin.settings.social.*`   | Y                            | —   | —    | —                                                   |
-| `admin.settings.roles.*`    | **—**                        | —   | —    | —                                                   |
-| `admin.settings.seo.*`      | Y                            | —   | —    | —                                                   |
+| Permission family         | view                         | add | edit | delete                                              |
+| ------------------------- | ---------------------------- | --- | ---- | --------------------------------------------------- |
+| `admin.dashboard.*`       | Y                            | —   | —    | —                                                   |
+| `admin.candidates.*`      | Y                            | Y   | Y    | **—** (optional Y for soft-delete if policy allows) |
+| `admin.teams.*`           | Y                            | —   | —    | —                                                   |
+| `admin.packages.*`        | Y                            | —   | —    | —                                                   |
+| `admin.subscriptions.*`   | Y (view only)                | —   | —    | —                                                   |
+| `admin.payments.*`        | Y                            | —   | Y    | —                                                   |
+| `admin.reports.*`         | Y (all report segment views) | —   | —    | —                                                   |
+| `admin.settings.site.*`   | Y                            | —   | —    | —                                                   |
+| `admin.settings.social.*` | Y                            | —   | —    | —                                                   |
+| `admin.settings.roles.*`  | **—**                        | —   | —    | —                                                   |
+| `admin.settings.seo.*`    | Y                            | —   | —    | —                                                   |
 
 _(If reviewers should edit site copy, grant `admin.settings.site.edit` explicitly.)_
 

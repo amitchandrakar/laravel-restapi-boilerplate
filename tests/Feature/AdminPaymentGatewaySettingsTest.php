@@ -26,12 +26,10 @@ it('allows admins to update and fetch payment gateway settings with masked secre
             'isEnabled' => true,
             'environment' => 'sandbox',
             'sandboxKeyId' => 'rzp_test',
-            'checkoutOptionsJson' => '{"method":{"upi":true}}',
         ])
         ->assertStatus(200)
         ->assertJsonPath('data.isEnabled', true)
-        ->assertJsonPath('data.sandboxKeyId', 'rzp_test')
-        ->assertJsonPath('data.checkoutOptionsJson', '{"method":{"upi":true}}');
+        ->assertJsonPath('data.sandboxKeyId', 'rzp_test');
 });
 
 it('returns forbidden when a candidate updates payment settings', function () {

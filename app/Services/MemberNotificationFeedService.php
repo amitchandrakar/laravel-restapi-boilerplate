@@ -23,6 +23,8 @@ class MemberNotificationFeedService
         'payment_succeeded',
         'payment_failed',
         'profile_published',
+        'kyc_approved',
+        'kyc_rejected',
     ];
 
     /**
@@ -144,7 +146,7 @@ class MemberNotificationFeedService
             'contact_request_accepted' => $data['to_user_uuid'] ?? null,
             'new_match' => $data['other_user_uuid'] ?? null,
             'profile_viewed' => $data['viewer_user_uuid'] ?? null,
-            'profile_published' => $data['user_uuid'] ?? null,
+            'profile_published', 'kyc_approved', 'kyc_rejected' => $data['user_uuid'] ?? null,
             default => null,
         };
 
@@ -284,6 +286,7 @@ class MemberNotificationFeedService
             'profile_viewed' => 'profile_viewed',
             'payment_succeeded', 'payment_failed' => 'payment',
             'profile_published' => 'profile_published',
+            'kyc_approved', 'kyc_rejected' => 'kyc',
             default => 'default',
         };
     }
@@ -376,18 +379,12 @@ class MemberNotificationFeedService
         }
 
         if ($kind === 'payment_succeeded' || $kind === 'payment_failed') {
-            $payUuid = isset($data['payment_uuid']) && is_string($data['payment_uuid']) ? $data['payment_uuid'] : null;
-
-            if ($payUuid === null || $payUuid === '') {
-                return [];
-            }
-
             return [
                 [
-                    'action' => 'view_registration_payment',
-                    'label' => 'Payment status',
+                    'action' => 'view_registration_status',
+                    'label' => 'Registration status',
                     'method' => 'GET',
-                    'path' => '/api/v1/app/auth/payment/registration/' . $payUuid . '/status',
+                    'path' => '/api/v1/app/me/registration/status',
                     'body' => null,
                 ],
             ];
@@ -400,6 +397,19 @@ class MemberNotificationFeedService
                     'label' => 'View profile',
                     'method' => 'GET',
                     'path' => '/api/v1/app/auth/me',
+                    'body' => null,
+                ],
+            ];
+        }
+
+        if ($kind === 'kyc_approved' || $kind === 'kyc_rejected') {
+            return [
+                [
+                    'action' => 'open_verify_identity',
+                    'label' => 'View identity',
+                    'method' => 'GET',
+                    'path' => '/api/v1/app/me/kyc/documents',
+                    'deepLink' => '/account/verify-identity',
                     'body' => null,
                 ],
             ];

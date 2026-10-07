@@ -15,10 +15,12 @@ it('stores parents and sibling metadata from family background submissions', fun
             'father_occupation' => 'Business',
             'father_gotra' => 'Kashyap',
             'father_native_place' => 'Bilaspur',
+            'father_contact_number' => '9876543210',
             'mother_name' => 'Sunita',
             'mother_occupation' => 'Homemaker',
             'mother_gotra' => 'Kaushik',
             'mother_native_place' => 'Durg',
+            'mother_contact_number' => '9123456780',
             'brothers_count' => 1,
             'sisters_count' => 1,
             'family_type' => 'Nuclear',
@@ -38,7 +40,9 @@ it('stores parents and sibling metadata from family background submissions', fun
     $this->assertDatabaseHas('users', [
         'id' => $candidate->id,
         'father_name' => 'Rajesh',
+        'father_contact_number' => '9876543210',
         'mother_name' => 'Sunita',
+        'mother_contact_number' => '9123456780',
         'brothers_count' => 1,
     ]);
 
@@ -52,7 +56,9 @@ it('stores parents and sibling metadata from family background submissions', fun
         ->getJson('/api/v1/app/auth/candidate/profile/details')
         ->assertStatus(200)
         ->assertJsonPath('data.sections.familyBackground.siblings.0.name', 'Ravi')
-        ->assertJsonPath('data.sections.familyBackground.siblings.0.age', 40);
+        ->assertJsonPath('data.sections.familyBackground.siblings.0.age', 40)
+        ->assertJsonPath('data.sections.familyBackground.fatherContactNumber', '9876543210')
+        ->assertJsonPath('data.sections.familyBackground.motherContactNumber', '9123456780');
 });
 
 it('clears stored siblings whenever clients submit an empty siblings array', function () {

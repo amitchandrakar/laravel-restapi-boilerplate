@@ -40,10 +40,12 @@
 - `father_occupation`
 - `father_gotra`
 - `father_native_place`
+- `father_contact_number`
 - `mother_name`
 - `mother_occupation`
 - `mother_gotra`
 - `mother_native_place`
+- `mother_contact_number`
 - `brothers_count`
 - `sisters_count`
 - `family_type`
@@ -112,6 +114,34 @@
 - `education`
 - `age`
 - `is_elder`
+- `sort_order`
+- `created_at`
+- `updated_at`
+- `deleted_at`
+
+### `user_spoc_contacts`
+
+- `id`
+- `uuid`
+- `user_id`
+- `name`
+- `relation`
+- `contact_number`
+- `sort_order`
+- `created_at`
+- `updated_at`
+- `deleted_at`
+
+### `user_property_details`
+
+- `id`
+- `uuid`
+- `user_id`
+- `property_type` (petrol_pump|office|shop|agricultural_field|house|land|other)
+- `area_sq_ft`
+- `city`
+- `state`
+- `country`
 - `sort_order`
 - `created_at`
 - `updated_at`
@@ -362,10 +392,6 @@
 ### `social_login_settings` (singleton)
 
 - Google/Facebook/Instagram OAuth fields; client secrets encrypted; `updated_by`, timestamps
-
-### `payment_gateway_settings` (singleton)
-
-- Razorpay: `gateway`, `is_enabled`, `environment`, live/sandbox keys (encrypted), `webhook_secret`, `currency`, `checkout_options_json` (text JSON string), `webhook_url`
 
 ### `notification_settings` (singleton)
 

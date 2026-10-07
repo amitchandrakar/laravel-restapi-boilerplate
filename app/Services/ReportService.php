@@ -219,6 +219,9 @@ class ReportService
     /**
      * @return list<array{label: string, period: string}>
      */
+    /**
+     * @return list<array{label: string, period: string}>
+     */
     private function lastMonthPeriods(int $count): array
     {
         $periods = [];
@@ -270,17 +273,14 @@ class ReportService
      */
     private function mapPeriodSeries(array $periods, array $totalsByPeriod): array
     {
-        $series = [];
-
-        foreach ($periods as $period) {
+        return array_map(static function (array $period) use ($totalsByPeriod): array {
             $raw = $totalsByPeriod[$period['period']] ?? 0;
-            $series[] = [
+
+            return [
                 'label' => $period['label'],
                 'value' => (int) round((float) $raw),
             ];
-        }
-
-        return $series;
+        }, $periods);
     }
 
     /**
@@ -326,25 +326,23 @@ class ReportService
      */
     private function revenueBySubscriptionType(): array
     {
-        $rows = DB::table('payments')
-            ->join('packages', 'packages.id', '=', 'payments.package_id')
-            ->where('payments.payment_status', 'success')
-            ->selectRaw('COALESCE(packages.name, \'Unknown\') as name, SUM(payments.amount) as total')
-            ->groupBy('packages.name')
-            ->orderByDesc('total')
-            ->limit(10)
-            ->get();
-
-        $series = [];
-
-        foreach ($rows as $row) {
-            $series[] = [
-                'name' => (string) $row->name,
-                'count' => (int) round((float) $row->total),
-            ];
-        }
-
-        return $series;
+        return array_values(
+            DB::table('payments')
+                ->join('packages', 'packages.id', '=', 'payments.package_id')
+                ->where('payments.payment_status', 'success')
+                ->selectRaw('COALESCE(packages.name, \'Unknown\') as name, SUM(payments.amount) as total')
+                ->groupBy('packages.name')
+                ->orderByDesc('total')
+                ->limit(10)
+                ->get()
+                ->map(
+                    static fn($row): array => [
+                        'name' => (string) $row->name,
+                        'count' => (int) round((float) $row->total),
+                    ]
+                )
+                ->all()
+        );
     }
 
     /**

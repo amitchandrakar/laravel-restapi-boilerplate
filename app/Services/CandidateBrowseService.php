@@ -6,13 +6,15 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Support\ScoutConfig;
+use App\Support\ViewerPreferredGender;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class CandidateBrowseService
 {
     public function __construct(
         private readonly CandidateCardDataService $cardData,
-        private readonly CandidateAlgoliaBrowseService $algoliaBrowse
+        private readonly CandidateAlgoliaBrowseService $algoliaBrowse,
+        private readonly CandidateDiscoveryExclusionService $exclusions
     ) {}
 
     /**
@@ -22,6 +24,8 @@ class CandidateBrowseService
      */
     public function paginateBrowse(User $viewer, int $perPage, array $filters = [], int $page = 1): LengthAwarePaginator
     {
+        $filters = ViewerPreferredGender::mergeIntoFilters($viewer, $filters);
+
         if (ScoutConfig::usesAlgolia()) {
             return $this->algoliaBrowse->paginateBrowse($viewer, $perPage, max(1, $page), $filters);
         }
@@ -44,6 +48,12 @@ class CandidateBrowseService
             ->whereNull('deleted_at')
             ->orderByDesc('published_at')
             ->orderByDesc('id');
+
+        $excludedIds = $this->exclusions->excludedUserIdsForViewer($viewer);
+
+        if ($excludedIds !== []) {
+            $query->getQuery()->whereNotIn('id', $excludedIds);
+        }
 
         CandidateDiscoveryFilterApplier::apply($query, $filters, 'users');
 

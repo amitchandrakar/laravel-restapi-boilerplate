@@ -129,7 +129,7 @@ Import **`Community-Connect-API.postman_environment.json`** alongside this colle
 | Folder | Base path | Audience |
 |--------|-----------|----------|
 | **Admin** | `/api/v1/admin/*` | Staff with Spatie permissions (candidates, packages, payments, reports, settings, team users, RBAC) |
-| **App** | `/api/v1/app/*` | Candidates and members (registration, profile, discovery, contact requests, KYC, notifications, Razorpay) |
+| App | `/api/v1/app/*` | Candidates and members (registration, profile, discovery, contact requests, KYC, notifications) |
 | **Infrastructure** | `/api`, `/api/health*` | Health checks and API metadata (no auth) |
 
 ## API standards
@@ -161,7 +161,7 @@ Public routes (login, register, forgot-password, featured profiles, webhooks) us
 
 - Multi-step profile (basics, photos, partner preferences, KYC documents).
 - Profile discovery/search, favorites, matches, contact requests.
-- Membership packages, Razorpay registration/checkout, webhooks.
+- Membership packages, complimentary registration/checkout.
 - Notifications and account/me endpoints.
 
 ## Key admin features
@@ -243,7 +243,6 @@ MD;
                 ['key' => 'notification_id', 'value' => '', 'enabled' => true],
                 ['key' => 'image_uuid', 'value' => '', 'enabled' => true],
                 ['key' => 'contact_request_uuid', 'value' => '', 'enabled' => true],
-                ['key' => 'razorpay_webhook_signature', 'value' => '', 'enabled' => true],
             ],
             '_postman_variable_scope' => 'environment',
             '_postman_exported_at' => now()->toIso8601String(),

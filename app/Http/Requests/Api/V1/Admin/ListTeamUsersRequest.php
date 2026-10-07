@@ -32,6 +32,7 @@ class ListTeamUsersRequest extends ApiFormRequest
             'country' => ['sometimes', 'string', 'max:128'],
             'department' => ['sometimes', 'string', 'max:128'],
             'sort' => ['sometimes', 'string', Rule::in(TeamUserService::SORT_OPTIONS)],
+            'include' => ['sometimes', 'string', 'max:64'],
         ];
     }
 }

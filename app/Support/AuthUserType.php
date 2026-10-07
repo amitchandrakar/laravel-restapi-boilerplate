@@ -14,7 +14,8 @@ final class AuthUserType
 
     public static function forUser(User $user): string
     {
-        if ($user->hasRole(self::CANDIDATE)) {
+        // Roles live on the `web` guard; after auth:sanctum the default driver may be `sanctum`.
+        if ($user->hasRole(self::CANDIDATE, 'web')) {
             return self::CANDIDATE;
         }
 

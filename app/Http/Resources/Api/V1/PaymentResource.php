@@ -37,7 +37,9 @@ class PaymentResource extends JsonResource
             'candidate' => [
                 'uuid' => $user?->uuid,
                 'fullName' => trim(($user?->first_name ?? '') . ' ' . ($user?->last_name ?? '')),
-                'profilePhoto' => $user?->profile_photo_url,
+                'profilePhoto' => filled($payment->candidateProfilePhoto ?? null)
+                    ? $payment->candidateProfilePhoto
+                    : $user?->profile_photo_url,
                 'email' => $user?->email,
                 'phone' => $user?->phone,
             ],

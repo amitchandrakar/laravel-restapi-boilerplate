@@ -6,12 +6,31 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Support\CacheKeys;
+use App\Support\ViewerPreferredGender;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
 class FeaturedCandidateService
 {
+    public function __construct(private readonly CandidateDiscoveryExclusionService $exclusions) {}
+
+    /**
+     * @return Builder<User>
+     */
+    private function featuredCandidatesQuery(): Builder
+    {
+        $query = (new User())
+            ->scopeCandidates(User::query())
+            ->where('is_featured', true)
+            ->where('profile_status', 'published')
+            ->where('published_at', '!=', null);
+        $query->getQuery()->orderBy('featured_at', 'desc')->orderBy('published_at', 'desc');
+
+        return $query;
+    }
+
     public function setFeatured(User $candidate, bool $isFeatured, int $actorId): User
     {
         if ($isFeatured) {
@@ -51,23 +70,34 @@ class FeaturedCandidateService
     /**
      * @return LengthAwarePaginator<int, User>
      */
-    public function paginatePublicFeatured(int $perPage = 15, int $page = 1): LengthAwarePaginator
+    public function paginatePublicFeatured(int $perPage = 15, int $page = 1, ?User $viewer = null): LengthAwarePaginator
     {
-        $ttl = max(60, (int) config('cache_strategy.featured_profiles_seconds', 300));
         $page = max(1, $page);
+
+        if ($viewer instanceof User) {
+            $query = $this->featuredCandidatesQuery();
+            $excludedIds = $this->exclusions->excludedUserIdsForViewer($viewer);
+
+            if ($excludedIds !== []) {
+                $query->getQuery()->whereNotIn('id', $excludedIds);
+            }
+
+            $preferredGender = ViewerPreferredGender::forUser($viewer);
+
+            if ($preferredGender !== null) {
+                $query->getQuery()->whereRaw('LOWER(TRIM(gender)) = ?', [$preferredGender]);
+            }
+
+            return $query->paginate($perPage, ['*'], 'page', $page);
+        }
+
+        $ttl = max(60, (int) config('cache_strategy.featured_profiles_seconds', 300));
         $key = CacheKeys::publicFeaturedPage($page, $perPage);
 
         return Cache::remember(
             $key,
             $ttl,
-            fn(): LengthAwarePaginator => User::query()
-                ->candidates()
-                ->where('is_featured', true)
-                ->where('profile_status', 'published')
-                ->whereNotNull('published_at')
-                ->orderByDesc('featured_at')
-                ->orderByDesc('published_at')
-                ->paginate($perPage, ['*'], 'page', $page)
+            fn(): LengthAwarePaginator => $this->featuredCandidatesQuery()->paginate($perPage, ['*'], 'page', $page)
         );
     }
 }

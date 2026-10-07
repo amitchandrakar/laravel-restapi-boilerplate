@@ -30,7 +30,7 @@ class SaveCandidateBasicsRequest extends ApiFormRequest
             'email' => $emailRules,
             'phone' => ['nullable', 'string', 'max:32'],
             'marital_status' => ['nullable', 'string', 'max:64'],
-            'photo_url' => ['nullable', 'url', 'max:2048'],
+            // 'photo_url' => ['nullable', 'url', 'max:2048'],
             'sub_caste' => ['nullable', 'string', 'max:128'],
         ];
     }

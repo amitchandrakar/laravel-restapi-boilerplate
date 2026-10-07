@@ -34,7 +34,10 @@ class ContactRequestAcceptedNotification extends Notification implements ShouldQ
             'to_user_uuid' => $toUser?->uuid,
             'to_user_name' => $toName !== '' ? $toName : null,
             'message' => $toUser !== null
-                    ? sprintf('%s accepted your contact request. You can view their phone on their profile.', $toName)
+                    ? sprintf(
+                        '%s accepted your contact request. You can view their phone and family contact person details on their profile.',
+                        $toName
+                    )
                     : 'Your contact request was accepted.',
         ];
     }

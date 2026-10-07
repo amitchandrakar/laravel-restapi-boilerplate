@@ -38,17 +38,17 @@ php artisan postman:generate --output=docs/postman
 
 **Admin:** auth, candidates, dashboard, packages, subscriptions, payments, reports, settings, team-users, users
 
-**App:** auth, candidate-kyc, candidate-profile, contact-requests, discovery, me, public, webhooks
+**App:** auth, candidate-kyc, candidate-profile, contact-requests, discovery, me, public
 
 **Infrastructure** (master only): `GET /api`, `GET /api/health`, `GET /api/health/detailed`
 
 ## Authentication
 
-| Realm                      | Token variable   | Notes                                                   |
-| -------------------------- | ---------------- | ------------------------------------------------------- |
-| Admin                      | `{{AUTH_TOKEN}}` | Sanctum Bearer; requires admin role/permissions         |
-| App                        | `{{AUTH_TOKEN}}` | Sanctum Bearer; candidate/member routes                 |
-| Public / webhooks / health | none (noauth)    | Login, register, featured candidates, Razorpay webhooks |
+| Realm           | Token variable   | Notes                                               |
+| --------------- | ---------------- | --------------------------------------------------- |
+| Admin           | `{{AUTH_TOKEN}}` | Sanctum Bearer; requires admin role/permissions     |
+| App             | `{{AUTH_TOKEN}}` | Sanctum Bearer; candidate/member routes             |
+| Public / health | none (noauth)    | Login, register, featured candidates, health checks |
 
 ### Tracked session
 
@@ -79,25 +79,24 @@ Bodies follow [`ApiResponseBuilder`](../../app/Support/ApiResponseBuilder.php): 
 
 ## Environment variables
 
-| Variable                     | Usage                                                          |
-| ---------------------------- | -------------------------------------------------------------- |
-| `BASE_URL`                   | API origin from `APP_URL` at generate time (no trailing slash) |
-| `ADMIN_USERNAME`             | Admin login (`admin@example.com` by default)                   |
-| `ADMIN_PASSWORD`             | Admin login (`1234567890` by default)                          |
-| `CANDIDATE_USERNAME`         | App login (`candidate.parichay@example.com` by default)        |
-| `CANDIDATE_PASSWORD`         | App login (`1234567890` by default)                            |
-| `AUTH_TOKEN`                 | Bearer token (set automatically after login/register/refresh)  |
-| `session_token_hash`         | From login response (set automatically when present)           |
-| `candidate_uuid`             | Path param `{user}`, `{candidate}`, profile header             |
-| `package_uuid`               | Packages / registration                                        |
-| `payment_uuid`               | Payments                                                       |
-| `import_batch_id`            | CSV import status                                              |
-| `document_uuid`              | KYC documents                                                  |
-| `role_uuid`                  | Admin roles                                                    |
-| `notification_id`            | Member notifications                                           |
-| `image_uuid`                 | Profile photos                                                 |
-| `contact_request_uuid`       | Contact requests                                               |
-| `razorpay_webhook_signature` | `X-Razorpay-Signature` for webhooks                            |
+| Variable               | Usage                                                          |
+| ---------------------- | -------------------------------------------------------------- |
+| `BASE_URL`             | API origin from `APP_URL` at generate time (no trailing slash) |
+| `ADMIN_USERNAME`       | Admin login (`admin@example.com` by default)                   |
+| `ADMIN_PASSWORD`       | Admin login (`1234567890` by default)                          |
+| `CANDIDATE_USERNAME`   | App login (`candidate.parichay@example.com` by default)        |
+| `CANDIDATE_PASSWORD`   | App login (`1234567890` by default)                            |
+| `AUTH_TOKEN`           | Bearer token (set automatically after login/register/refresh)  |
+| `session_token_hash`   | From login response (set automatically when present)           |
+| `candidate_uuid`       | Path param `{user}`, `{candidate}`, profile header             |
+| `package_uuid`         | Packages / registration                                        |
+| `payment_uuid`         | Payments                                                       |
+| `import_batch_id`      | CSV import status                                              |
+| `document_uuid`        | KYC documents                                                  |
+| `role_uuid`            | Admin roles                                                    |
+| `notification_id`      | Member notifications                                           |
+| `image_uuid`           | Profile photos                                                 |
+| `contact_request_uuid` | Contact requests                                               |
 
 ## Candidate profile (app routes)
 

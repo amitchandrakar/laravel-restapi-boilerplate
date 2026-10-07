@@ -209,6 +209,8 @@ function contactRequestTwoCandidatesWithTokens(string $prefixA = 'cr-a-', string
 
     contactRequestSubscribeToTalash($a);
     contactRequestSubscribeToTalash($b);
+    test()->approveCandidateKyc($a);
+    test()->approveCandidateKyc($b);
 
     $tokenA = contactRequestLoginToken($emailA);
 

@@ -97,10 +97,11 @@ class SaveAdminCandidateFullProfileRequest extends ApiFormRequest
                 'career_education' => ['sometimes', 'array'],
                 'family_background' => ['sometimes', 'array'],
                 'lifestyle' => ['sometimes', 'array'],
+                'property_details' => ['sometimes', 'array'],
                 'partner_preferences' => ['sometimes', 'array'],
                 'basics.email' => ['required_without:candidate_uuid', 'email', 'max:255'],
                 'basics.phone' => ['sometimes', 'nullable', 'string', 'max:32'],
-                'basics.photo_url' => ['sometimes', 'nullable', 'url', 'max:2048'],
+                // 'basics.photo_url' => ['sometimes', 'nullable', 'url', 'max:2048'],
                 'basics.sub_caste' => ['sometimes', 'nullable', 'string', 'max:128'],
             ],
             HoroscopeBirthPlaceValidator::rules('horoscope'),
@@ -108,6 +109,7 @@ class SaveAdminCandidateFullProfileRequest extends ApiFormRequest
             SaveCandidateCareerEducationRequest::rulesWithPrefix('career_education'),
             SaveCandidateFamilyBackgroundRequest::rulesWithPrefix('family_background'),
             SaveCandidateLifestyleRequest::rulesWithPrefix('lifestyle'),
+            SaveCandidatePropertyDetailsRequest::rulesWithPrefix('property_details'),
             SaveCandidatePartnerPreferencesRequest::rulesWithPrefix('partner_preferences')
         );
     }

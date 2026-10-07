@@ -6,12 +6,17 @@ namespace App\Services;
 
 use App\Models\Favorite;
 use App\Models\User;
+use App\Support\ViewerPreferredGender;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\ValidationException;
 
 class CandidateFavoriteService
 {
-    public function __construct(private readonly CandidateCardDataService $cardData) {}
+    public function __construct(
+        private readonly CandidateCardDataService $cardData,
+        private readonly CandidateDiscoveryExclusionService $exclusions
+    ) {}
 
     /**
      * @param  array<string, mixed>  $filters
@@ -20,9 +25,15 @@ class CandidateFavoriteService
      */
     public function paginateFavorites(User $viewer, int $perPage, array $filters = []): LengthAwarePaginator
     {
+        $filters = ViewerPreferredGender::mergeIntoFilters($viewer, $filters);
+        $excludedIds = $this->exclusions->excludedUserIdsForViewer($viewer);
+
         $query = Favorite::query()
             ->where('user_id', $viewer->id)
             ->whereNull('deleted_at')
+            ->when($excludedIds !== [], static function (Builder $q) use ($excludedIds): void {
+                $q->getQuery()->whereNotIn('favorite_user_id', $excludedIds);
+            })
             ->whereHas('favoriteUser', static function ($q) use ($filters): void {
                 $q->whereNull('deleted_at');
                 CandidateDiscoveryFilterApplier::apply($q, $filters, 'users');

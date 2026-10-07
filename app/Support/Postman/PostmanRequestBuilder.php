@@ -81,12 +81,6 @@ final class PostmanRequestBuilder
     {
         $headers = [['key' => 'Accept', 'value' => 'application/json']];
 
-        if ($this->isWebhook($record)) {
-            $headers[] = ['key' => 'X-Razorpay-Signature', 'value' => '{{razorpay_webhook_signature}}'];
-
-            return $headers;
-        }
-
         if (
             $record->method !== 'GET' &&
             $record->method !== 'DELETE' &&
@@ -301,6 +295,11 @@ final class PostmanRequestBuilder
         ];
     }
 
+    private function isWebhook(PostmanRouteRecord $record): bool
+    {
+        return str_contains($record->uri, 'webhook');
+    }
+
     private function isTokenIssuingRoute(PostmanRouteRecord $record): bool
     {
         $tokenPaths = ['auth/login', 'auth/register', 'auth/register-candidate', 'auth/refresh'];
@@ -350,11 +349,6 @@ final class PostmanRequestBuilder
         }
 
         return true;
-    }
-
-    private function isWebhook(PostmanRouteRecord $record): bool
-    {
-        return str_contains($record->uri, 'webhook') || str_contains($record->uri, 'razorpay/webhook');
     }
 
     private function description(PostmanRouteRecord $record, string $realm): string

@@ -9,6 +9,7 @@ use App\Support\CandidateProfileOptionSets;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class CandidateProfileOptionsService
 {
@@ -143,16 +144,43 @@ class CandidateProfileOptionsService
             ->orderBy('name')
             ->get(['id', 'state_id', 'name']);
 
+        $cityIds = $cities->pluck('id')->map(static fn($id): int => (int) $id)->unique()->values()->all();
+
+        $villagesByCity = collect();
+
+        if ($cityIds !== [] && Schema::hasTable('villages')) {
+            $villagesByCity = DB::table('villages')
+                ->whereIn('city_id', $cityIds)
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'city_id', 'name'])
+                ->groupBy(static fn(object $v): int => (int) $v->city_id)
+                ->map(static function (Collection $rows): array {
+                    return $rows
+                        ->map(
+                            static fn(object $v): array => [
+                                'id' => (int) $v->id,
+                                'name' => (string) $v->name,
+                            ]
+                        )
+                        ->values()
+                        ->all();
+                });
+        }
+
         $citiesByState = $cities
             ->groupBy(static fn(object $c): int => (int) $c->state_id)
-            ->map(static function (Collection $rows): array {
+            ->map(static function (Collection $rows) use ($villagesByCity): array {
                 return $rows
-                    ->map(
-                        static fn(object $c): array => [
-                            'id' => (int) $c->id,
+                    ->map(static function (object $c) use ($villagesByCity): array {
+                        $cid = (int) $c->id;
+
+                        return [
+                            'id' => $cid,
                             'name' => (string) $c->name,
-                        ]
-                    )
+                            'villages' => array_values($villagesByCity->get($cid, [])),
+                        ];
+                    })
                     ->values()
                     ->all();
             });

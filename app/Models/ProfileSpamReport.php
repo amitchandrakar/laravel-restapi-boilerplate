@@ -13,6 +13,18 @@ class ProfileSpamReport extends BaseModel
 
     protected $guarded = [];
 
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'reviewed_at' => 'datetime',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
+    }
+
     protected static function booted(): void
     {
         static::creating(static function (ProfileSpamReport $report): void {
@@ -32,5 +44,10 @@ class ProfileSpamReport extends BaseModel
     public function reportedUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reported_user_id');
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
     }
 }

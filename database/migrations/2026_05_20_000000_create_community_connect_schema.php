@@ -1242,9 +1242,13 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        app('cache')
-            ->store(config('permission.cache.store') != 'default' ? config('permission.cache.store') : null)
-            ->forget(config('permission.cache.key'));
+        try {
+            app('cache')
+                ->store(config('permission.cache.store') != 'default' ? config('permission.cache.store') : null)
+                ->forget(config('permission.cache.key'));
+        } catch (Throwable) {
+            // Cache may be unavailable during migrate:fresh (e.g. Redis not running locally).
+        }
 
         $schema = Schema::connection($this->getConnection());
 

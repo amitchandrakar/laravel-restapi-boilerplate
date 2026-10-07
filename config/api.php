@@ -42,6 +42,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Request logging
+    |--------------------------------------------------------------------------
+    */
+
+    'log_api_calls' => filter_var(env('LOG_API_CALLS', false), FILTER_VALIDATE_BOOL),
+
+    'log_user_activity_on_read' => filter_var(env('LOG_USER_ACTIVITY_ON_READ', false), FILTER_VALIDATE_BOOL),
+
+    /*
+    |--------------------------------------------------------------------------
     | Authentication (Sanctum + lockout)
     |--------------------------------------------------------------------------
     */

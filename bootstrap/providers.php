@@ -4,4 +4,10 @@ use App\Providers\AppServiceProvider;
 use App\Providers\EventServiceProvider;
 use App\Providers\TelescopeServiceProvider;
 
-return [AppServiceProvider::class, EventServiceProvider::class, TelescopeServiceProvider::class];
+$providers = [AppServiceProvider::class, EventServiceProvider::class];
+
+if (filter_var(env('TELESCOPE_ENABLED', false), FILTER_VALIDATE_BOOL)) {
+    $providers[] = TelescopeServiceProvider::class;
+}
+
+return $providers;

@@ -23,7 +23,13 @@ class ReviewKycDocumentRequest extends ApiFormRequest
     {
         return [
             'verification_status' => ['required', 'string', 'in:approved,rejected,resubmission_required'],
-            'rejection_reason' => ['required_if:verification_status,rejected', 'nullable', 'string', 'max:5000'],
+            'rejection_reason' => [
+                'required_if:verification_status,rejected',
+                'required_if:verification_status,resubmission_required',
+                'nullable',
+                'string',
+                'max:5000',
+            ],
         ];
     }
 }

@@ -5,7 +5,6 @@ includes:
 
 parameters:
     stubFiles:
-        - stubs/razorpay-api.stub
         - stubs/algolia-search.stub
 
     paths:
@@ -15,6 +14,9 @@ parameters:
     level: 8
 
     reportUnmatchedIgnoredErrors: false
+
+    # Models declare casts in casts(); Larastan only sees those when this is on.
+    parseModelCastsMethod: true
 
     strictRules:
         # Laravel codebases often rely on empty() for collections/strings

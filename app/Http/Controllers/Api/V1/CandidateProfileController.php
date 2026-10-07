@@ -15,6 +15,7 @@ use App\Http\Requests\Api\V1\Candidate\SaveCandidatePartnerPreferencesRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidatePersonalDetailsRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidatePhotosRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidatePreferencesRequest;
+use App\Http\Requests\Api\V1\Candidate\SaveCandidatePropertyDetailsRequest;
 use App\Http\Requests\Api\V1\Candidate\UploadCandidateProfileImageRequest;
 use App\Http\Resources\Api\V1\AdminCandidateProfileDetailsResource;
 use App\Http\Resources\Api\V1\CandidateUserResource;
@@ -78,6 +79,10 @@ class CandidateProfileController extends Controller
             !$actor->can(CandidateEntitlements::VIEW_FULL_PROFILE)
         ) {
             return $this->forbiddenResponse('You do not have permission to view this profile.');
+        }
+
+        if ((int) $actor->id !== (int) $candidate->id && !CandidateEntitlements::hasApprovedIdentity($actor)) {
+            return $this->forbiddenResponse('Complete identity verification before viewing other members.');
         }
 
         $this->profileViewService->recordCandidatePeerView($actor, $candidate);
@@ -285,7 +290,7 @@ class CandidateProfileController extends Controller
             $request->userAgent()
         );
         LogUserActivityJob::dispatch(
-            (int) $user->id,
+            $user->id,
             'candidate.profile.image.upload',
             'api_v1_candidate',
             ['image_id' => $data['id'] ?? null],
@@ -323,6 +328,11 @@ class CandidateProfileController extends Controller
     public function saveLifestyle(SaveCandidateLifestyleRequest $request): JsonResponse
     {
         return $this->saveSection($request, CandidateProfileSectionService::SECTION_LIFESTYLE);
+    }
+
+    public function savePropertyDetails(SaveCandidatePropertyDetailsRequest $request): JsonResponse
+    {
+        return $this->saveSection($request, CandidateProfileSectionService::SECTION_PROPERTY_DETAILS);
     }
 
     public function savePartnerPreferences(SaveCandidatePartnerPreferencesRequest $request): JsonResponse
@@ -379,7 +389,7 @@ class CandidateProfileController extends Controller
         }
         $updated = $this->service->saveSection($user, $section, $request->validated());
         LogAuditJob::dispatch(
-            (int) $user->id,
+            $user->id,
             'users',
             $user->id,
             'candidate.section.save',

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\User;
 use App\Support\UserImageStorageUrl;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -38,7 +39,7 @@ class CandidateCardDataService
         $out = [];
 
         foreach ($users as $user) {
-            $id = (int) $user->id;
+            $id = $user->id;
             $row = [
                 'user' => $user,
                 'profileImageUrl' => $photoMap[$id] ?? $this->defaultPhotoUrl(),
@@ -261,6 +262,37 @@ class CandidateCardDataService
         }
 
         return $set;
+    }
+
+    /**
+     * @param  list<int>  $userIds
+     *
+     * @return array<int, bool> user_id => has at least one approved KYC document
+     */
+    public function identityVerifiedByUserId(array $userIds): array
+    {
+        if ($userIds === []) {
+            return [];
+        }
+
+        $approved = DB::table('user_verification_documents')
+            ->select('user_id')
+            ->whereIn('user_id', $userIds)
+            ->where('verification_status', 'approved')
+            ->whereNull('deleted_at')
+            ->distinct()
+            ->pluck('user_id')
+            ->map(static fn($id): int => (int) $id)
+            ->all();
+
+        $set = array_fill_keys($approved, true);
+        $map = [];
+
+        foreach ($userIds as $uid) {
+            $map[$uid] = isset($set[$uid]);
+        }
+
+        return $map;
     }
 
     public function defaultPhotoUrl(): string

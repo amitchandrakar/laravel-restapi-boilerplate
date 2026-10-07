@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+use Database\Seeders\DemoMasterDataSeeder;
 use Database\Seeders\MasterDegreesOccupationsSeeder;
 use Database\Seeders\RbacSeeder;
 use Illuminate\Support\Facades\DB;
@@ -43,4 +44,45 @@ it('persists career education rows with explicit degree foreign keys', function 
     expect($row->field_of_study)->toBe('Computer Science');
     expect($row->institution_name)->toBe('NIT');
     expect((int) $row->end_year)->toBe(2017);
+});
+
+it('persists grade, highest flag, and income range label on career education save', function () {
+    $this->seed(RbacSeeder::class);
+    $this->seed(DemoMasterDataSeeder::class);
+
+    $admin = $this->createUserWithRole('admin', 'admin-career-edu-save@example.com');
+    $candidate = $this->createUserWithRole('candidate', 'candidate-career-edu-save@example.com');
+
+    $this->actingAs($admin, 'sanctum')
+        ->patchJson('/api/v1/admin/candidates/' . $candidate->uuid . '/sections/career-education', [
+            'occupation' => 'Software Engineer',
+            'employer' => 'Acme Tech',
+            'income_range' => '10–20 LPA',
+            'qualifications' => [
+                [
+                    'field_of_study' => 'B.Tech',
+                    'institution_name' => 'NIT Raipur',
+                    'year_of_graduation' => 2019,
+                    'grade_or_percentage' => '85%',
+                    'is_highest' => true,
+                ],
+            ],
+        ])
+        ->assertStatus(200);
+
+    $rangeId = (int) DB::table('income_ranges')->where('name', '10–20 LPA')->value('id');
+    expect($rangeId)->toBeGreaterThan(0);
+
+    $this->assertDatabaseHas('users', [
+        'id' => $candidate->id,
+        'occupation' => 'Software Engineer',
+        'employer' => 'Acme Tech',
+        'income_range_id' => $rangeId,
+    ]);
+
+    $row = DB::table('user_education_details')->where('user_id', $candidate->id)->first();
+    expect($row)->not->toBeNull();
+    expect($row->field_of_study)->toBe('B.Tech');
+    expect($row->grade_or_percentage)->toBe('85%');
+    expect((bool) $row->is_highest)->toBeTrue();
 });

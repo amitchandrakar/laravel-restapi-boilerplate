@@ -420,29 +420,9 @@ parameters:
 			count: 1
 			path: app/Http/Controllers/Api/V1/PublicFeaturedCandidateController.php
 
-		-
-			message: '#^Casting to string something that''s already string\.$#'
-			identifier: cast.useless
-			count: 1
-			path: app/Http/Controllers/Api/V1/RegistrationPaymentController.php
 
-		-
-			message: '#^Method App\\Http\\Controllers\\Api\\V1\\RegistrationPaymentController\:\:paginatedList\(\) has parameter \$paginator with generic class Illuminate\\Pagination\\LengthAwarePaginator but does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Http/Controllers/Api/V1/RegistrationPaymentController.php
 
-		-
-			message: '#^Method App\\Http\\Controllers\\Api\\V1\\RegistrationPaymentController\:\:paginatedList\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Http/Controllers/Api/V1/RegistrationPaymentController.php
 
-		-
-			message: '#^Method App\\Http\\Controllers\\Api\\V1\\RegistrationPaymentController\:\:paginatedResponse\(\) has parameter \$paginator with generic class Illuminate\\Pagination\\LengthAwarePaginator but does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Http/Controllers/Api/V1/RegistrationPaymentController.php
 
 		-
 			message: '#^Method App\\Http\\Controllers\\Api\\V1\\UserController\:\:paginatedList\(\) has parameter \$paginator with generic class Illuminate\\Pagination\\LengthAwarePaginator but does not specify its types\: TKey, TValue$#'
@@ -678,11 +658,6 @@ parameters:
 			count: 1
 			path: app/Http/Requests/Api/V1/Me/RegistrationCheckoutRequest.php
 
-		-
-			message: '#^Method App\\Http\\Requests\\Api\\V1\\Payment\\ConfirmRegistrationPaymentRequest\:\:rules\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Http/Requests/Api/V1/Payment/ConfirmRegistrationPaymentRequest.php
 
 		-
 			message: '#^Method App\\Http\\Requests\\Api\\V1\\RegisterCandidateRequest\:\:rules\(\) has invalid return type App\\Http\\Requests\\Api\\V1\\ValidationRule\.$#'
@@ -1860,29 +1835,9 @@ parameters:
 			count: 1
 			path: app/Notifications/PackageCreatedNotification.php
 
-		-
-			message: '#^Casting to string something that''s already string\.$#'
-			identifier: cast.useless
-			count: 1
-			path: app/Notifications/PaymentFailedNotification.php
 
-		-
-			message: '#^Method App\\Notifications\\PaymentFailedNotification\:\:via\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Notifications/PaymentFailedNotification.php
 
-		-
-			message: '#^Casting to string something that''s already string\.$#'
-			identifier: cast.useless
-			count: 2
-			path: app/Notifications/PaymentSucceededNotification.php
 
-		-
-			message: '#^Method App\\Notifications\\PaymentSucceededNotification\:\:via\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Notifications/PaymentSucceededNotification.php
 
 		-
 			message: '#^Method App\\Notifications\\ProfilePublishedNotification\:\:via\(\) return type has no value type specified in iterable type array\.$#'
@@ -2922,53 +2877,13 @@ parameters:
 			count: 2
 			path: app/Services/PackageService.php
 
-		-
-			message: '#^Call to method toArray\(\) on an unknown class App\\Services\\Payment\\Order\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Services/Payment/RazorpayClient.php
 
-		-
-			message: '#^PHPDoc tag @var for variable \$order contains unknown class App\\Services\\Payment\\Order\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Services/Payment/RazorpayClient.php
 
-		-
-			message: '#^PHPDoc tag @var with type App\\Services\\Payment\\Order is not subtype of type array\<string, mixed\>\.$#'
-			identifier: varTag.type
-			count: 1
-			path: app/Services/Payment/RazorpayClient.php
 
-		-
-			message: '#^Casting to string something that''s already string\.$#'
-			identifier: cast.useless
-			count: 4
-			path: app/Services/Payment/RegistrationPaymentService.php
 
-		-
-			message: '#^Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Payment\>\:\:lockForUpdate\(\)\.$#'
-			identifier: staticMethod.dynamicCall
-			count: 2
-			path: app/Services/Payment/RegistrationPaymentService.php
 
-		-
-			message: '#^Method App\\Services\\Payment\\RegistrationPaymentService\:\:finalizeFailed\(\) has parameter \$raw with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Payment/RegistrationPaymentService.php
 
-		-
-			message: '#^Method App\\Services\\Payment\\RegistrationPaymentService\:\:finalizeSucceeded\(\) has parameter \$raw with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Payment/RegistrationPaymentService.php
 
-		-
-			message: '#^Parameter \#1 \.\.\.\$arrays of function array_merge expects array, array\|string given\.$#'
-			identifier: argument.type
-			count: 2
-			path: app/Services/Payment/RegistrationPaymentService.php
 
 		-
 			message: '#^Casting to string something that''s already string\.$#'

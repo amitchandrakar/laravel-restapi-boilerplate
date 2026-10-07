@@ -98,7 +98,11 @@ class RbacSeeder extends Seeder
 
         $candidate->syncPermissions(['admin.candidates.edit']);
 
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        try {
+            app(PermissionRegistrar::class)->forgetCachedPermissions();
+        } catch (\Throwable) {
+            // Cache store (e.g. Redis) may be unavailable during local setup.
+        }
     }
 
     /**
@@ -114,6 +118,7 @@ class RbacSeeder extends Seeder
             ['code' => 'admin_teams', 'name' => 'Admin — Teams', 'sort_order' => ++$n],
             ['code' => 'admin_users', 'name' => 'Admin — Users (API)', 'sort_order' => ++$n],
             ['code' => 'admin_packages', 'name' => 'Admin — Packages', 'sort_order' => ++$n],
+            ['code' => 'admin_coupons', 'name' => 'Admin — Coupons', 'sort_order' => ++$n],
             ['code' => 'admin_subscriptions', 'name' => 'Admin — Subscriptions', 'sort_order' => ++$n],
             ['code' => 'admin_payments', 'name' => 'Admin — Payments', 'sort_order' => ++$n],
             ['code' => 'admin_reports_state', 'name' => 'Admin — Reports (State)', 'sort_order' => ++$n],
@@ -130,8 +135,12 @@ class RbacSeeder extends Seeder
                 'name' => 'Admin — Reports (Team activities)',
                 'sort_order' => ++$n,
             ],
+            [
+                'code' => 'admin_moderation_reports',
+                'name' => 'Admin — Moderation reports',
+                'sort_order' => ++$n,
+            ],
             ['code' => 'admin_settings_site', 'name' => 'Admin — Settings (Site)', 'sort_order' => ++$n],
-            ['code' => 'admin_settings_payments', 'name' => 'Admin — Settings (Payments)', 'sort_order' => ++$n],
             ['code' => 'admin_settings_social', 'name' => 'Admin — Settings (Social login)', 'sort_order' => ++$n],
             [
                 'code' => 'admin_settings_roles',
@@ -148,6 +157,11 @@ class RbacSeeder extends Seeder
             ['code' => 'admin_settings_redis', 'name' => 'Admin — Settings (Redis)', 'sort_order' => ++$n],
             ['code' => 'admin_settings_search', 'name' => 'Admin — Settings (Search)', 'sort_order' => ++$n],
             ['code' => 'admin_settings_legal', 'name' => 'Admin — Settings (Legal pages)', 'sort_order' => ++$n],
+            [
+                'code' => 'admin_settings_payments',
+                'name' => 'Admin — Settings (Payments)',
+                'sort_order' => ++$n,
+            ],
         ];
     }
 
@@ -285,6 +299,30 @@ class RbacSeeder extends Seeder
                     'title' => 'Delete packages',
                 ],
                 [
+                    'name' => 'admin.coupons.view',
+                    'module_code' => 'admin_coupons',
+                    'action' => 'view',
+                    'title' => 'View coupons',
+                ],
+                [
+                    'name' => 'admin.coupons.add',
+                    'module_code' => 'admin_coupons',
+                    'action' => 'add',
+                    'title' => 'Add coupons',
+                ],
+                [
+                    'name' => 'admin.coupons.edit',
+                    'module_code' => 'admin_coupons',
+                    'action' => 'edit',
+                    'title' => 'Edit coupons',
+                ],
+                [
+                    'name' => 'admin.coupons.delete',
+                    'module_code' => 'admin_coupons',
+                    'action' => 'delete',
+                    'title' => 'Delete coupons',
+                ],
+                [
                     'name' => 'admin.subscriptions.view',
                     'module_code' => 'admin_subscriptions',
                     'action' => 'view',
@@ -351,6 +389,18 @@ class RbacSeeder extends Seeder
                     'title' => 'Reports: Team activities',
                 ],
                 [
+                    'name' => 'admin.moderation_reports.view',
+                    'module_code' => 'admin_moderation_reports',
+                    'action' => 'view',
+                    'title' => 'View moderation reports',
+                ],
+                [
+                    'name' => 'admin.moderation_reports.action',
+                    'module_code' => 'admin_moderation_reports',
+                    'action' => 'edit',
+                    'title' => 'Take moderation actions',
+                ],
+                [
                     'name' => 'admin.settings.site.view',
                     'module_code' => 'admin_settings_site',
                     'action' => 'view',
@@ -361,18 +411,6 @@ class RbacSeeder extends Seeder
                     'module_code' => 'admin_settings_site',
                     'action' => 'edit',
                     'title' => 'Edit site settings',
-                ],
-                [
-                    'name' => 'admin.settings.payments.view',
-                    'module_code' => 'admin_settings_payments',
-                    'action' => 'view',
-                    'title' => 'View payment settings',
-                ],
-                [
-                    'name' => 'admin.settings.payments.edit',
-                    'module_code' => 'admin_settings_payments',
-                    'action' => 'edit',
-                    'title' => 'Edit payment settings',
                 ],
                 [
                     'name' => 'admin.settings.social.view',
@@ -470,6 +508,18 @@ class RbacSeeder extends Seeder
                     'action' => 'edit',
                     'title' => 'Edit legal pages',
                 ],
+                [
+                    'name' => 'admin.settings.payments.view',
+                    'module_code' => 'admin_settings_payments',
+                    'action' => 'view',
+                    'title' => 'View payment gateway settings',
+                ],
+                [
+                    'name' => 'admin.settings.payments.edit',
+                    'module_code' => 'admin_settings_payments',
+                    'action' => 'edit',
+                    'title' => 'Edit payment gateway settings',
+                ],
             ],
             $this->candidateFeaturePermissionDefinitions()
         );
@@ -488,6 +538,7 @@ class RbacSeeder extends Seeder
             'admin.candidates.export',
             'admin.teams.view',
             'admin.packages.view',
+            'admin.coupons.view',
             'admin.subscriptions.view',
             'admin.payments.view',
             'admin.payments.add',
@@ -500,7 +551,6 @@ class RbacSeeder extends Seeder
             'admin.reports.user_activities.view',
             'admin.reports.team_activities.view',
             'admin.settings.site.view',
-            'admin.settings.payments.view',
             'admin.settings.social.view',
             'admin.settings.seo.view',
             'admin.settings.notifications.view',
@@ -508,6 +558,7 @@ class RbacSeeder extends Seeder
             'admin.settings.redis.view',
             'admin.settings.search.view',
             'admin.settings.legal.view',
+            'admin.settings.payments.view',
         ];
     }
 

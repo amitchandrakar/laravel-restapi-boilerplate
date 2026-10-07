@@ -8,9 +8,10 @@ use App\Models\Payment;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Support\QuerySearch;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -22,6 +23,8 @@ class PaymentService
     public const PAYMENT_METHODS = ['upi', 'card', 'netbanking', 'wallet', 'cash', 'manual'];
 
     public const SORT_OPTIONS = ['latest', 'oldest', 'amount'];
+
+    public function __construct(private readonly CandidateCardDataService $cardData) {}
 
     /**
      * @param  array<string, mixed>  $data
@@ -73,9 +76,42 @@ class PaymentService
     {
         $perPage = min(100, max(1, (int) ($filters['perPage'] ?? 15)));
 
-        return $this->buildListQuery($filters)
+        $paginator = $this->buildListQuery($filters)
             ->with(['user', 'package'])
             ->paginate($perPage);
+
+        return $this->attachCandidateProfilePhotos($paginator);
+    }
+
+    /**
+     * @param  LengthAwarePaginator<int, Payment>  $paginator
+     *
+     * @return LengthAwarePaginator<int, Payment>
+     */
+    private function attachCandidateProfilePhotos(LengthAwarePaginator $paginator): LengthAwarePaginator
+    {
+        /** @var Collection<int, Payment> $items */
+        $items = $paginator->getCollection();
+        $userIds = array_values(
+            $items
+                ->map(static fn(Payment $payment): int => $payment->user_id)
+                ->filter(static fn(int $id): bool => $id > 0)
+                ->unique()
+                ->all()
+        );
+
+        $photoMap = $this->cardData->profileImageUrlByUserId($userIds);
+
+        $paginator->setCollection(
+            $items->map(static function (Payment $payment) use ($photoMap): Payment {
+                $userId = $payment->user_id;
+                $payment->setAttribute('candidateProfilePhoto', $photoMap[$userId] ?? '');
+
+                return $payment;
+            })
+        );
+
+        return $paginator;
     }
 
     /**

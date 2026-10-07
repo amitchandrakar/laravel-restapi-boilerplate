@@ -8,6 +8,7 @@ use App\Models\ContactRequest;
 use App\Models\User;
 use App\Notifications\ContactRequestAcceptedNotification;
 use App\Notifications\ContactRequestReceivedNotification;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -79,5 +80,23 @@ class ContactRequestService
 
             return $request->fresh() ?? $request;
         });
+    }
+
+    /**
+     * Sent contact requests for the authenticated member, excluding admin-resolved "contacted".
+     *
+     * @return LengthAwarePaginator<int, ContactRequest>
+     */
+    public function paginateSentForMember(User $member, int $perPage = 15): LengthAwarePaginator
+    {
+        $query = ContactRequest::query()
+            ->where('from_user_id', $member->id)
+            ->where(static function ($q): void {
+                $q->where('admin_resolution', null)->orWhere('admin_resolution', '!=', 'contacted');
+            })
+            ->with(['toUser']);
+        $query->getQuery()->orderBy('created_at', 'desc');
+
+        return $query->paginate(max(1, min(100, $perPage)));
     }
 }

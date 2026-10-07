@@ -6,9 +6,9 @@ namespace App\Services;
 
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -26,6 +26,8 @@ class CandidateUserService
      * Paginated admin candidate list with bucket and attribute filters.
      *
      * @param  array<string, mixed>  $filters
+     *
+     * @return LengthAwarePaginator<int, User>
      */
     public function list(array $filters = []): LengthAwarePaginator
     {
@@ -85,6 +87,14 @@ class CandidateUserService
             $query->where('marital_status', (string) $filters['marital_status']);
         }
 
+        if (!empty($filters['community'])) {
+            $query->where('sub_caste', (string) $filters['community']);
+        }
+
+        if (!empty($filters['city'])) {
+            $query->where('current_city', (string) $filters['city']);
+        }
+
         if (!empty($filters['search'])) {
             $term = '%' . addcslashes((string) $filters['search'], '%_\\') . '%';
             $query->where(static function (Builder $builder) use ($term): void {
@@ -92,7 +102,10 @@ class CandidateUserService
                     ->where('email', 'like', $term)
                     ->orWhere('phone', 'like', $term)
                     ->orWhere('first_name', 'like', $term)
-                    ->orWhere('last_name', 'like', $term);
+                    ->orWhere('last_name', 'like', $term)
+                    ->orWhere('father_name', 'like', $term)
+                    ->orWhere('mother_name', 'like', $term)
+                    ->orWhere('current_city', 'like', $term);
             });
         }
 
@@ -105,7 +118,7 @@ class CandidateUserService
             default => $query->latest('updated_at'),
         };
 
-        return $query;
+        return $query->with('primaryRole');
     }
 
     /**

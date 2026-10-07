@@ -15,15 +15,16 @@ use App\Observers\SubscriptionObserver;
 use App\Observers\UserObserver;
 use App\Policies\SubscriptionPolicy;
 use App\Policies\TeamUserPolicy;
-use App\Services\Settings\SettingsRuntimeBootstrap;
+use App\Services\Settings\NotificationConfigResolver;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Scout\Scout;
+use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -42,10 +43,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureRateLimiting();
         $this->configureScoutQueues();
-
-        if (Schema::hasTable('site_settings')) {
-            $this->app->make(SettingsRuntimeBootstrap::class)->apply();
-        }
+        $this->applyNotificationMailConfig();
 
         Gate::before(static function ($user, string $ability): ?bool {
             if ($user instanceof User && $user->hasRole('admin')) {
@@ -71,6 +69,21 @@ class AppServiceProvider extends ServiceProvider
     {
         Scout::makeSearchableUsing(MakeSearchableOnLowQueue::class);
         Scout::removeFromSearchUsing(RemoveFromSearchOnLowQueue::class);
+    }
+
+    /**
+     * Apply notification mail config on every HTTP/queue process boot.
+     * Local keeps .env MAIL_*; staging/production use notification_settings.
+     */
+    protected function applyNotificationMailConfig(): void
+    {
+        try {
+            $this->app->make(NotificationConfigResolver::class)->apply();
+        } catch (Throwable $e) {
+            Log::warning('Failed to apply notification mail config on boot', [
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     protected function configureRateLimiting(): void

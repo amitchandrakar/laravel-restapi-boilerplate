@@ -9,7 +9,10 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class CandidateAlgoliaBrowseService
 {
-    public function __construct(private readonly CandidateCardDataService $cardData) {}
+    public function __construct(
+        private readonly CandidateCardDataService $cardData,
+        private readonly CandidateDiscoveryExclusionService $exclusions
+    ) {}
 
     /**
      * @param  array<string, mixed>  $filters
@@ -18,7 +21,11 @@ class CandidateAlgoliaBrowseService
      */
     public function paginateBrowse(User $viewer, int $perPage, int $page, array $filters = []): LengthAwarePaginator
     {
-        $built = CandidateAlgoliaFilterBuilder::build($filters, (string) $viewer->uuid);
+        $built = CandidateAlgoliaFilterBuilder::build(
+            $filters,
+            (string) $viewer->uuid,
+            $this->exclusions->excludedUserUuidsForViewer($viewer)
+        );
 
         /** @var Builder<User> $builder */
         $builder = User::search('');

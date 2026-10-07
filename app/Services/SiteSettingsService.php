@@ -7,7 +7,9 @@ namespace App\Services;
 use App\Enums\AdminSettingsType;
 use App\Models\SiteSetting;
 use App\Services\Concerns\AbstractSingletonSettingsService;
+use App\Support\CacheKeys;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class SiteSettingsService extends AbstractSingletonSettingsService
 {
@@ -88,5 +90,50 @@ class SiteSettingsService extends AbstractSingletonSettingsService
             'successStoriesCount' => $all['successStoriesCount'] ?? 0,
             'maintenanceMode' => (bool) ($all['maintenanceMode'] ?? false),
         ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function cachedPublicApiArray(): array
+    {
+        $ttl = max(60, (int) config('cache_strategy.site_settings_seconds', 3600));
+
+        /** @var array<string, mixed> $data */
+        $data = Cache::remember(CacheKeys::publicSiteSettings(), $ttl, fn(): array => $this->toPublicApiArray());
+
+        return $data;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function cachedAll(): array
+    {
+        $ttl = max(60, (int) config('cache_strategy.site_settings_seconds', 3600));
+
+        /** @var array<string, mixed> $data */
+        $data = Cache::remember(CacheKeys::adminSiteSettings(), $ttl, fn(): array => $this->all());
+
+        return $data;
+    }
+
+    public function forgetCaches(): void
+    {
+        Cache::forget(CacheKeys::publicSiteSettings());
+        Cache::forget(CacheKeys::adminSiteSettings());
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     *
+     * @return array<string, mixed>
+     */
+    public function update(array $data, ?int $actorUserId = null): array
+    {
+        $updated = parent::update($data, $actorUserId);
+        $this->forgetCaches();
+
+        return $updated;
     }
 }

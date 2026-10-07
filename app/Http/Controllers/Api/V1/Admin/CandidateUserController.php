@@ -13,6 +13,7 @@ use App\Http\Requests\Api\V1\Admin\UpdateCandidateFeaturedRequest;
 use App\Http\Requests\Api\V1\Admin\UpdateCandidateProfileStatusRequest;
 use App\Http\Requests\Api\V1\StoreCandidateUserRequest;
 use App\Http\Requests\Api\V1\UpdateCandidateUserRequest;
+use App\Http\Resources\Api\V1\AdminCandidateListResource;
 use App\Http\Resources\Api\V1\AuthLoginResource;
 use App\Http\Resources\Api\V1\CandidateUserResource;
 use App\Http\Resources\Api\V1\UserResource;
@@ -20,6 +21,7 @@ use App\Jobs\LogAuditJob;
 use App\Jobs\LogUserActivityJob;
 use App\Jobs\StartUserSessionJob;
 use App\Models\User;
+use App\Services\AdminCandidateListDataService;
 use App\Services\CandidateCsvExportService;
 use App\Services\CandidateCsvImportService;
 use App\Services\CandidateImpersonationService;
@@ -29,6 +31,7 @@ use App\Services\FeaturedCandidateService;
 use App\Support\SanctumPlainTokenHasher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -41,6 +44,7 @@ class CandidateUserController extends Controller
 {
     public function __construct(
         private readonly CandidateUserService $service,
+        private readonly AdminCandidateListDataService $listDataService,
         private readonly FeaturedCandidateService $featuredCandidateService,
         private readonly CandidateImpersonationService $impersonationService,
         private readonly CandidateCsvExportService $csvExportService,
@@ -63,16 +67,36 @@ class CandidateUserController extends Controller
             throw $e;
         }
 
-        LogUserActivityJob::dispatch(
-            (int) $request->user()->id,
-            'admin.candidates.index',
-            'api_v1_admin',
-            ['filters' => $request->validated()],
-            $request->ip()
+        if (config('api.log_user_activity_on_read', false)) {
+            LogUserActivityJob::dispatch(
+                (int) $request->user()->id,
+                'admin.candidates.index',
+                'api_v1_admin',
+                ['filters' => $request->validated()],
+                $request->ip()
+            );
+        }
+
+        $listRows = $this->listDataService->buildListPayloads(collect($paginator->items()));
+        $rowByUserId = collect($listRows)->keyBy(static fn(array $row): int => (int) $row['user']->id);
+
+        $rows = $paginator->getCollection()->map(
+            static fn(User $user): array => $rowByUserId->get((int) $user->id, [
+                'user' => $user,
+                'profileImageUrl' => '',
+                'profileIconUrl' => null,
+                'identityVerified' => false,
+                'profileCompletenessPercent' => AdminCandidateListDataService::profileCompletenessPercent($user),
+            ])
         );
 
         return $this->paginatedResponse(
-            CandidateUserResource::collection($paginator),
+            AdminCandidateListResource::collection(
+                new LengthAwarePaginator($rows, $paginator->total(), $paginator->perPage(), $paginator->currentPage(), [
+                    'path' => $paginator->path(),
+                    'pageName' => $paginator->getPageName(),
+                ])
+            ),
             'Candidates fetched successfully'
         );
     }
@@ -557,9 +581,9 @@ class CandidateUserController extends Controller
         }
 
         LogAuditJob::dispatch(
-            (int) $request->user()->id,
+            $request->user()->id,
             'users',
-            (int) $updated->id,
+            $updated->id,
             'candidate.featured',
             null,
             ['is_featured' => $isFeatured],

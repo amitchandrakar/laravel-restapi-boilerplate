@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 use App\Jobs\StartUserSessionJob;
+use App\Models\ProfileDoNotShow;
+use App\Models\ProfileSpamReport;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\PackagePermissionService;
@@ -12,6 +14,7 @@ use Database\Seeders\PackageCatalogSeeder;
 use Database\Seeders\RbacSeeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
 beforeEach(function (): void {
@@ -48,6 +51,106 @@ describe('candidate discovery API', function (): void {
         expect($found2['isFavorite'])->toBeTrue();
     });
 
+    it('hides spam-reported candidates from the reporter browse and favorites until dismissed', function (): void {
+        Notification::fake();
+
+        $viewer = makeCandidate('spam-hide-viewer@example.com');
+        subscribe($viewer, 'TALASH_BASIC');
+        app(PackagePermissionService::class)->syncCandidatePermissions($viewer->fresh());
+
+        $reported = makePublishedCandidate('spam-hide-reported@example.com');
+        $other = makePublishedCandidate('spam-hide-other@example.com');
+        $bystander = makeCandidate('spam-hide-bystander@example.com');
+        subscribe($bystander, 'TALASH_BASIC');
+        app(PackagePermissionService::class)->syncCandidatePermissions($bystander->fresh());
+
+        $viewerToken = tokenFor($viewer);
+        $this->withToken($viewerToken)
+            ->patchJson('/api/v1/app/auth/candidate/favorites/' . $reported->uuid, ['favorite' => true])
+            ->assertStatus(200);
+        $this->withToken($viewerToken)
+            ->patchJson('/api/v1/app/auth/candidate/favorites/' . $other->uuid, ['favorite' => true])
+            ->assertStatus(200);
+
+        $this->withToken($viewerToken)
+            ->postJson('/api/v1/app/auth/candidate/' . $reported->uuid . '/report-spam', [
+                'reason' => 'Suspicious messages asking for money.',
+            ])
+            ->assertStatus(201);
+
+        $browse = $this->withToken($viewerToken)->getJson('/api/v1/app/auth/candidate/search');
+        $browse->assertStatus(200);
+        $browseUuids = collect($browse->json('data'))->pluck('uuid')->all();
+        expect($browseUuids)->not->toContain((string) $reported->uuid);
+        expect($browseUuids)->toContain((string) $other->uuid);
+
+        $favorites = $this->withToken($viewerToken)->getJson('/api/v1/app/auth/candidate/favorites');
+        $favorites->assertStatus(200);
+        $favoriteUuids = collect($favorites->json('data'))->pluck('uuid')->all();
+        expect($favoriteUuids)->not->toContain((string) $reported->uuid);
+        expect($favoriteUuids)->toContain((string) $other->uuid);
+
+        $bystanderBrowse = $this->withToken(tokenFor($bystander))->getJson('/api/v1/app/auth/candidate/search');
+        $bystanderBrowse->assertStatus(200);
+        expect(collect($bystanderBrowse->json('data'))->pluck('uuid')->all())->toContain((string) $reported->uuid);
+
+        $report = ProfileSpamReport::query()
+            ->where('reporter_user_id', $viewer->id)
+            ->where('reported_user_id', $reported->id)
+            ->where('status', 'pending')
+            ->firstOrFail();
+
+        $admin = $this->createUserWithRole('admin', 'spam-hide-admin@example.com');
+
+        $this->actingAs($admin, 'sanctum')
+            ->postJson('/api/v1/admin/moderation-reports/spam/' . $report->uuid . '/mark-not-spammer')
+            ->assertStatus(200)
+            ->assertJsonPath('data.status', 'dismissed');
+
+        $browseAfter = $this->withToken($viewerToken)->getJson('/api/v1/app/auth/candidate/search');
+        $browseAfter->assertStatus(200);
+        expect(collect($browseAfter->json('data'))->pluck('uuid')->all())->toContain((string) $reported->uuid);
+    });
+
+    it('hides muted candidates from the viewer browse until unmarked', function (): void {
+        $viewer = makeCandidate('mute-hide-viewer@example.com');
+        subscribe($viewer, 'TALASH_BASIC');
+        app(PackagePermissionService::class)->syncCandidatePermissions($viewer->fresh());
+
+        $hidden = makePublishedCandidate('mute-hide-target@example.com');
+        $other = makePublishedCandidate('mute-hide-other@example.com');
+
+        $viewerToken = tokenFor($viewer);
+        $this->withToken($viewerToken)
+            ->postJson('/api/v1/app/auth/candidate/' . $hidden->uuid . '/dont-show-again')
+            ->assertStatus(201);
+
+        $browse = $this->withToken($viewerToken)->getJson('/api/v1/app/auth/candidate/search');
+        $browse->assertStatus(200);
+        $browseUuids = collect($browse->json('data'))->pluck('uuid')->all();
+        expect($browseUuids)->not->toContain((string) $hidden->uuid);
+        expect($browseUuids)->toContain((string) $other->uuid);
+
+        $admin = $this->createUserWithRole('admin', 'mute-hide-admin@example.com');
+        $rowUuid = (string) ProfileDoNotShow::query()
+            ->where('user_id', $viewer->id)
+            ->where('hidden_user_id', $hidden->id)
+            ->value('uuid');
+
+        $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/v1/admin/moderation-reports/dont-show-again')
+            ->assertStatus(200)
+            ->assertJsonPath('data.0.uuid', $rowUuid);
+
+        $this->actingAs($admin, 'sanctum')
+            ->postJson('/api/v1/admin/moderation-reports/dont-show-again/' . $rowUuid . '/unmark')
+            ->assertStatus(200);
+
+        $browseAfter = $this->withToken($viewerToken)->getJson('/api/v1/app/auth/candidate/search');
+        $browseAfter->assertStatus(200);
+        expect(collect($browseAfter->json('data'))->pluck('uuid')->all())->toContain((string) $hidden->uuid);
+    });
+
     it('forbids discovery when the viewer has no package permissions', function (): void {
         $viewer = makeCandidate('browse-no-package@example.com');
         $other = makePublishedCandidate('browse-other-nopkg@example.com');
@@ -59,6 +162,29 @@ describe('candidate discovery API', function (): void {
             ->assertStatus(403);
         $this->withToken($t)->getJson('/api/v1/app/auth/candidate/favorites')->assertStatus(403);
         $this->withToken($t)->getJson('/api/v1/app/auth/candidate/matches')->assertStatus(403);
+    });
+
+    it('forbids discovery when identity is not verified even with package browse', function (): void {
+        $viewer = makeCandidate('browse-unverified@example.com', false);
+        subscribe($viewer, 'TALASH_BASIC');
+        app(PackagePermissionService::class)->syncCandidatePermissions($viewer->fresh());
+        $other = makePublishedCandidate('browse-other-unverified@example.com');
+
+        $t = tokenFor($viewer->fresh());
+        $this->withToken($t)
+            ->getJson('/api/v1/app/auth/candidate/search')
+            ->assertStatus(403)
+            ->assertJsonPath('message', 'Complete identity verification before viewing other members.');
+        $this->withToken($t)->getJson('/api/v1/app/auth/candidate/matches')->assertStatus(403);
+        $this->withToken($t)
+            ->getJson('/api/v1/app/auth/candidate/' . $other->uuid . '/profile-details')
+            ->assertStatus(403);
+
+        $this->approveCandidateKyc($viewer->fresh());
+        $this->withToken($t)->getJson('/api/v1/app/auth/candidate/search')->assertStatus(200);
+        $this->withToken($t)
+            ->getJson('/api/v1/app/auth/candidate/' . $other->uuid . '/profile-details')
+            ->assertStatus(200);
     });
 
     it('returns limited card fields for Parichay subscribers on browse', function (): void {
@@ -395,6 +521,68 @@ describe('candidate discovery API', function (): void {
         expect($row['hasPremiumSubscription'])->toBeFalse();
         expect($row['isFavorite'])->toBeTrue();
     });
+
+    it('hard-filters browse and matches by viewer preferred gender', function (): void {
+        Notification::fake();
+
+        $viewer = makeCandidate('pref-gender-viewer@example.com');
+        subscribe($viewer, 'RISHTA_PRO');
+        app(PackagePermissionService::class)->syncCandidatePermissions($viewer->fresh());
+
+        DB::table('user_partner_preferences')->insert([
+            'uuid' => (string) Str::uuid(),
+            'user_id' => $viewer->id,
+            'preferred_gender' => 'Female',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $female = makePublishedCandidate('pref-gender-female@example.com');
+        $female->update(['gender' => 'female', 'first_name' => 'Female']);
+        $male = makePublishedCandidate('pref-gender-male@example.com');
+        $male->update(['gender' => 'male', 'first_name' => 'Male']);
+
+        DB::table('matches')->insert([
+            [
+                'uuid' => (string) Str::uuid(),
+                'user_id' => $viewer->id,
+                'matched_user_id' => $female->id,
+                'match_score' => 90,
+                'match_reason_json' => null,
+                'match_status' => 'active',
+                'generated_by' => 'system',
+                'generated_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'uuid' => (string) Str::uuid(),
+                'user_id' => $viewer->id,
+                'matched_user_id' => $male->id,
+                'match_score' => 80,
+                'match_reason_json' => null,
+                'match_status' => 'active',
+                'generated_by' => 'system',
+                'generated_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        $token = tokenFor($viewer->fresh());
+
+        $browse = $this->withToken($token)->getJson('/api/v1/app/auth/candidate/search?gender=male');
+        $browse->assertStatus(200);
+        $browseUuids = collect($browse->json('data'))->pluck('uuid')->all();
+        expect($browseUuids)->toContain((string) $female->uuid);
+        expect($browseUuids)->not->toContain((string) $male->uuid);
+
+        $matches = $this->withToken($token)->getJson('/api/v1/app/auth/candidate/matches');
+        $matches->assertStatus(200);
+        $matchUuids = collect($matches->json('data'))->pluck('uuid')->all();
+        expect($matchUuids)->toContain((string) $female->uuid);
+        expect($matchUuids)->not->toContain((string) $male->uuid);
+    });
 });
 function tokenFor(User $user): string
 {
@@ -406,7 +594,7 @@ function tokenFor(User $user): string
 
     return $token;
 }
-function makeCandidate(string $email): User
+function makeCandidate(string $email, bool $kycApproved = true): User
 {
     $roleId = (int) Role::query()->where('name', 'candidate')->where('guard_name', 'web')->value('id');
 
@@ -420,6 +608,10 @@ function makeCandidate(string $email): User
         'role_id' => $roleId,
     ]);
     $user->assignRole('candidate');
+
+    if ($kycApproved) {
+        test()->approveCandidateKyc($user);
+    }
 
     return $user;
 }

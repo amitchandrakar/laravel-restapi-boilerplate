@@ -30,6 +30,12 @@ class SaveCandidateCareerEducationRequest extends ApiFormRequest
             $p . 'occupation' => ['nullable', 'string', 'max:255'],
             $p . 'employer' => ['nullable', 'string', 'max:255'],
             $p . 'income' => ['nullable', 'numeric', 'min:0'],
+            $p . 'income_range' => ['nullable', 'string', 'max:64'],
+            $p . 'income_range_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('income_ranges', 'id')->where('is_active', true),
+            ],
             $p . 'marital_status' => ['nullable', 'string', 'max:64'],
             $p . 'qualifications' => ['nullable', 'array'],
             $p . 'qualifications.*.degree_id' => [
@@ -40,6 +46,8 @@ class SaveCandidateCareerEducationRequest extends ApiFormRequest
             $p . 'qualifications.*.field_of_study' => ['nullable', 'string', 'max:255'],
             $p . 'qualifications.*.institution_name' => ['nullable', 'string', 'max:255'],
             $p . 'qualifications.*.year_of_graduation' => ['nullable', 'integer', 'min:1950', 'max:2100'],
+            $p . 'qualifications.*.grade_or_percentage' => ['nullable', 'string', 'max:64'],
+            $p . 'qualifications.*.is_highest' => ['nullable', 'boolean'],
         ];
     }
 }

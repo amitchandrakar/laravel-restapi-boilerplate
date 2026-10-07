@@ -98,6 +98,7 @@ class DemoUsersSeeder extends Seeder
                         'sisters_count' => 1,
                         'family_type' => 'nuclear',
                         'status' => 'active',
+                        'about_me' => 'I am a software engineer who enjoys building useful products and exploring new places on weekends—often with music or trips with friends. My family taught me to respect elders and keep growing. I hope to meet someone family-oriented, with her own interests, who wants kindness and clear communication at the centre of our home.',
                     ],
                     $maternalFullRaipur
                 ),
@@ -168,6 +169,7 @@ class DemoUsersSeeder extends Seeder
                         'brothers_count' => 1,
                         'sisters_count' => 0,
                         'status' => 'active',
+                        'about_me' => 'Medicine is how I connect with people and ease difficult days. After shifts I unwind cooking for family and walking outdoors. I am rooted in our culture yet open about building a life together. I hope to meet someone kind, emotionally available, and ready for trust, patience, and mutual respect.',
                     ],
                     $maternalStateOnly
                 ),
@@ -226,6 +228,7 @@ class DemoUsersSeeder extends Seeder
                         'smoking' => 'never',
                         'drinking' => 'socially',
                         'status' => 'active',
+                        'about_me' => 'As a chartered accountant I value structure and reliability, and I also slow down with music, cricket, and long talks over tea. I take pride in supporting my family. I seek an educated, family-oriented partner who balances tradition with freedom to be herself.',
                     ],
                     $maternalFullBilaspur
                 ),
@@ -288,6 +291,7 @@ class DemoUsersSeeder extends Seeder
                         'smoking' => 'never',
                         'drinking' => 'socially',
                         'status' => 'active',
+                        'about_me' => 'I design spaces that feel warm and livable—architecture is both craft and care. Weekends mean sketching, travel when I can, and time with family. I seek a grounded partner who respects ambition in a woman, communicates clearly, and wants us to back each other\'s goals.',
                     ],
                     $maternalFullRaipur
                 ),
@@ -330,6 +334,7 @@ class DemoUsersSeeder extends Seeder
                     'smoking' => 'never',
                     'drinking' => 'never',
                     'status' => 'active',
+                    'about_me' => 'Teaching keeps me curious every day. I enjoy reading, quiet evenings, and planning simple trips. I come from a close family and value honesty over image. I hope to meet someone kind, emotionally mature, and ready to build a warm, respectful home together.',
                 ],
                 'education' => [
                     [
@@ -375,6 +380,7 @@ class DemoUsersSeeder extends Seeder
                         'brothers_count' => 0,
                         'sisters_count' => 1,
                         'status' => 'active',
+                        'about_me' => 'I work as a graphic designer and love turning ideas into visuals people connect with. Festivals, Sunday meals, and caring for parents matter to me. I seek someone who respects family, enjoys humour, and wants a partnership where we both feel heard.',
                     ],
                     $maternalStateOnly
                 ),
@@ -422,6 +428,7 @@ class DemoUsersSeeder extends Seeder
                         'brothers_count' => 1,
                         'sisters_count' => 0,
                         'status' => 'active',
+                        'about_me' => 'Civil engineering keeps me close to real work—sites, teams, and deadlines. I follow sports, play when I can, and love planning trips. I want a caring, straightforward partner ready to unite two families with grace, trust, and shared values.',
                     ],
                     $maternalFullBilaspur
                 ),
@@ -468,6 +475,7 @@ class DemoUsersSeeder extends Seeder
                         'brothers_count' => 0,
                         'sisters_count' => 0,
                         'status' => 'active',
+                        'about_me' => 'Teaching children reminds me that kindness and clarity matter every day. I love cooking traditional family recipes and spending quiet time with relatives. I want marriage rooted in respect and laughter, with a partner who cherishes family and grows with me.',
                     ],
                     $maternalFullRaipur
                 ),
@@ -499,8 +507,20 @@ class DemoUsersSeeder extends Seeder
 
         foreach ($profiles as $index => $row) {
             $email = $row['user']['email'];
+            $aboutMe = $this->resolveAboutMe($row);
 
             if (User::withTrashed()->where('email', $email)->exists()) {
+                $existing = User::withTrashed()->where('email', $email)->first();
+
+                if (
+                    $existing instanceof User &&
+                    ($existing->about_me === null ||
+                        trim((string) $existing->about_me) === '' ||
+                        $existing->about_me === 'Demo profile seeded for development and QA.')
+                ) {
+                    $existing->forceFill(['about_me' => $aboutMe])->save();
+                }
+
                 continue;
             }
 
@@ -508,6 +528,7 @@ class DemoUsersSeeder extends Seeder
 
             $user = User::create(
                 array_merge($row['user'], [
+                    'about_me' => $aboutMe,
                     'password' => self::DEMO_PASSWORD,
                     'role_id' => $candidateRoleId > 0 ? $candidateRoleId : null,
                 ])
@@ -759,7 +780,11 @@ class DemoUsersSeeder extends Seeder
                         'complexion' => 'fair',
                         'blood_group' => 'O+',
                         'manglik_status' => 'no',
-                        'about_me' => 'Demo profile seeded for development and QA.',
+                        'about_me' => $this->resolveAboutMe([
+                            'user' => [
+                                'about_me' => $user->about_me,
+                            ],
+                        ]),
                         'time_of_birth' => '10:30:00',
                         'zodiac_sign' => 'aries',
                         'place_of_birth_line' => 'Raipur, Chhattisgarh',
@@ -788,6 +813,22 @@ class DemoUsersSeeder extends Seeder
                 )
             )
             ->save();
+    }
+
+    /**
+     * @param  array{user?: array<string, mixed>}  $row
+     */
+    private function resolveAboutMe(array $row): string
+    {
+        $fromRow = trim((string) ($row['user']['about_me'] ?? ''));
+
+        if ($fromRow !== '' && $fromRow !== 'Demo profile seeded for development and QA.') {
+            return $fromRow;
+        }
+
+        return 'I am looking for a life partner who values family, honesty, and growing together. ' .
+            'I enjoy spending time with loved ones, staying curious about work and hobbies, ' .
+            'and building a warm, respectful home.';
     }
 
     private function resolveOccupationId(string $occupationLabel): ?int

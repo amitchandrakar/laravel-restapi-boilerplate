@@ -7,6 +7,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
+/**
+ * @property string $candidateProfilePhoto
+ */
 class Payment extends BaseModel
 {
     protected $table = 'payments';

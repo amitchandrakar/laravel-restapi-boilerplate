@@ -8,7 +8,9 @@ use App\Enums\AdminSettingsType;
 use App\Events\AdminSettingsUpdatedEvent;
 use App\Jobs\ApplySettingsConfigJob;
 use App\Models\LegalPage;
+use App\Support\CacheKeys;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class LegalPageService
 {
@@ -27,7 +29,28 @@ class LegalPageService
 
     public function findPublishedBySlug(string $slug): ?LegalPage
     {
-        return LegalPage::query()->where('slug', $slug)->where('is_published', true)->first();
+        $ttl = max(60, (int) config('cache_strategy.legal_pages_seconds', 600));
+
+        /** @var LegalPage|null $page */
+        $page = Cache::remember(
+            CacheKeys::publicLegalPage($slug),
+            $ttl,
+            fn(): ?LegalPage => LegalPage::query()->where('slug', $slug)->where('is_published', true)->first()
+        );
+
+        return $page;
+    }
+
+    public function forgetPublishedCache(string $slug): void
+    {
+        Cache::forget(CacheKeys::publicLegalPage($slug));
+    }
+
+    public function forgetAllPublishedCaches(): void
+    {
+        foreach ($this->list() as $page) {
+            $this->forgetPublishedCache($page->slug);
+        }
     }
 
     /**
@@ -58,6 +81,7 @@ class LegalPageService
         }
 
         $page->save();
+        $this->forgetPublishedCache($page->slug);
 
         AdminSettingsUpdatedEvent::dispatch(AdminSettingsType::LegalPage, $actorUserId);
         ApplySettingsConfigJob::dispatch(AdminSettingsType::LegalPage);

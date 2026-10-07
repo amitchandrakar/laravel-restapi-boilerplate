@@ -6,8 +6,10 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\UserVerificationDocument;
+use App\Notifications\KycReviewResultNotification;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 
 class KycDocumentService
@@ -160,16 +162,22 @@ class KycDocumentService
 
         $document->verification_status = $newStatus;
         $document->verified_by = $reviewerUserId;
-        $document->verified_at = now()->toDateTimeString();
+        $document->verified_at = now();
 
-        if ($newStatus === 'rejected') {
+        if ($newStatus === 'rejected' || $newStatus === 'resubmission_required') {
             $document->rejection_reason = (string) ($payload['rejection_reason'] ?? '');
         } else {
-            $document->rejection_reason = $payload['rejection_reason'] ?? null;
+            $document->rejection_reason = null;
         }
         $document->save();
 
-        return $document->fresh();
+        $fresh = $document->fresh(['user']);
+
+        if ($fresh instanceof UserVerificationDocument && $fresh->user instanceof User) {
+            Notification::send($fresh->user, new KycReviewResultNotification($fresh));
+        }
+
+        return $fresh ?? $document;
     }
 
     /**

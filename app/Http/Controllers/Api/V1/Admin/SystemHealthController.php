@@ -24,8 +24,8 @@ class SystemHealthController extends Controller
         $ttl = max(60, (int) config('cache_strategy.dashboard_health_seconds', 3600));
 
         $payload = Cache::remember(CacheKeys::dashboardSystemHealth(), $ttl, function (): array {
-            $services = $this->healthCheckService->checkServices();
-            $healthy = $this->healthCheckService->isHealthy();
+            $services = $this->healthCheckService->checkServicesFast();
+            $healthy = $this->healthCheckService->isHealthyFast();
 
             return [
                 'status' => $healthy ? 'up' : 'degraded',

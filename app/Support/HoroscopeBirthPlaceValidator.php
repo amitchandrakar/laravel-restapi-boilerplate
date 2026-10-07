@@ -26,7 +26,16 @@ final class HoroscopeBirthPlaceValidator
                 $p . 'date_of_birth' => ['nullable', 'date'],
                 $p . 'time_of_birth' => ['nullable', 'string', 'regex:/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/'],
                 $p . 'zodiac_sign' => ['nullable', 'string', 'max:64'],
+                $p . 'manglik_status' => ['nullable', 'string', 'max:32'],
+                $p . 'gotra' => ['nullable', 'string', 'max:128'],
+                $p . 'rashi' => ['nullable', 'string', 'max:64'],
+                $p . 'nakshatra' => ['nullable', 'string', 'max:64'],
                 $p . 'place_of_birth_line' => ['nullable', 'string', 'max:255'],
+                $p . 'place_of_birth_country' => ['nullable', 'string', 'max:128'],
+                $p . 'place_of_birth_state' => ['nullable', 'string', 'max:128'],
+                $p . 'place_of_birth_city' => ['nullable', 'string', 'max:128'],
+                $p . 'place_of_birth_district' => ['nullable', 'string', 'max:128'],
+                $p . 'place_of_birth_village' => ['nullable', 'string', 'max:128'],
             ],
             self::flatGeoIdRules('birth_', $p)
         );

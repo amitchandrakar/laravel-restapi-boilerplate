@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\V1\CandidateContactRequestController;
 use App\Http\Controllers\Api\V1\CandidateDiscoveryController;
 use App\Http\Controllers\Api\V1\CandidateKycController;
 use App\Http\Controllers\Api\V1\CandidateProfileController;
+use App\Http\Controllers\Api\V1\CandidateProfileHideController;
+use App\Http\Controllers\Api\V1\CandidateSpamReportController;
 use App\Http\Controllers\Api\V1\MeDeviceController;
 use App\Http\Controllers\Api\V1\MeKycController;
 use App\Http\Controllers\Api\V1\MemberNotificationController;
@@ -15,7 +17,7 @@ use App\Http\Controllers\Api\V1\PublicCandidateProfileOptionsController;
 use App\Http\Controllers\Api\V1\PublicFeaturedCandidateController;
 use App\Http\Controllers\Api\V1\PublicLegalPageController;
 use App\Http\Controllers\Api\V1\PublicSiteSettingsController;
-use App\Http\Controllers\Api\V1\RegistrationPaymentController;
+use App\Http\Controllers\Api\V1\VillageController;
 use Illuminate\Support\Facades\Route;
 
 $sanctumWithTrackedSession = ['auth:sanctum', 'tracked.session'];
@@ -29,17 +31,10 @@ Route::prefix('public')
         Route::get('legal-pages/{slug}', [PublicLegalPageController::class, 'show']);
     });
 
-Route::post('payment/razorpay/webhook', [RegistrationPaymentController::class, 'webhook'])->middleware(
-    'throttle:120,1'
-);
-
-Route::post('webhooks/razorpay', [RegistrationPaymentController::class, 'webhook'])->middleware('throttle:120,1');
-
 Route::prefix('me')
     ->middleware(array_merge($sanctumWithTrackedSession, ['profile.uuid.header']))
     ->group(function (): void {
         Route::post('registration/checkout', [MeRegistrationController::class, 'checkout']);
-        Route::post('registration/payments/verify', [MeRegistrationController::class, 'verify']);
         Route::get('registration/status', [MeRegistrationController::class, 'status']);
 
         Route::get('kyc/documents', [MeKycController::class, 'documents']);
@@ -48,10 +43,14 @@ Route::prefix('me')
         Route::post('kyc/submit', [MeKycController::class, 'submit']);
 
         Route::put('devices', [MeDeviceController::class, 'update']);
+        Route::delete('devices', [MeDeviceController::class, 'destroy']);
     });
 
 Route::prefix('auth')->group(function () use ($sanctumWithTrackedSession): void {
     Route::get('registration', [AuthController::class, 'registrationOptions'])->middleware('throttle:api-general');
+    Route::post('registration/validate-coupon', [AuthController::class, 'validateRegistrationCoupon'])->middleware(
+        'throttle:api-general'
+    );
 
     Route::middleware('throttle:api-auth-strict')->group(function (): void {
         Route::post('register', [AuthController::class, 'register']);
@@ -59,12 +58,6 @@ Route::prefix('auth')->group(function () use ($sanctumWithTrackedSession): void 
     });
 
     Route::middleware($sanctumWithTrackedSession)->group(function (): void {
-        Route::post('payment/registration/confirm', [RegistrationPaymentController::class, 'confirm']);
-        Route::get('payment/registration/{paymentUuid}/status', [
-            RegistrationPaymentController::class,
-            'status',
-        ])->whereUuid('paymentUuid');
-
         Route::prefix('notifications')
             ->middleware('throttle:api-general')
             ->group(function (): void {
@@ -88,9 +81,11 @@ Route::prefix('auth')->group(function () use ($sanctumWithTrackedSession): void 
             Route::patch('career-education', [CandidateProfileController::class, 'saveCareerEducation']);
             Route::patch('family-background', [CandidateProfileController::class, 'saveFamilyBackground']);
             Route::patch('lifestyle', [CandidateProfileController::class, 'saveLifestyle']);
+            Route::patch('property-details', [CandidateProfileController::class, 'savePropertyDetails']);
             Route::patch('partner-preferences', [CandidateProfileController::class, 'savePartnerPreferences']);
             Route::get('progress', [CandidateProfileController::class, 'progress']);
             Route::post('publish', [CandidateProfileController::class, 'publish']);
+            Route::post('villages', [VillageController::class, 'findOrCreate'])->middleware('throttle:api-general');
         });
 
         Route::get('candidate/{candidate:uuid}/profile-details', [
@@ -117,7 +112,12 @@ Route::prefix('auth')->group(function () use ($sanctumWithTrackedSession): void 
         Route::patch('candidate/favorites/{user:uuid}', [CandidateDiscoveryController::class, 'toggleFavorite']);
         Route::get('candidate/matches', [CandidateDiscoveryController::class, 'matches']);
 
+        Route::post('candidate/{candidate:uuid}/report-spam', [CandidateSpamReportController::class, 'store']);
+        Route::post('candidate/{candidate:uuid}/dont-show-again', [CandidateProfileHideController::class, 'store']);
+        Route::delete('candidate/{candidate:uuid}/dont-show-again', [CandidateProfileHideController::class, 'destroy']);
+
         Route::post('candidate/contact-requests', [CandidateContactRequestController::class, 'store']);
+        Route::get('candidate/contact-requests', [CandidateContactRequestController::class, 'sent']);
         Route::patch('candidate/contact-requests/{contactRequest}', [
             CandidateContactRequestController::class,
             'respond',

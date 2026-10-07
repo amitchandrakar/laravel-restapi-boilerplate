@@ -56,6 +56,7 @@ class RegisterCandidateRequest extends ApiFormRequest
                 'uuid',
                 Rule::exists('packages', 'uuid')->where('is_active', true)->whereNull('deleted_at'),
             ],
+            'coupon_code' => ['nullable', 'string', 'max:64'],
         ];
     }
 }

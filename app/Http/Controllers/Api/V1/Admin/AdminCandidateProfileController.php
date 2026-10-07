@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Api\V1\Controller;
+use App\Http\Requests\Api\V1\Candidate\FindOrCreateVillageRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveAdminCandidateFullProfileRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidateBasicsRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidateCareerEducationRequest;
@@ -15,18 +16,36 @@ use App\Http\Requests\Api\V1\Candidate\SaveCandidateLocationFamilyRootsRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidatePartnerPreferencesRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidatePersonalDetailsRequest;
 use App\Http\Requests\Api\V1\Candidate\SaveCandidatePhotosRequest;
+use App\Http\Requests\Api\V1\Candidate\SaveCandidatePropertyDetailsRequest;
+use App\Http\Requests\Api\V1\Candidate\UploadCandidateProfileImageRequest;
 use App\Http\Resources\Api\V1\AdminCandidateProfileDetailsResource;
 use App\Jobs\LogAuditJob;
 use App\Jobs\LogUserActivityJob;
 use App\Models\User;
 use App\Services\CandidateProfileSectionService;
+use App\Services\UserImageUploadService;
+use App\Services\VillageService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AdminCandidateProfileController extends Controller
 {
-    public function __construct(private readonly CandidateProfileSectionService $service) {}
+    public function __construct(
+        private readonly CandidateProfileSectionService $service,
+        private readonly UserImageUploadService $userImageUploads,
+        private readonly VillageService $villages
+    ) {}
+
+    public function findOrCreateVillage(FindOrCreateVillageRequest $request): JsonResponse
+    {
+        $data = $this->villages->findOrCreate(
+            (int) $request->validated('city_id'),
+            (string) $request->validated('name')
+        );
+
+        return $this->successResponse($data, 'Village ready');
+    }
 
     public function profileDetails(User $user): JsonResponse
     {
@@ -77,6 +96,18 @@ class AdminCandidateProfileController extends Controller
         return $this->saveSection($request, $user, CandidateProfileSectionService::SECTION_PHOTOS);
     }
 
+    public function uploadPhoto(UploadCandidateProfileImageRequest $request, User $user): JsonResponse
+    {
+        if ($deny = $this->guardCandidate($user)) {
+            return $deny;
+        }
+
+        $data = $this->userImageUploads->upload($user, $request->file('image'));
+        $this->logSectionActivity($request, $user, 'candidate.profile.image.upload', ['photos']);
+
+        return $this->successResponse($data, 'Candidate photo uploaded successfully');
+    }
+
     public function savePersonalDetails(SaveCandidatePersonalDetailsRequest $request, User $user): JsonResponse
     {
         return $this->saveSection($request, $user, CandidateProfileSectionService::SECTION_PERSONAL_DETAILS);
@@ -105,6 +136,11 @@ class AdminCandidateProfileController extends Controller
     public function saveLifestyle(SaveCandidateLifestyleRequest $request, User $user): JsonResponse
     {
         return $this->saveSection($request, $user, CandidateProfileSectionService::SECTION_LIFESTYLE);
+    }
+
+    public function savePropertyDetails(SaveCandidatePropertyDetailsRequest $request, User $user): JsonResponse
+    {
+        return $this->saveSection($request, $user, CandidateProfileSectionService::SECTION_PROPERTY_DETAILS);
     }
 
     public function savePartnerPreferences(SaveCandidatePartnerPreferencesRequest $request, User $user): JsonResponse

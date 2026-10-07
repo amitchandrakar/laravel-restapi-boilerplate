@@ -34,7 +34,7 @@ class MeKycController extends Controller
             return $this->errorResponse('Unauthenticated', 401);
         }
 
-        if (!$user->hasRole('candidate')) {
+        if (!$user->hasRole('candidate', 'web')) {
             return $this->forbiddenResponse();
         }
 
@@ -54,7 +54,7 @@ class MeKycController extends Controller
             return $this->errorResponse('Unauthenticated', 401);
         }
 
-        if (!$user->hasRole('candidate')) {
+        if (!$user->hasRole('candidate', 'web')) {
             return $this->forbiddenResponse();
         }
 
@@ -87,7 +87,7 @@ class MeKycController extends Controller
             return $this->errorResponse('Unauthenticated', 401);
         }
 
-        if (!$user->hasRole('candidate')) {
+        if (!$user->hasRole('candidate', 'web')) {
             return $this->forbiddenResponse();
         }
 
@@ -133,7 +133,7 @@ class MeKycController extends Controller
             return $this->errorResponse('Unauthenticated', 401);
         }
 
-        if (!$user->hasRole('candidate')) {
+        if (!$user->hasRole('candidate', 'web')) {
             return $this->forbiddenResponse();
         }
 

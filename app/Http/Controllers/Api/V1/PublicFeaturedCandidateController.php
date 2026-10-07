@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Resources\Api\V1\PublicFeaturedCandidateResource;
 use App\Models\User;
 use App\Services\FeaturedCandidateService;
+use App\Support\CandidateEntitlements;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,9 +21,21 @@ class PublicFeaturedCandidateController extends Controller
     {
         $viewer = $this->resolveViewerFromBearerTokenOrNull($request);
 
+        if (
+            $viewer instanceof User &&
+            $viewer->hasRole('candidate') &&
+            !CandidateEntitlements::hasApprovedIdentity($viewer)
+        ) {
+            return $this->forbiddenResponse('Complete identity verification before viewing other members.');
+        }
+
         $perPage = max(1, min(50, (int) $request->integer('perPage', 15)));
         $page = max(1, (int) $request->integer('page', 1));
-        $paginator = $this->featuredCandidateService->paginatePublicFeatured($perPage, $page);
+        $paginator = $this->featuredCandidateService->paginatePublicFeatured(
+            $perPage,
+            $page,
+            $viewer instanceof User ? $viewer : null
+        );
 
         if ($viewer instanceof User) {
             $candidateIds = collect($paginator->items())

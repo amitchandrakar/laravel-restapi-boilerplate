@@ -18,7 +18,7 @@ it('allows admins with permission to record a payment and sync the subscription'
         'user_id' => $candidate->id,
         'subscription_id' => $subscription->id,
         'package_id' => $package->id,
-        'gateway_name' => 'razorpay',
+        'gateway_name' => 'manual',
         'gateway_order_id' => 'order_123',
         'gateway_payment_id' => 'pay_123',
         'amount' => 4999,
